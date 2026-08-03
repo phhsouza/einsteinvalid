@@ -6,6 +6,9 @@
 <title>EinsteinValid — Conferência de Plantões</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
 :root {
   --green:#1D9E75; --green-dark:#0F6E56; --green-light:#E1F5EE;
@@ -37,17 +40,34 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .login-input:focus{border-color:var(--green);}
 .login-btn{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:8px;transition:background 0.15s;}
 .login-btn:hover{background:var(--green-dark);}
+.login-btn:disabled{background:var(--g200);cursor:not-allowed;}
 .login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:16px;}
+.login-status{font-size:11px;color:var(--g400);text-align:center;margin-top:10px;}
 
 /* Topbar */
-.topbar{background:var(--white);border-bottom:1px solid var(--bd);padding:14px 20px;display:none;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.topbar{background:var(--white);border-bottom:1px solid var(--bd);padding:14px 20px;display:none;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:12px;}
 .topbar.show{display:flex;}
-.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-left{display:flex;align-items:center;gap:12px;min-width:0;}
 .topbar-logo{height:36px;width:auto;object-fit:contain;flex-shrink:0;}
 .topbar-title{font-size:16px;font-weight:700;color:var(--g900);letter-spacing:-0.01em;}
 .topbar-sub{font-size:11px;color:var(--g400);margin-top:1px;}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.topbar-user{font-size:12px;color:var(--g600);font-weight:500;}
+.topbar-user .role{background:var(--green-light);color:var(--green-dark);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;margin-left:6px;text-transform:uppercase;letter-spacing:0.05em;}
+.topbar-user .role.admin{background:var(--blue-light);color:var(--blue-dark);}
 .btn-logout{background:transparent;border:1px solid var(--g200);color:var(--g600);border-radius:8px;padding:6px 12px;font-size:12px;font-family:var(--font);cursor:pointer;transition:background 0.15s;}
 .btn-logout:hover{background:var(--g100);}
+.conn-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--g600);}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.conn-badge.offline .conn-dot{background:var(--g400);}
+
+/* Tabs bar */
+.tabs-bar{background:var(--white);border-bottom:1px solid var(--bd);display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:65px;z-index:99;}
+.tabs-bar.show{display:flex;}
+.tabs-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:1;min-width:140px;padding:12px 16px;font-size:13px;font-weight:500;color:var(--g400);cursor:pointer;border:none;background:none;font-family:var(--font);border-bottom:2px solid transparent;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+.tab-btn:hover{color:var(--g600);}
+.tab-btn.active{color:var(--green-dark);border-bottom-color:var(--green);}
 
 /* Layout */
 .wrap{max-width:1240px;margin:0 auto;padding:20px;display:none;}
@@ -55,7 +75,12 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .card{background:var(--white);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;box-shadow:var(--sh);margin-bottom:16px;}
 .card-title{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .card-title .num{background:var(--green);color:white;width:22px;height:22px;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.card-title .right{margin-left:auto;font-size:12px;color:var(--g600);font-weight:normal;}
 .section-hidden{display:none;}
+
+/* Screens */
+.screen{display:none;}
+.screen.active{display:block;}
 
 /* Upload */
 .upload-area{border:2px dashed var(--g200);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.15s;display:block;}
@@ -71,9 +96,13 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .month-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap;}
 .month-label{font-size:13px;color:var(--g600);font-weight:500;}
 .month-select{padding:9px 12px;font-size:13px;border:1px solid var(--g200);border-radius:8px;font-family:var(--font);outline:none;background:var(--white);min-width:220px;}
-.btn-process{background:var(--green);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background 0.15s;margin-left:auto;}
-.btn-process:hover{background:var(--green-dark);}
-.btn-process:disabled{background:var(--g200);cursor:not-allowed;}
+.btn-primary{background:var(--green);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background 0.15s;}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-primary:disabled{background:var(--g200);cursor:not-allowed;}
+.btn-secondary{background:transparent;border:1px solid var(--g200);color:var(--g600);border-radius:8px;padding:9px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);}
+.btn-secondary:hover{background:var(--g100);}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);}
+.btn-danger:hover{background:var(--red-light);}
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
@@ -85,18 +114,21 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
 /* Noturnos */
 .noturnos-list{display:flex;flex-direction:column;gap:5px;max-height:400px;overflow-y:auto;}
-.not-row{display:flex;align-items:center;padding:10px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--white);gap:12px;transition:all 0.15s;cursor:pointer;}
-.not-row:hover{background:var(--g50);}
+.not-row{display:flex;align-items:center;padding:10px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--white);gap:12px;transition:all 0.15s;}
+.not-row.editable{cursor:pointer;}
+.not-row.editable:hover{background:var(--g50);}
 .not-row.acionado{background:var(--amber-light);border-color:var(--amber);}
+.not-row.readonly{opacity:0.85;cursor:default;}
 .not-date{font-family:var(--mono);font-size:12px;color:var(--g600);width:88px;flex-shrink:0;font-weight:500;}
 .not-day{font-size:12px;color:var(--g400);width:72px;flex-shrink:0;}
 .not-name{font-size:13px;color:var(--g900);flex:1;font-weight:500;}
 .not-check{margin-left:auto;display:flex;align-items:center;gap:8px;user-select:none;}
 .not-check input{width:18px;height:18px;cursor:pointer;accent-color:var(--amber);}
+.not-check input:disabled{cursor:not-allowed;}
 .not-check-label{font-size:12px;color:var(--g600);font-weight:500;}
 .not-row.acionado .not-check-label{color:var(--amber-dark);font-weight:600;}
 
-/* Tabela resumo */
+/* Tabela */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r-sm);}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
 .tbl th{text-align:left;padding:10px 12px;background:var(--g50);font-weight:600;color:var(--g600);border-bottom:1px solid var(--bd);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:0.03em;}
@@ -110,26 +142,57 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .tbl tfoot td{font-weight:700;background:var(--blue-light);color:var(--blue-dark);border-top:2px solid var(--blue);}
 .tbl tfoot td.money.total{color:var(--blue-dark);font-size:14px;}
 
+/* Users */
+.users-list{display:flex;flex-direction:column;gap:6px;}
+.user-row{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--white);}
+.user-row.admin{border-color:var(--blue);background:var(--blue-light);}
+.user-name{font-size:13px;color:var(--g900);font-weight:500;}
+.user-slug{font-size:11px;color:var(--g400);font-family:var(--mono);margin-top:2px;}
+.user-status{font-size:11px;color:var(--g600);}
+.user-status.pending{color:var(--amber-dark);font-weight:600;}
+.form-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:14px;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field label{font-size:11px;color:var(--g600);font-weight:500;}
+.form-field select,.form-field input{padding:9px 12px;font-size:13px;border:1px solid var(--g200);border-radius:8px;font-family:var(--font);outline:none;background:var(--white);}
+.form-field select:focus,.form-field input:focus{border-color:var(--green);}
+
 /* Download */
-.download-row{margin-top:16px;display:flex;justify-content:flex-end;align-items:center;gap:12px;}
+.download-row{margin-top:16px;display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;}
 .download-hint{font-size:11px;color:var(--g400);}
 .btn-download{background:var(--blue);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;}
 .btn-download:hover{background:var(--blue-dark);}
 
+/* Password modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:600;padding:20px;backdrop-filter:blur(3px);}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:400px;box-shadow:var(--sh-md);}
+.modal-title{font-size:16px;font-weight:700;color:var(--g900);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--g600);margin-bottom:18px;}
+.modal-field{margin-bottom:12px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+
 /* Toast */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--g900);color:white;padding:12px 20px;border-radius:8px;font-size:13px;transition:transform 0.25s;z-index:600;box-shadow:var(--sh-md);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--g900);color:white;padding:12px 20px;border-radius:8px;font-size:13px;transition:transform 0.25s;z-index:700;box-shadow:var(--sh-md);}
 .toast.show{transform:translateX(-50%) translateY(0);}
+.toast.green{background:var(--green-dark);}
+.toast.red{background:var(--red);}
 
 /* Empty state */
 .empty{color:var(--g400);padding:24px;text-align:center;font-size:13px;}
+
+/* Info panel (senha nova gerada) */
+.info-panel{background:var(--amber-light);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:13px;color:var(--amber-dark);}
+.info-panel strong{font-family:var(--mono);background:var(--white);padding:2px 6px;border-radius:4px;}
 
 /* Responsive */
 @media (max-width:640px){
   .card{padding:16px;}
   .month-row{flex-direction:column;align-items:stretch;}
-  .btn-process{margin-left:0;}
   .not-day{display:none;}
   .not-date{width:auto;}
+  .tabs-bar{top:60px;}
+  .user-row{grid-template-columns:1fr;gap:6px;}
+  .topbar-user{display:none;}
 }
 </style>
 </head>
@@ -140,17 +203,38 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   <div class="login-box">
     <div class="login-logo"><img src="logo.png" alt="Einstein"></div>
     <div class="login-title">EinsteinValid</div>
-    <div class="login-sub">Conferência de plantões — acesso restrito</div>
+    <div class="login-sub">Conferência de plantões</div>
     <div class="login-field">
       <label class="login-label">Usuário</label>
-      <input class="login-input" id="login-user" placeholder="admin" autocomplete="username">
+      <input class="login-input" id="login-user" placeholder="admin ou nome do médico" autocomplete="username">
     </div>
     <div class="login-field">
       <label class="login-label">Senha</label>
       <input class="login-input" id="login-pass" type="password" placeholder="••••••" autocomplete="current-password">
     </div>
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
     <div class="login-error" id="login-error"></div>
+    <div class="login-status" id="login-status"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: TROCAR SENHA ══ -->
+<div class="modal-overlay" id="pwd-modal">
+  <div class="modal-box">
+    <div class="modal-title">Trocar senha</div>
+    <div class="modal-sub" id="pwd-modal-sub">Este é seu primeiro acesso. Defina uma senha nova.</div>
+    <div class="modal-field">
+      <label class="login-label">Nova senha</label>
+      <input class="login-input" id="pwd-new" type="password" placeholder="Mín. 4 caracteres">
+    </div>
+    <div class="modal-field">
+      <label class="login-label">Confirmar senha</label>
+      <input class="login-input" id="pwd-confirm" type="password" placeholder="Repita a senha">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="pwd-cancel" onclick="closePwdModal()">Cancelar</button>
+      <button class="btn-primary" onclick="submitNewPassword()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -163,44 +247,109 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
       <div class="topbar-sub">Conferência de plantões</div>
     </div>
   </div>
-  <button class="btn-logout" onclick="doLogout()">Sair</button>
+  <div class="topbar-right">
+    <span class="conn-badge" id="conn-badge"><span class="conn-dot"></span><span id="conn-text">Online</span></span>
+    <span class="topbar-user" id="topbar-user"></span>
+    <button class="btn-secondary" onclick="openPwdModal(false)">Trocar senha</button>
+    <button class="btn-logout" onclick="doLogout()">Sair</button>
+  </div>
+</div>
+
+<!-- ══ TABS ADMIN ══ -->
+<div class="tabs-bar" id="admin-tabs">
+  <button class="tab-btn active" id="tab-btn-escala" onclick="switchAdminTab('escala')">📄 Escala</button>
+  <button class="tab-btn" id="tab-btn-usuarios" onclick="switchAdminTab('usuarios')">👥 Usuários</button>
+  <button class="tab-btn" id="tab-btn-resumo" onclick="switchAdminTab('resumo')">📊 Resumo geral</button>
 </div>
 
 <!-- ══ APP ══ -->
 <div class="wrap" id="app">
 
-  <!-- 1. Upload -->
-  <div class="card">
-    <div class="card-title"><span class="num">1</span> Enviar escala</div>
-    <label class="upload-area" id="upload-area">
-      <div class="upload-icon">📄</div>
-      <div class="upload-text"><strong>Clique</strong> ou arraste o arquivo Excel da escala</div>
-      <div class="upload-hint">.xls ou .xlsx</div>
-      <input type="file" class="upload-file" id="upload-file" accept=".xls,.xlsx">
-    </label>
-    <div id="file-info-wrap"></div>
-    <div class="month-row" id="month-row" style="display:none">
-      <span class="month-label">Mês de referência:</span>
-      <select class="month-select" id="month-select"></select>
-      <button class="btn-process" onclick="processFile()">Processar</button>
+  <!-- ═══ ADMIN: ESCALA ═══ -->
+  <div class="screen active" id="screen-escala">
+    <div class="card">
+      <div class="card-title">Upload da escala</div>
+      <label class="upload-area" id="upload-area">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text"><strong>Clique</strong> ou arraste o Excel da escala</div>
+        <div class="upload-hint">.xls ou .xlsx</div>
+        <input type="file" class="upload-file" id="upload-file" accept=".xls,.xlsx">
+      </label>
+      <div id="file-info-wrap"></div>
+      <div class="month-row" id="month-row" style="display:none">
+        <span class="month-label">Mês:</span>
+        <select class="month-select" id="month-select"></select>
+        <button class="btn-primary" onclick="uploadEscala()">Salvar escala</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Meses salvos <span class="right" id="mes-vigente-label"></span></div>
+      <div id="meses-list"><div class="empty">Nenhum mês salvo ainda.</div></div>
     </div>
   </div>
 
-  <!-- 2. Noturnos -->
-  <div class="card section-hidden" id="sec-noturnos">
-    <div class="card-title"><span class="num">2</span> Marcar noturnos acionados</div>
-    <div style="font-size:12px;color:var(--g600);margin-bottom:14px">Marque os plantões noturnos que foram acionados. Os não marcados contam como sobreaviso. As marcações ficam salvas no navegador.</div>
-    <div class="noturnos-list" id="noturnos-list"></div>
+  <!-- ═══ ADMIN: USUÁRIOS ═══ -->
+  <div class="screen" id="screen-usuarios">
+    <div class="card">
+      <div class="card-title">Criar novo usuário</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Nome do médico (deve bater com o da escala)</label>
+          <select id="new-user-nome"><option value="">Selecione…</option></select>
+        </div>
+        <div style="align-self:end">
+          <button class="btn-primary" onclick="createUser()">+ Criar usuário</button>
+        </div>
+      </div>
+      <div id="new-user-info"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Usuários cadastrados</div>
+      <div class="users-list" id="users-list"></div>
+    </div>
   </div>
 
-  <!-- 3. Resumo -->
-  <div class="card section-hidden" id="sec-resumo">
-    <div class="card-title"><span class="num">3</span> Resumo</div>
-    <div class="stats" id="stats"></div>
-    <div class="tbl-wrap"><table class="tbl" id="tbl-resumo"></table></div>
-    <div class="download-row">
-      <span class="download-hint">Excel contém 3 abas: Resumo, Detalhado e Noturnos</span>
-      <button class="btn-download" onclick="downloadExcel()">⬇ Baixar Excel</button>
+  <!-- ═══ ADMIN: RESUMO GERAL ═══ -->
+  <div class="screen" id="screen-resumo">
+    <div class="card">
+      <div class="card-title">
+        Resumo geral
+        <span class="right">
+          Mês: <select class="month-select" id="resumo-mes-select" onchange="renderResumoGeral()" style="min-width:160px"></select>
+        </span>
+      </div>
+      <div class="stats" id="resumo-stats"></div>
+      <div class="tbl-wrap"><table class="tbl" id="tbl-resumo"></table></div>
+      <div class="download-row">
+        <span class="download-hint">Excel contém 3 abas: Resumo, Detalhado e Noturnos</span>
+        <button class="btn-download" onclick="downloadExcel()">⬇ Baixar Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MÉDICO ═══ -->
+  <div class="screen" id="screen-medico">
+    <div class="card">
+      <div class="card-title">
+        <span id="medico-nome-label">—</span>
+        <span class="right">
+          Mês: <select class="month-select" id="medico-mes-select" onchange="renderMedico()" style="min-width:160px"></select>
+        </span>
+      </div>
+      <div class="stats" id="medico-stats"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="medico-noturnos-title">Meus noturnos</div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:14px" id="medico-noturnos-hint"></div>
+      <div class="noturnos-list" id="medico-noturnos"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalhamento</div>
+      <div class="tbl-wrap"><table class="tbl" id="medico-tbl"></table></div>
     </div>
   </div>
 
@@ -209,41 +358,58 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 <div class="toast" id="toast"></div>
 
 <script>
-// ── AUTH ──────────────────────────────────────────
-const ADMIN_USER='admin', ADMIN_PASS='admin';
-function doLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    localStorage.setItem('einsteinvalid_session','1');
-    showApp();
-  } else {
-    document.getElementById('login-error').textContent='Usuário ou senha incorretos.';
-    document.getElementById('login-pass').value='';
-  }
-}
-function doLogout(){
-  localStorage.removeItem('einsteinvalid_session');
-  document.getElementById('login-overlay').classList.add('show');
-  document.getElementById('topbar').classList.remove('show');
-  document.getElementById('app').classList.remove('show');
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-  document.getElementById('login-error').textContent='';
-}
-function showApp(){
-  document.getElementById('login-overlay').classList.remove('show');
-  document.getElementById('topbar').classList.add('show');
-  document.getElementById('app').classList.add('show');
-  document.getElementById('login-error').textContent='';
+// ══════════════════════════════════════════════════════
+//  FIREBASE INIT
+// ══════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyDHW-v3sUhbahNHtrJInQdnT3YEbhwNEwI",
+  authDomain: "einsteinvalid.firebaseapp.com",
+  databaseURL: "https://einsteinvalid-default-rtdb.firebaseio.com",
+  projectId: "einsteinvalid",
+};
+
+let db = null;
+let fbReady = false;
+
+function initFirebase() {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+      firebase.auth().signInAnonymously().then(() => {
+        db = firebase.database();
+        fbReady = true;
+        db.ref('.info/connected').on('value', snap => setConn(!!snap.val()));
+        resolve();
+      }).catch(err => {
+        setConn(false, 'Erro auth');
+        reject(err);
+      });
+    } catch (err) {
+      setConn(false, 'Erro Firebase');
+      reject(err);
+    }
+  });
 }
 
-// ── REGRAS ────────────────────────────────────────
+function setConn(ok, label) {
+  const b = document.getElementById('conn-badge');
+  const t = document.getElementById('conn-text');
+  if (!b) return;
+  b.className = 'conn-badge' + (ok ? '' : ' offline');
+  t.textContent = label || (ok ? 'Online' : 'Offline');
+}
+
+// ══════════════════════════════════════════════════════
+//  REGRAS E CONSTANTES
+// ══════════════════════════════════════════════════════
 const DIAS_PT=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
 const MESES_PT=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const LOWER_WORDS=new Set(['De','Da','Do','Das','Dos','E']);
 const CAT_MEIO='Meio de semana', CAT_FDS='Fim de semana', CAT_NOITE='Noturno';
 const RATE_FDS=165, RATE_NOT_ACIONADO_H=145, RATE_NOT_SOBREAVISO=522, H_TURNO=6, H_NOITE=12;
+const ADMIN_SLUG='admin';
+const ADMIN_INITIAL_PASS='admin';
+
 function rateMeioSemana(n){
   if(n<=6) return 135;
   if(n<=10) return 145;
@@ -252,19 +418,20 @@ function rateMeioSemana(n){
   return 175;
 }
 
-// ── STATE ─────────────────────────────────────────
-let allPlantoes=[];        // {data:Date, dia_semana, fim_semana, turno, medico}
-let filteredPlantoes=[];   // após filtro de mês
-let noturnosState=new Map(); // key: "YYYY-MM-DD|Médico" → true (acionado)
-let currentMonthKey=null;
-
-// ── UTILS ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
 function normalizeName(name){
   if(!name) return null;
   name=String(name).trim().replace(/\s+/g,' ');
   if(!name) return null;
   const words=name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
   return words.map((w,i)=>(i>0 && LOWER_WORDS.has(w))?w.toLowerCase():w).join(' ');
+}
+function slugify(name){
+  return String(name).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
 }
 function parseDate(s){
   if(!s) return null;
@@ -276,43 +443,224 @@ function parseDate(s){
 function detectShift(cell){
   if(!cell) return null;
   const s=String(cell).toLowerCase();
-  if(s.includes('manhã') || s.includes('manha')) return 'Manhã';
+  if(s.includes('manhã')||s.includes('manha')) return 'Manhã';
   if(s.includes('tarde')) return 'Tarde';
-  if(s.includes('noite') || s.includes('noturno')) return 'Noite';
+  if(s.includes('noite')||s.includes('noturno')) return 'Noite';
   return null;
 }
 function categorize(p){
   if(p.turno==='Noite') return CAT_NOITE;
-  const d=p.data.getDay();
+  const d = new Date(p.dataIso).getDay();
   return (d===0 || d===6) ? CAT_FDS : CAT_MEIO;
 }
 function dayIdxMon0(d){
   const js=d.getDay();
   return js===0 ? 6 : js-1;
 }
-function fmtDate(d){
-  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+function fmtDate(iso){
+  const [y,m,d]=iso.split('-');
+  return `${d}/${m}/${y}`;
 }
-function isoDate(d){
+function isoDateFromDate(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function fmtMoney(v){
   return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-function keyFor(p){
-  return isoDate(p.data)+'|'+p.medico;
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function acionamentoKey(p){
+  return `${p.dataIso}|${slugify(p.medico)}`;
 }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+function showToast(msg, type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast'+(type?' '+type:''),2600);
+}
 
-// ── PARSER ────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  HASH DE SENHA
+// ══════════════════════════════════════════════════════
+async function hashPass(pass, salt){
+  const enc=new TextEncoder().encode(salt+pass);
+  const buf=await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function newSalt(){
+  const bytes=new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function generateInitialPass(){
+  // Senha inicial de 8 caracteres alfanuméricos, fácil de digitar
+  const chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s='';
+  const bytes=new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  for(let i=0;i<8;i++) s+=chars[bytes[i]%chars.length];
+  return s;
+}
+
+// ══════════════════════════════════════════════════════
+//  AUTH LOCAL
+// ══════════════════════════════════════════════════════
+let currentUser = null;  // {slug, nome, role, passChanged}
+
+async function doLogin(){
+  const rawUser = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent='';
+  if(!rawUser || !pass){ errEl.textContent='Preencha usuário e senha.'; return; }
+  if(!fbReady){ errEl.textContent='Aguardando conexão…'; return; }
+
+  document.getElementById('login-btn').disabled = true;
+  document.getElementById('login-status').textContent = 'Verificando…';
+
+  try {
+    // ADMIN
+    if(rawUser.toLowerCase() === ADMIN_SLUG){
+      const snap = await db.ref('usuarios/'+ADMIN_SLUG).once('value');
+      let user = snap.val();
+      if(!user){
+        // Primeira vez: cria admin com senha inicial "admin"
+        if(pass !== ADMIN_INITIAL_PASS){
+          errEl.textContent='Senha incorreta.';
+          return;
+        }
+        const salt = newSalt();
+        const passHash = await hashPass(ADMIN_INITIAL_PASS, salt);
+        user = {nome:'Admin', role:'admin', salt, passHash, passChanged:false, criadoEm:Date.now()};
+        await db.ref('usuarios/'+ADMIN_SLUG).set(user);
+      } else {
+        const check = await hashPass(pass, user.salt);
+        if(check !== user.passHash){ errEl.textContent='Senha incorreta.'; return; }
+      }
+      currentUser = {slug:ADMIN_SLUG, ...user};
+      saveSession();
+      afterLogin();
+      return;
+    }
+
+    // MÉDICO
+    const slug = slugify(rawUser);
+    const snap = await db.ref('usuarios/'+slug).once('value');
+    const user = snap.val();
+    if(!user){ errEl.textContent='Usuário não encontrado.'; return; }
+    const check = await hashPass(pass, user.salt);
+    if(check !== user.passHash){ errEl.textContent='Senha incorreta.'; return; }
+    currentUser = {slug, ...user};
+    saveSession();
+    afterLogin();
+  } catch(err) {
+    errEl.textContent = 'Erro: ' + err.message;
+  } finally {
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-status').textContent = '';
+  }
+}
+
+function saveSession(){
+  if(currentUser) localStorage.setItem('einsteinvalid_session', JSON.stringify(currentUser));
+}
+function clearSession(){ localStorage.removeItem('einsteinvalid_session'); }
+async function tryRestoreSession(){
+  const s = localStorage.getItem('einsteinvalid_session');
+  if(!s) return false;
+  try {
+    const cached = JSON.parse(s);
+    if(!cached?.slug) return false;
+    // Rechecar no DB (senha pode ter mudado, usuário deletado, etc.)
+    const snap = await db.ref('usuarios/'+cached.slug).once('value');
+    const fresh = snap.val();
+    if(!fresh || fresh.passHash !== cached.passHash){ clearSession(); return false; }
+    currentUser = {slug:cached.slug, ...fresh};
+    return true;
+  } catch { return false; }
+}
+
+function doLogout(){
+  currentUser = null;
+  clearSession();
+  document.getElementById('login-overlay').classList.add('show');
+  document.getElementById('topbar').classList.remove('show');
+  document.getElementById('admin-tabs').classList.remove('show');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').textContent='';
+}
+
+async function afterLogin(){
+  document.getElementById('login-overlay').classList.remove('show');
+  document.getElementById('topbar').classList.add('show');
+  document.getElementById('app').classList.add('show');
+
+  const userEl = document.getElementById('topbar-user');
+  userEl.innerHTML = `${escapeHtml(currentUser.nome)}<span class="role${currentUser.role==='admin'?' admin':''}">${currentUser.role==='admin'?'Admin':'Médico'}</span>`;
+
+  // Setup listeners globais
+  attachGlobalListeners();
+
+  if(currentUser.role === 'admin'){
+    document.getElementById('admin-tabs').classList.add('show');
+    document.getElementById('screen-medico').classList.remove('active');
+    switchAdminTab('escala');
+  } else {
+    document.getElementById('admin-tabs').classList.remove('show');
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-medico').classList.add('active');
+    document.getElementById('medico-nome-label').textContent = currentUser.nome;
+    renderMedicoInit();
+  }
+
+  // Se primeiro acesso, força troca de senha
+  if(currentUser.passChanged === false){
+    openPwdModal(true);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  MODAL: TROCAR SENHA
+// ══════════════════════════════════════════════════════
+let pwdModalForced = false;
+function openPwdModal(forced){
+  pwdModalForced = !!forced;
+  document.getElementById('pwd-new').value = '';
+  document.getElementById('pwd-confirm').value = '';
+  document.getElementById('pwd-modal-sub').textContent = forced
+    ? 'Este é seu primeiro acesso. Defina uma senha nova para continuar.'
+    : 'Digite uma nova senha para sua conta.';
+  document.getElementById('pwd-cancel').style.display = forced ? 'none' : '';
+  document.getElementById('pwd-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('pwd-new').focus(), 50);
+}
+function closePwdModal(){
+  if(pwdModalForced) return; // não pode cancelar em modo forced
+  document.getElementById('pwd-modal').classList.remove('show');
+}
+async function submitNewPassword(){
+  const p1 = document.getElementById('pwd-new').value;
+  const p2 = document.getElementById('pwd-confirm').value;
+  if(!p1 || p1.length<4){ showToast('Senha muito curta (mín. 4 caracteres)', 'red'); return; }
+  if(p1 !== p2){ showToast('As senhas não conferem', 'red'); return; }
+  const salt = newSalt();
+  const passHash = await hashPass(p1, salt);
+  await db.ref('usuarios/'+currentUser.slug).update({salt, passHash, passChanged:true});
+  currentUser.salt = salt;
+  currentUser.passHash = passHash;
+  currentUser.passChanged = true;
+  saveSession();
+  pwdModalForced = false;
+  document.getElementById('pwd-modal').classList.remove('show');
+  showToast('Senha atualizada', 'green');
+}
+
+// ══════════════════════════════════════════════════════
+//  PARSER EXCEL
+// ══════════════════════════════════════════════════════
 function parseSheet(sheet){
   const rows=XLSX.utils.sheet_to_json(sheet,{header:1, raw:false, defval:null});
   const plantoes=[];
@@ -334,9 +682,9 @@ function parseSheet(sheet){
           const data=datas[c];
           if(medico && data){
             plantoes.push({
-              data, turno, medico,
-              dia_semana:DIAS_PT[dayIdxMon0(data)],
-              fim_semana:[0,6].includes(data.getDay()),
+              dataIso: isoDateFromDate(data),
+              turno,
+              medico,
             });
           }
         }
@@ -350,60 +698,63 @@ function parseSheet(sheet){
   return plantoes;
 }
 
-// ── UPLOAD ────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  ADMIN: TABS
+// ══════════════════════════════════════════════════════
+function switchAdminTab(tab){
+  ['escala','usuarios','resumo'].forEach(t=>{
+    document.getElementById('tab-btn-'+t).classList.toggle('active', t===tab);
+    document.getElementById('screen-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='usuarios') renderUsuarios();
+  if(tab==='resumo') renderResumoGeral();
+  if(tab==='escala') renderMesesList();
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN: ESCALA — UPLOAD
+// ══════════════════════════════════════════════════════
+let uploadedPlantoes=[];
+let uploadedFileName='';
+
 const uploadArea=document.getElementById('upload-area');
 const uploadFile=document.getElementById('upload-file');
 uploadFile.addEventListener('change', handleFileSelect);
 uploadArea.addEventListener('dragover', e=>{e.preventDefault(); uploadArea.classList.add('dragover');});
 uploadArea.addEventListener('dragleave', ()=>uploadArea.classList.remove('dragover'));
 uploadArea.addEventListener('drop', e=>{
-  e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  if(e.dataTransfer.files[0]){
-    uploadFile.files=e.dataTransfer.files;
-    handleFileSelect();
-  }
+  e.preventDefault(); uploadArea.classList.remove('dragover');
+  if(e.dataTransfer.files[0]){ uploadFile.files=e.dataTransfer.files; handleFileSelect(); }
 });
 function handleFileSelect(){
   const f=uploadFile.files[0];
   if(!f) return;
+  uploadedFileName = f.name;
   const reader=new FileReader();
   reader.onload=ev=>{
     try{
       const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      allPlantoes=parseSheet(ws);
-      if(!allPlantoes.length){
-        showToast('Nenhum plantão detectado no arquivo.');
-        return;
-      }
+      uploadedPlantoes=parseSheet(ws);
+      if(!uploadedPlantoes.length){ showToast('Nenhum plantão detectado', 'red'); return; }
       showFileInfo(f);
       populateMonthSelect(f.name);
       document.getElementById('month-row').style.display='flex';
-      document.getElementById('sec-noturnos').classList.add('section-hidden');
-      document.getElementById('sec-resumo').classList.add('section-hidden');
-    } catch(err){
-      showToast('Erro ao ler arquivo: '+err.message);
-    }
+    } catch(err){ showToast('Erro ao ler: '+err.message, 'red'); }
   };
   reader.readAsArrayBuffer(f);
 }
 function showFileInfo(f){
   document.getElementById('file-info-wrap').innerHTML=`
     <div class="file-info">
-      <span class="file-info-name">✓ ${escapeHtml(f.name)} (${allPlantoes.length} plantões detectados)</span>
+      <span class="file-info-name">✓ ${escapeHtml(f.name)} (${uploadedPlantoes.length} plantões)</span>
       <button class="file-info-clear" onclick="clearFile()" title="Remover">×</button>
     </div>`;
 }
 function clearFile(){
-  uploadFile.value='';
-  allPlantoes=[];
-  filteredPlantoes=[];
-  currentMonthKey=null;
+  uploadFile.value=''; uploadedPlantoes=[]; uploadedFileName='';
   document.getElementById('file-info-wrap').innerHTML='';
   document.getElementById('month-row').style.display='none';
-  document.getElementById('sec-noturnos').classList.add('section-hidden');
-  document.getElementById('sec-resumo').classList.add('section-hidden');
 }
 function populateMonthSelect(filename){
   const sel=document.getElementById('month-select');
@@ -412,8 +763,8 @@ function populateMonthSelect(filename){
   const nameMatch=filename && filename.match(/(\d{2})-(\d{2})-(\d{4})/);
   if(nameMatch) defaultKey=nameMatch[3]+'-'+nameMatch[2];
   const monthCounts=new Map();
-  allPlantoes.forEach(p=>{
-    const k=p.data.getFullYear()+'-'+String(p.data.getMonth()+1).padStart(2,'0');
+  uploadedPlantoes.forEach(p=>{
+    const k=p.dataIso.slice(0,7);
     monthCounts.set(k,(monthCounts.get(k)||0)+1);
   });
   const sortedKeys=Array.from(monthCounts.keys()).sort();
@@ -432,161 +783,439 @@ function populateMonthSelect(filename){
   }
 }
 
-// ── PROCESS ───────────────────────────────────────
-function processFile(){
-  const key=document.getElementById('month-select').value;
-  if(!key) return;
-  currentMonthKey=key;
-  const [y,m]=key.split('-').map(Number);
-  filteredPlantoes=allPlantoes.filter(p=>p.data.getFullYear()===y && p.data.getMonth()+1===m);
-  // Load noturnos state from localStorage
-  const stateKey='noturnos_'+key;
-  try{
-    const saved=localStorage.getItem(stateKey);
-    noturnosState=saved ? new Map(JSON.parse(saved)) : new Map();
-  } catch{ noturnosState=new Map(); }
-  renderNoturnos();
-  renderResumo();
-  document.getElementById('sec-noturnos').classList.remove('section-hidden');
-  document.getElementById('sec-resumo').classList.remove('section-hidden');
-  setTimeout(()=>document.getElementById('sec-noturnos').scrollIntoView({behavior:'smooth', block:'start'}), 120);
+async function uploadEscala(){
+  const mesKey=document.getElementById('month-select').value;
+  if(!mesKey || !uploadedPlantoes.length){ showToast('Selecione um mês', 'red'); return; }
+  const [y,m]=mesKey.split('-').map(Number);
+  const plantoesMes = uploadedPlantoes.filter(p=>{
+    const [py,pm]=p.dataIso.split('-').map(Number);
+    return py===y && pm===m;
+  });
+  if(!plantoesMes.length){ showToast('Nenhum plantão do mês selecionado', 'red'); return; }
+  if(!confirm(`Salvar ${plantoesMes.length} plantões de ${MESES_PT[m]}/${y}?\n\n(As marcações de acionamento existentes serão preservadas.)`)) return;
+
+  // Estrutura: meses/{mesKey}/{meta, plantoes} — acionamentos são preservados (nó separado)
+  const plantoesObj = {};
+  plantoesMes.forEach((p, i) => {
+    const key = `p${i}_${Date.now()}_${Math.floor(Math.random()*999)}`;
+    plantoesObj[key] = {...p, categoria: categorize(p)};
+  });
+
+  try {
+    await db.ref(`meses/${mesKey}/meta`).set({
+      uploadedAt: Date.now(),
+      uploadedBy: currentUser.slug,
+      count: plantoesMes.length,
+    });
+    await db.ref(`meses/${mesKey}/plantoes`).set(plantoesObj);
+    showToast(`Escala de ${MESES_PT[m]}/${y} salva`, 'green');
+    clearFile();
+    renderMesesList();
+  } catch(err) {
+    showToast('Erro ao salvar: '+err.message, 'red');
+  }
 }
 
-function renderNoturnos(){
-  const nots=filteredPlantoes.filter(p=>p.turno==='Noite').sort((a,b)=>a.data-b.data || a.medico.localeCompare(b.medico,'pt-BR'));
-  const el=document.getElementById('noturnos-list');
-  if(!nots.length){
-    el.innerHTML='<div class="empty">Nenhum plantão noturno no mês.</div>';
-    return;
-  }
-  el.innerHTML=nots.map(p=>{
-    const k=keyFor(p);
-    const checked=noturnosState.get(k);
-    return `<label class="not-row${checked?' acionado':''}" data-key="${escapeHtml(k)}">
-      <span class="not-date">${fmtDate(p.data)}</span>
-      <span class="not-day">${p.dia_semana}</span>
-      <span class="not-name">${escapeHtml(p.medico)}</span>
-      <span class="not-check">
-        <input type="checkbox" ${checked?'checked':''} onchange="toggleNoturno('${escapeHtml(k)}', this.checked)">
-        <span class="not-check-label">Acionado</span>
-      </span>
-    </label>`;
+async function renderMesesList(){
+  const el = document.getElementById('meses-list');
+  const [snap, vigSnap] = await Promise.all([
+    db.ref('meses').once('value'),
+    db.ref('mesVigente').once('value'),
+  ]);
+  const meses = snap.val() || {};
+  const vigente = vigSnap.val();
+  document.getElementById('mes-vigente-label').textContent = vigente ? `Mês vigente: ${labelMes(vigente)}` : 'Nenhum mês vigente';
+  const keys = Object.keys(meses).sort().reverse();
+  if(!keys.length){ el.innerHTML = '<div class="empty">Nenhum mês salvo ainda.</div>'; return; }
+  el.innerHTML = keys.map(k => {
+    const m = meses[k];
+    const count = m.meta?.count || Object.keys(m.plantoes||{}).length;
+    const isVig = k === vigente;
+    return `<div class="user-row${isVig?' admin':''}">
+      <div>
+        <div class="user-name">${labelMes(k)}${isVig?' · <span style="color:var(--blue-dark);font-weight:600">VIGENTE</span>':''}</div>
+        <div class="user-slug">${count} plantões · atualizado ${m.meta?.uploadedAt ? new Date(m.meta.uploadedAt).toLocaleString('pt-BR') : '—'}</div>
+      </div>
+      <div></div>
+      <button class="btn-secondary" onclick="setMesVigente('${k}')">${isVig?'Manter vigente':'Definir vigente'}</button>
+      <button class="btn-danger" onclick="deleteMes('${k}')">Apagar</button>
+    </div>`;
   }).join('');
 }
-function toggleNoturno(key, checked){
-  if(checked) noturnosState.set(key, true);
-  else noturnosState.delete(key);
-  const row=document.querySelector(`.not-row[data-key="${CSS.escape(key)}"]`);
-  if(row) row.classList.toggle('acionado', checked);
-  if(currentMonthKey){
-    localStorage.setItem('noturnos_'+currentMonthKey, JSON.stringify(Array.from(noturnosState.entries())));
-  }
-  renderResumo();
+
+async function setMesVigente(k){
+  await db.ref('mesVigente').set(k);
+  showToast(`Mês vigente: ${labelMes(k)}`, 'green');
+  renderMesesList();
+}
+async function deleteMes(k){
+  if(!confirm(`Apagar todos os dados de ${labelMes(k)}? Esta ação não pode ser desfeita.`)) return;
+  await db.ref(`meses/${k}`).remove();
+  const vig = (await db.ref('mesVigente').once('value')).val();
+  if(vig === k) await db.ref('mesVigente').remove();
+  showToast('Mês apagado', 'green');
+  renderMesesList();
+}
+function labelMes(key){
+  const [y,m]=key.split('-');
+  return `${MESES_PT[+m]}/${y}`;
 }
 
-function computeStats(){
-  const medicos=new Map();
-  filteredPlantoes.forEach(p=>{
-    if(!medicos.has(p.medico)) medicos.set(p.medico,{meio:0, fds:0, notAc:0, notNAc:0});
-    const m=medicos.get(p.medico);
-    const cat=categorize(p);
-    if(cat===CAT_MEIO) m.meio++;
-    else if(cat===CAT_FDS) m.fds++;
-    else if(cat===CAT_NOITE){
-      if(noturnosState.get(keyFor(p))) m.notAc++;
+// ══════════════════════════════════════════════════════
+//  ADMIN: USUÁRIOS
+// ══════════════════════════════════════════════════════
+async function renderUsuarios(){
+  // Popular dropdown de nomes com médicos detectados no último mês
+  await populateNomesDropdown();
+  const snap = await db.ref('usuarios').once('value');
+  const users = snap.val() || {};
+  const list = document.getElementById('users-list');
+  const entries = Object.entries(users).sort((a,b)=>{
+    if(a[1].role==='admin') return -1;
+    if(b[1].role==='admin') return 1;
+    return a[1].nome.localeCompare(b[1].nome,'pt-BR');
+  });
+  if(!entries.length){ list.innerHTML = '<div class="empty">Nenhum usuário cadastrado.</div>'; return; }
+  list.innerHTML = entries.map(([slug, u]) => {
+    const isAdmin = u.role === 'admin';
+    return `<div class="user-row${isAdmin?' admin':''}">
+      <div>
+        <div class="user-name">${escapeHtml(u.nome)}${isAdmin?' <span class="role admin" style="background:var(--blue-light);color:var(--blue-dark);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;text-transform:uppercase">Admin</span>':''}</div>
+        <div class="user-slug">${escapeHtml(slug)}</div>
+      </div>
+      <div class="user-status${u.passChanged===false?' pending':''}">${u.passChanged===false?'⚠ senha inicial':'✓ senha definida'}</div>
+      <button class="btn-secondary" onclick="resetPassword('${slug}')">Reset senha</button>
+      ${isAdmin?'<span></span>':`<button class="btn-danger" onclick="deleteUser('${slug}')">Apagar</button>`}
+    </div>`;
+  }).join('');
+}
+
+async function populateNomesDropdown(){
+  const sel = document.getElementById('new-user-nome');
+  sel.innerHTML = '<option value="">Selecione…</option>';
+  // Pega o mês mais recente salvo
+  const snap = await db.ref('meses').once('value');
+  const meses = snap.val() || {};
+  const keys = Object.keys(meses).sort().reverse();
+  if(!keys.length){
+    sel.innerHTML = '<option value="">Faça upload de uma escala primeiro</option>';
+    return;
+  }
+  const nomes = new Set();
+  keys.forEach(k => {
+    const pls = meses[k].plantoes || {};
+    Object.values(pls).forEach(p => nomes.add(p.medico));
+  });
+  const usuariosSnap = await db.ref('usuarios').once('value');
+  const existentes = new Set(Object.keys(usuariosSnap.val() || {}));
+  Array.from(nomes).sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(n => {
+    const slug = slugify(n);
+    if(existentes.has(slug)) return; // já cadastrado
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = n;
+    sel.appendChild(opt);
+  });
+}
+
+async function createUser(){
+  const nome = document.getElementById('new-user-nome').value;
+  if(!nome){ showToast('Selecione um nome', 'red'); return; }
+  const slug = slugify(nome);
+  if(slug === ADMIN_SLUG){ showToast('Slug reservado', 'red'); return; }
+  const initialPass = generateInitialPass();
+  const salt = newSalt();
+  const passHash = await hashPass(initialPass, salt);
+  await db.ref('usuarios/'+slug).set({
+    nome, role:'medico', salt, passHash, passChanged:false, criadoEm:Date.now(),
+  });
+  document.getElementById('new-user-info').innerHTML = `
+    <div class="info-panel">
+      Usuário <strong>${escapeHtml(nome)}</strong> criado. Senha inicial: <strong>${initialPass}</strong>
+      <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar essa senha no primeiro acesso.</div>
+    </div>`;
+  showToast('Usuário criado', 'green');
+  renderUsuarios();
+}
+
+async function resetPassword(slug){
+  if(!confirm('Gerar nova senha inicial para este usuário?')) return;
+  const initialPass = generateInitialPass();
+  const salt = newSalt();
+  const passHash = await hashPass(initialPass, salt);
+  await db.ref('usuarios/'+slug).update({salt, passHash, passChanged:false});
+  document.getElementById('new-user-info').innerHTML = `
+    <div class="info-panel">
+      Nova senha para <strong>${escapeHtml(slug)}</strong>: <strong>${initialPass}</strong>
+    </div>`;
+  showToast('Senha resetada', 'green');
+  renderUsuarios();
+}
+
+async function deleteUser(slug){
+  if(!confirm(`Apagar usuário ${slug}?`)) return;
+  await db.ref('usuarios/'+slug).remove();
+  showToast('Usuário apagado', 'green');
+  renderUsuarios();
+}
+
+// ══════════════════════════════════════════════════════
+//  RESUMO GERAL (ADMIN)
+// ══════════════════════════════════════════════════════
+async function populateMesesSelect(selectId, defaultVigente){
+  const sel = document.getElementById(selectId);
+  const [snap, vigSnap] = await Promise.all([
+    db.ref('meses').once('value'),
+    db.ref('mesVigente').once('value'),
+  ]);
+  const meses = snap.val() || {};
+  const vigente = vigSnap.val();
+  sel.innerHTML = '';
+  const keys = Object.keys(meses).sort().reverse();
+  if(!keys.length){
+    sel.innerHTML = '<option value="">Nenhum mês salvo</option>';
+    return {keys:[], vigente:null};
+  }
+  keys.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = labelMes(k) + (k===vigente ? ' · VIGENTE' : '');
+    sel.appendChild(opt);
+  });
+  sel.value = defaultVigente && vigente && keys.includes(vigente) ? vigente : keys[0];
+  return {keys, vigente};
+}
+
+async function renderResumoGeral(){
+  if(!document.getElementById('screen-resumo').classList.contains('active')) return;
+  const sel = document.getElementById('resumo-mes-select');
+  if(!sel.options.length){
+    await populateMesesSelect('resumo-mes-select', true);
+  }
+  const mesKey = sel.value;
+  if(!mesKey){
+    document.getElementById('tbl-resumo').innerHTML = '<tbody><tr><td class="empty">Nenhum mês para exibir.</td></tr></tbody>';
+    document.getElementById('resumo-stats').innerHTML = '';
+    return;
+  }
+  const snap = await db.ref(`meses/${mesKey}`).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const acionamentos = data.acionamentos || {};
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0});
+    const m = medicos.get(p.medico);
+    const cat = p.categoria || categorize(p);
+    if(cat === CAT_MEIO) m.meio++;
+    else if(cat === CAT_FDS) m.fds++;
+    else if(cat === CAT_NOITE){
+      if(acionamentos[acionamentoKey(p)]) m.notAc++;
       else m.notNAc++;
     }
   });
-  return medicos;
-}
 
-function renderResumo(){
-  const medicos=computeStats();
-  const rows=Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
   let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0;
-  const bodyRows=rows.map(([m, c])=>{
+  const bodyRows = rows.map(([m, c])=>{
     const rh=rateMeioSemana(c.meio);
-    const vMeio=c.meio*H_TURNO*rh;
-    const vFds=c.fds*H_TURNO*RATE_FDS;
-    const vNAc=c.notNAc*RATE_NOT_SOBREAVISO;
-    const vAc=c.notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+    const vMeio=c.meio*H_TURNO*rh, vFds=c.fds*H_TURNO*RATE_FDS;
+    const vNAc=c.notNAc*RATE_NOT_SOBREAVISO, vAc=c.notAc*H_NOITE*RATE_NOT_ACIONADO_H;
     const total=vMeio+vFds+vNAc+vAc;
     totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total;
-    const totalPlantoes=c.meio+c.fds+c.notNAc+c.notAc;
+    const totP=c.meio+c.fds+c.notNAc+c.notAc;
     return `<tr>
       <td>${escapeHtml(m)}</td>
-      <td class="num">${c.meio}</td>
-      <td class="num">${c.fds}</td>
-      <td class="num">${c.notNAc}</td>
-      <td class="num">${c.notAc}</td>
-      <td class="num" style="font-weight:600">${totalPlantoes}</td>
+      <td class="num">${c.meio}</td><td class="num">${c.fds}</td>
+      <td class="num">${c.notNAc}</td><td class="num">${c.notAc}</td>
+      <td class="num" style="font-weight:600">${totP}</td>
       <td class="rate">R$ ${rh}</td>
-      <td class="money">${fmtMoney(vMeio)}</td>
-      <td class="money">${fmtMoney(vFds)}</td>
-      <td class="money">${fmtMoney(vNAc)}</td>
-      <td class="money">${fmtMoney(vAc)}</td>
+      <td class="money">${fmtMoney(vMeio)}</td><td class="money">${fmtMoney(vFds)}</td>
+      <td class="money">${fmtMoney(vNAc)}</td><td class="money">${fmtMoney(vAc)}</td>
       <td class="money total">${fmtMoney(total)}</td>
     </tr>`;
   }).join('');
-  const totalPlantoes=totMeio+totFds+totNAc+totAc;
+  const totP=totMeio+totFds+totNAc+totAc;
   document.getElementById('tbl-resumo').innerHTML=`
     <thead><tr>
       <th>Médico</th>
-      <th class="num">Meio semana</th>
-      <th class="num">Fim semana</th>
-      <th class="num">Not. n/ acion.</th>
-      <th class="num">Not. acionado</th>
-      <th class="num">Total plantões</th>
-      <th class="num">R$/h MS</th>
-      <th class="num">R$ Meio semana</th>
-      <th class="num">R$ Fim semana</th>
-      <th class="num">R$ Not. n/acion.</th>
-      <th class="num">R$ Not. acionado</th>
+      <th class="num">Meio semana</th><th class="num">Fim semana</th>
+      <th class="num">Not. n/ acion.</th><th class="num">Not. acionado</th>
+      <th class="num">Total plantões</th><th class="num">R$/h MS</th>
+      <th class="num">R$ Meio semana</th><th class="num">R$ Fim semana</th>
+      <th class="num">R$ Not. n/acion.</th><th class="num">R$ Not. acionado</th>
       <th class="num">TOTAL R$</th>
     </tr></thead>
     <tbody>${bodyRows}</tbody>
     <tfoot><tr>
       <td>TOTAL</td>
-      <td class="num">${totMeio}</td>
-      <td class="num">${totFds}</td>
-      <td class="num">${totNAc}</td>
-      <td class="num">${totAc}</td>
-      <td class="num">${totalPlantoes}</td>
+      <td class="num">${totMeio}</td><td class="num">${totFds}</td>
+      <td class="num">${totNAc}</td><td class="num">${totAc}</td>
+      <td class="num">${totP}</td>
       <td></td><td></td><td></td><td></td><td></td>
       <td class="money total">${fmtMoney(totMoney)}</td>
     </tr></tfoot>`;
-  document.getElementById('stats').innerHTML=`
-    <div class="stat"><div class="stat-val">${filteredPlantoes.length}</div><div class="stat-lbl">Plantões (mês)</div></div>
+  document.getElementById('resumo-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
     <div class="stat"><div class="stat-val">${totAc+totNAc}</div><div class="stat-lbl">Noturnos (${totAc} acion.)</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(totMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 }
 
-// ── DOWNLOAD ──────────────────────────────────────
-function downloadExcel(){
-  if(!filteredPlantoes.length) return;
+// ══════════════════════════════════════════════════════
+//  MÉDICO
+// ══════════════════════════════════════════════════════
+let medicoCurrentMes = null;
+let medicoData = null;
+
+async function renderMedicoInit(){
+  await populateMesesSelect('medico-mes-select', true);
+  const sel = document.getElementById('medico-mes-select');
+  if(sel.value) renderMedico();
+  else {
+    document.getElementById('medico-stats').innerHTML='';
+    document.getElementById('medico-noturnos').innerHTML='<div class="empty">Nenhum mês disponível ainda.</div>';
+    document.getElementById('medico-tbl').innerHTML='';
+  }
+}
+
+async function renderMedico(){
+  const mesKey = document.getElementById('medico-mes-select').value;
+  if(!mesKey) return;
+  medicoCurrentMes = mesKey;
+  const [snap, vigSnap] = await Promise.all([
+    db.ref(`meses/${mesKey}`).once('value'),
+    db.ref('mesVigente').once('value'),
+  ]);
+  medicoData = snap.val() || {};
+  const vigente = vigSnap.val();
+  const isEditable = mesKey === vigente;
+
+  const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome);
+  const acionamentos = medicoData.acionamentos || {};
+
+  // Stats
+  let meio=0, fds=0, notAc=0, notNAc=0;
+  plantoes.forEach(p => {
+    const cat = p.categoria || categorize(p);
+    if(cat === CAT_MEIO) meio++;
+    else if(cat === CAT_FDS) fds++;
+    else if(cat === CAT_NOITE){
+      if(acionamentos[acionamentoKey(p)]) notAc++;
+      else notNAc++;
+    }
+  });
+  const rh = rateMeioSemana(meio);
+  const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
+  const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+  const total = vMeio+vFds+vNAc+vAc;
+
+  document.getElementById('medico-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${notAc+notNAc}</div><div class="stat-lbl">Noturnos (${notAc} acion.)</div></div>
+    <div class="stat"><div class="stat-val">R$ ${rh}</div><div class="stat-lbl">Valor/h Meio semana</div></div>
+    <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  // Noturnos
+  const noturnos = plantoes.filter(p => p.turno === 'Noite').sort((a,b)=>a.dataIso.localeCompare(b.dataIso));
+  const noturnosEl = document.getElementById('medico-noturnos');
+  const titleEl = document.getElementById('medico-noturnos-title');
+  const hintEl = document.getElementById('medico-noturnos-hint');
+  titleEl.innerHTML = `Meus noturnos ${isEditable ? '' : '<span class="right" style="color:var(--amber-dark);font-size:12px">🔒 leitura</span>'}`;
+  hintEl.textContent = isEditable
+    ? 'Marque os plantões noturnos em que você foi acionado.'
+    : `Este mês não é o vigente (${vigente ? labelMes(vigente)+' é o vigente' : 'nenhum vigente'}). Marcações estão bloqueadas.`;
+  if(!noturnos.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum plantão noturno no mês.</div>';
+  } else {
+    noturnosEl.innerHTML = noturnos.map(p=>{
+      const k = acionamentoKey(p);
+      const checked = !!acionamentos[k];
+      const dia = DIAS_PT[dayIdxMon0(new Date(p.dataIso))];
+      return `<label class="not-row ${isEditable?'editable':'readonly'}${checked?' acionado':''}">
+        <span class="not-date">${fmtDate(p.dataIso)}</span>
+        <span class="not-day">${dia}</span>
+        <span class="not-name">Noturno</span>
+        <span class="not-check">
+          <input type="checkbox" ${checked?'checked':''} ${isEditable?'':'disabled'} onchange="toggleAcionamento('${mesKey}','${k}',this.checked)">
+          <span class="not-check-label">Acionado</span>
+        </span>
+      </label>`;
+    }).join('');
+  }
+
+  // Tabela detalhada
+  const rows = plantoes.slice().sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno))
+    .map(p => {
+      const cat = p.categoria || categorize(p);
+      const dia = DIAS_PT[dayIdxMon0(new Date(p.dataIso))];
+      let valor = 0;
+      if(cat === CAT_MEIO) valor = H_TURNO*rh;
+      else if(cat === CAT_FDS) valor = H_TURNO*RATE_FDS;
+      else if(cat === CAT_NOITE){
+        valor = acionamentos[acionamentoKey(p)] ? H_NOITE*RATE_NOT_ACIONADO_H : RATE_NOT_SOBREAVISO;
+      }
+      return `<tr>
+        <td>${fmtDate(p.dataIso)}</td>
+        <td>${dia}</td>
+        <td>${p.turno}</td>
+        <td>${cat}${cat===CAT_NOITE && acionamentos[acionamentoKey(p)] ? ' (acionado)' : ''}</td>
+        <td class="money">${fmtMoney(valor)}</td>
+      </tr>`;
+    }).join('');
+  document.getElementById('medico-tbl').innerHTML=`
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr></tfoot>`;
+}
+
+async function toggleAcionamento(mesKey, key, checked){
+  try {
+    if(checked) await db.ref(`meses/${mesKey}/acionamentos/${key}`).set(true);
+    else await db.ref(`meses/${mesKey}/acionamentos/${key}`).remove();
+    renderMedico();
+  } catch(err) {
+    showToast('Erro ao salvar: '+err.message, 'red');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  DOWNLOAD EXCEL (mesmo formato de antes)
+// ══════════════════════════════════════════════════════
+async function downloadExcel(){
+  const mesKey = document.getElementById('resumo-mes-select').value;
+  if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
+  const snap = await db.ref(`meses/${mesKey}`).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const acionamentos = data.acionamentos || {};
+  if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
+
   const wb=XLSX.utils.book_new();
-  const [y,m]=currentMonthKey.split('-');
+  const [y,m]=mesKey.split('-');
   const periodoLabel=`${MESES_PT[+m]}/${y}`;
 
   // Detalhado
   const detHead=['Data','Dia da semana','Turno','Categoria','Médico'];
-  const detRows=filteredPlantoes.slice()
-    .sort((a,b)=>a.data-b.data || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
-    .map(p=>[fmtDate(p.data), p.dia_semana, p.turno, categorize(p), p.medico]);
+  const detRows=plantoes.slice()
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(new Date(p.dataIso))], p.turno, p.categoria||categorize(p), p.medico]);
   const wsDet=XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
   wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:22},{wch:42}];
 
   // Noturnos
   const notHead=['Data','Dia da semana','Médico','Acionado? (S)'];
-  const notRows=filteredPlantoes.filter(p=>p.turno==='Noite')
-    .sort((a,b)=>a.data-b.data || a.medico.localeCompare(b.medico,'pt-BR'))
-    .map(p=>[fmtDate(p.data), p.dia_semana, p.medico, noturnosState.get(keyFor(p)) ? 'S' : '']);
+  const notRows=plantoes.filter(p=>p.turno==='Noite')
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(new Date(p.dataIso))], p.medico, acionamentos[acionamentoKey(p)] ? 'S' : '']);
   const wsNot=XLSX.utils.aoa_to_sheet([notHead, ...notRows]);
   wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:18}];
 
-  // Resumo com fórmulas
-  const medicos=Array.from(computeStats().keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  // Resumo
+  const medSet = new Set();
+  plantoes.forEach(p => medSet.add(p.medico));
+  const medicos = Array.from(medSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const resHead=['Médico','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','TOTAL R$'];
   const startRow=5;
   const bodyRowsExcel=medicos.map((med, i)=>{
@@ -624,9 +1253,7 @@ function downloadExcel(){
     [`Conferência de plantões — ${periodoLabel}`],
     ['Marcar "S" na aba Noturnos para acionados. Vazio = não acionado.'],
     [],
-    resHead,
-    ...bodyRowsExcel,
-    totFormulas,
+    resHead, ...bodyRowsExcel, totFormulas,
   ]);
   wsRes['!cols']=[{wch:42},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:15}];
 
@@ -634,13 +1261,49 @@ function downloadExcel(){
   XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
   XLSX.utils.book_append_sheet(wb, wsNot, 'Noturnos');
   XLSX.writeFile(wb, `EinsteinValid_${periodoLabel.replace('/','_')}.xlsx`);
-  showToast('Excel gerado ✓');
+  showToast('Excel gerado ✓', 'green');
 }
 
-// ── INIT ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  LISTENERS GLOBAIS (atualiza UI ao vivo)
+// ══════════════════════════════════════════════════════
+let listenersAttached = false;
+function attachGlobalListeners(){
+  if(listenersAttached) return;
+  listenersAttached = true;
+  // Atualiza a tela do médico quando acionamentos mudam
+  db.ref('meses').on('value', () => {
+    if(currentUser?.role === 'medico' && document.getElementById('screen-medico').classList.contains('active')){
+      renderMedico();
+    }
+    if(currentUser?.role === 'admin'){
+      if(document.getElementById('screen-escala').classList.contains('active')) renderMesesList();
+      if(document.getElementById('screen-resumo').classList.contains('active')) renderResumoGeral();
+    }
+  });
+  db.ref('mesVigente').on('value', () => {
+    if(currentUser?.role === 'admin' && document.getElementById('screen-escala').classList.contains('active')) renderMesesList();
+    if(currentUser?.role === 'medico') renderMedico();
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
 document.getElementById('login-pass').addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
 document.getElementById('login-user').addEventListener('keydown', e=>{if(e.key==='Enter') document.getElementById('login-pass').focus();});
-if(localStorage.getItem('einsteinvalid_session')==='1') showApp();
+
+(async () => {
+  document.getElementById('login-status').textContent = 'Conectando…';
+  try {
+    await initFirebase();
+    document.getElementById('login-status').textContent = '';
+    const restored = await tryRestoreSession();
+    if(restored) afterLogin();
+  } catch(err) {
+    document.getElementById('login-status').textContent = 'Erro: '+err.message;
+  }
+})();
 </script>
 </body>
 </html>
