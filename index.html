@@ -27,6 +27,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .login-overlay{position:fixed;inset:0;background:var(--g50);display:none;align-items:center;justify-content:center;z-index:500;padding:20px;}
 .login-overlay.show{display:flex;}
 .login-box{background:var(--white);border:1px solid var(--bd);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,0.1);}
+.login-logo{display:flex;justify-content:center;margin-bottom:16px;}
+.login-logo img{height:64px;width:auto;object-fit:contain;}
 .login-title{font-size:22px;font-weight:700;color:var(--g900);text-align:center;margin-bottom:4px;letter-spacing:-0.01em;}
 .login-sub{font-size:12px;color:var(--g600);text-align:center;margin-bottom:24px;}
 .login-field{margin-bottom:14px;}
@@ -40,6 +42,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 /* Topbar */
 .topbar{background:var(--white);border-bottom:1px solid var(--bd);padding:14px 20px;display:none;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
 .topbar.show{display:flex;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-logo{height:36px;width:auto;object-fit:contain;flex-shrink:0;}
 .topbar-title{font-size:16px;font-weight:700;color:var(--g900);letter-spacing:-0.01em;}
 .topbar-sub{font-size:11px;color:var(--g400);margin-top:1px;}
 .btn-logout{background:transparent;border:1px solid var(--g200);color:var(--g600);border-radius:8px;padding:6px 12px;font-size:12px;font-family:var(--font);cursor:pointer;transition:background 0.15s;}
@@ -134,6 +138,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 <!-- ══ LOGIN ══ -->
 <div class="login-overlay show" id="login-overlay">
   <div class="login-box">
+    <div class="login-logo"><img src="logo.png" alt="Einstein"></div>
     <div class="login-title">EinsteinValid</div>
     <div class="login-sub">Conferência de plantões — acesso restrito</div>
     <div class="login-field">
@@ -151,9 +156,12 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
 <!-- ══ TOPBAR ══ -->
 <div class="topbar" id="topbar">
-  <div>
-    <div class="topbar-title">EinsteinValid</div>
-    <div class="topbar-sub">Conferência de plantões</div>
+  <div class="topbar-left">
+    <img class="topbar-logo" src="logo.png" alt="Einstein">
+    <div>
+      <div class="topbar-title">EinsteinValid</div>
+      <div class="topbar-sub">Conferência de plantões</div>
+    </div>
   </div>
   <button class="btn-logout" onclick="doLogout()">Sair</button>
 </div>
