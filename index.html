@@ -127,6 +127,11 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .not-check input:disabled{cursor:not-allowed;}
 .not-check-label{font-size:12px;color:var(--g600);font-weight:500;}
 .not-row.acionado .not-check-label{color:var(--amber-dark);font-weight:600;}
+.not-prt{display:flex;align-items:center;gap:6px;margin-right:14px;}
+.not-prt-label{font-size:11px;color:var(--g600);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;}
+.not-prt input{width:110px;padding:5px 8px;font-size:12px;border:1px solid var(--g200);border-radius:6px;font-family:var(--mono);outline:none;background:var(--white);}
+.not-prt input:focus{border-color:var(--amber);}
+.not-prt input:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed;}
 
 /* Tabela */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r-sm);}
@@ -1126,6 +1131,7 @@ async function renderMedico(){
 
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome);
   const acionamentos = medicoData.acionamentos || {};
+  const prtMap = medicoData.prt || {};
 
   // Stats
   let meio=0, fds=0, notAc=0, notNAc=0;
@@ -1164,16 +1170,21 @@ async function renderMedico(){
     noturnosEl.innerHTML = noturnos.map(p=>{
       const k = acionamentoKey(p);
       const checked = !!acionamentos[k];
+      const prt = prtMap[k] || '';
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-      return `<label class="not-row ${isEditable?'editable':'readonly'}${checked?' acionado':''}">
+      return `<div class="not-row ${checked?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
         <span class="not-name">Noturno</span>
+        <span class="not-prt">
+          <span class="not-prt-label">PRT</span>
+          <input type="text" value="${escapeHtml(prt)}" ${isEditable?'':'disabled'} placeholder="—" onchange="savePrt('${mesKey}','${k}',this.value)">
+        </span>
         <span class="not-check">
           <input type="checkbox" ${checked?'checked':''} ${isEditable?'':'disabled'} onchange="toggleAcionamento('${mesKey}','${k}',this.checked)">
           <span class="not-check-label">Acionado</span>
         </span>
-      </label>`;
+      </div>`;
     }).join('');
   }
 
@@ -1209,6 +1220,17 @@ async function toggleAcionamento(mesKey, key, checked){
     renderMedico();
   } catch(err) {
     showToast('Erro ao salvar: '+err.message, 'red');
+  }
+}
+
+async function savePrt(mesKey, key, value){
+  try {
+    const v = String(value).trim();
+    if(!v) await db.ref(`meses/${mesKey}/prt/${key}`).remove();
+    else await db.ref(`meses/${mesKey}/prt/${key}`).set(v);
+    showToast('PRT salvo', 'green');
+  } catch(err) {
+    showToast('Erro ao salvar PRT: '+err.message, 'red');
   }
 }
 
