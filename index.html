@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EinsteinValid — Conferência de Plantões</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --green:#1D9E75; --green-dark:#0F6E56; --green-light:#E1F5EE;
+  --blue:#2563EB; --blue-dark:#1D4ED8; --blue-light:#EFF6FF;
+  --amber:#EF9F27; --amber-dark:#854F0B; --amber-light:#FAEEDA;
+  --red:#E24B4A; --red-light:#FCEBEB;
+  --g50:#F8F7F4; --g100:#EEECEA; --g200:#D3D1C7; --g400:#888780; --g600:#5F5E5A; --g900:#1A1A18;
+  --white:#FFFFFF; --bd:rgba(0,0,0,0.08);
+  --sh:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);
+  --sh-md:0 4px 16px rgba(0,0,0,0.1);
+  --r:12px; --r-sm:8px;
+  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--g900);-webkit-font-smoothing:antialiased;}
+
+/* Login */
+.login-overlay{position:fixed;inset:0;background:var(--g50);display:none;align-items:center;justify-content:center;z-index:500;padding:20px;}
+.login-overlay.show{display:flex;}
+.login-box{background:var(--white);border:1px solid var(--bd);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,0.1);}
+.login-title{font-size:22px;font-weight:700;color:var(--g900);text-align:center;margin-bottom:4px;letter-spacing:-0.01em;}
+.login-sub{font-size:12px;color:var(--g600);text-align:center;margin-bottom:24px;}
+.login-field{margin-bottom:14px;}
+.login-label{font-size:12px;color:var(--g600);display:block;margin-bottom:6px;font-weight:500;}
+.login-input{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--g200);border-radius:8px;font-family:var(--font);outline:none;transition:border 0.15s;background:var(--white);}
+.login-input:focus{border-color:var(--green);}
+.login-btn{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:8px;transition:background 0.15s;}
+.login-btn:hover{background:var(--green-dark);}
+.login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:16px;}
+
+/* Topbar */
+.topbar{background:var(--white);border-bottom:1px solid var(--bd);padding:14px 20px;display:none;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.topbar.show{display:flex;}
+.topbar-title{font-size:16px;font-weight:700;color:var(--g900);letter-spacing:-0.01em;}
+.topbar-sub{font-size:11px;color:var(--g400);margin-top:1px;}
+.btn-logout{background:transparent;border:1px solid var(--g200);color:var(--g600);border-radius:8px;padding:6px 12px;font-size:12px;font-family:var(--font);cursor:pointer;transition:background 0.15s;}
+.btn-logout:hover{background:var(--g100);}
+
+/* Layout */
+.wrap{max-width:1240px;margin:0 auto;padding:20px;display:none;}
+.wrap.show{display:block;}
+.card{background:var(--white);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;box-shadow:var(--sh);margin-bottom:16px;}
+.card-title{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .num{background:var(--green);color:white;width:22px;height:22px;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.section-hidden{display:none;}
+
+/* Upload */
+.upload-area{border:2px dashed var(--g200);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.15s;display:block;}
+.upload-area:hover,.upload-area.dragover{border-color:var(--green);background:var(--green-light);}
+.upload-icon{font-size:36px;margin-bottom:8px;line-height:1;}
+.upload-text{font-size:14px;color:var(--g600);}
+.upload-text strong{color:var(--green-dark);font-weight:600;}
+.upload-hint{font-size:11px;color:var(--g400);margin-top:4px;}
+.upload-file{display:none;}
+.file-info{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--green-light);border-radius:8px;margin-top:12px;}
+.file-info-name{font-size:13px;color:var(--green-dark);font-weight:500;}
+.file-info-clear{background:transparent;border:none;color:var(--green-dark);cursor:pointer;font-size:20px;line-height:1;padding:0 6px;}
+.month-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap;}
+.month-label{font-size:13px;color:var(--g600);font-weight:500;}
+.month-select{padding:9px 12px;font-size:13px;border:1px solid var(--g200);border-radius:8px;font-family:var(--font);outline:none;background:var(--white);min-width:220px;}
+.btn-process{background:var(--green);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background 0.15s;margin-left:auto;}
+.btn-process:hover{background:var(--green-dark);}
+.btn-process:disabled{background:var(--g200);cursor:not-allowed;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
+.stat{background:var(--g50);border:1px solid var(--bd);border-radius:var(--r-sm);padding:14px 16px;text-align:left;}
+.stat-val{font-size:22px;font-weight:700;color:var(--g900);font-family:var(--mono);line-height:1.1;}
+.stat-lbl{font-size:10px;color:var(--g400);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px;font-weight:600;}
+.stat.money{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);border-color:var(--green-dark);}
+.stat.money .stat-val,.stat.money .stat-lbl{color:white;}
+
+/* Noturnos */
+.noturnos-list{display:flex;flex-direction:column;gap:5px;max-height:400px;overflow-y:auto;}
+.not-row{display:flex;align-items:center;padding:10px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--white);gap:12px;transition:all 0.15s;cursor:pointer;}
+.not-row:hover{background:var(--g50);}
+.not-row.acionado{background:var(--amber-light);border-color:var(--amber);}
+.not-date{font-family:var(--mono);font-size:12px;color:var(--g600);width:88px;flex-shrink:0;font-weight:500;}
+.not-day{font-size:12px;color:var(--g400);width:72px;flex-shrink:0;}
+.not-name{font-size:13px;color:var(--g900);flex:1;font-weight:500;}
+.not-check{margin-left:auto;display:flex;align-items:center;gap:8px;user-select:none;}
+.not-check input{width:18px;height:18px;cursor:pointer;accent-color:var(--amber);}
+.not-check-label{font-size:12px;color:var(--g600);font-weight:500;}
+.not-row.acionado .not-check-label{color:var(--amber-dark);font-weight:600;}
+
+/* Tabela resumo */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r-sm);}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{text-align:left;padding:10px 12px;background:var(--g50);font-weight:600;color:var(--g600);border-bottom:1px solid var(--bd);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:0.03em;}
+.tbl th.num{text-align:center;}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bd);color:var(--g900);}
+.tbl td.num{text-align:center;font-family:var(--mono);}
+.tbl td.money{text-align:right;font-family:var(--mono);color:var(--green-dark);white-space:nowrap;}
+.tbl td.money.total{font-weight:700;color:var(--green-dark);}
+.tbl td.rate{color:var(--g400);font-size:11px;text-align:center;font-family:var(--mono);}
+.tbl tr:hover td{background:var(--g50);}
+.tbl tfoot td{font-weight:700;background:var(--blue-light);color:var(--blue-dark);border-top:2px solid var(--blue);}
+.tbl tfoot td.money.total{color:var(--blue-dark);font-size:14px;}
+
+/* Download */
+.download-row{margin-top:16px;display:flex;justify-content:flex-end;align-items:center;gap:12px;}
+.download-hint{font-size:11px;color:var(--g400);}
+.btn-download{background:var(--blue);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;}
+.btn-download:hover{background:var(--blue-dark);}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--g900);color:white;padding:12px 20px;border-radius:8px;font-size:13px;transition:transform 0.25s;z-index:600;box-shadow:var(--sh-md);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Empty state */
+.empty{color:var(--g400);padding:24px;text-align:center;font-size:13px;}
+
+/* Responsive */
+@media (max-width:640px){
+  .card{padding:16px;}
+  .month-row{flex-direction:column;align-items:stretch;}
+  .btn-process{margin-left:0;}
+  .not-day{display:none;}
+  .not-date{width:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-overlay show" id="login-overlay">
+  <div class="login-box">
+    <div class="login-title">EinsteinValid</div>
+    <div class="login-sub">Conferência de plantões — acesso restrito</div>
+    <div class="login-field">
+      <label class="login-label">Usuário</label>
+      <input class="login-input" id="login-user" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Senha</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar" id="topbar">
+  <div>
+    <div class="topbar-title">EinsteinValid</div>
+    <div class="topbar-sub">Conferência de plantões</div>
+  </div>
+  <button class="btn-logout" onclick="doLogout()">Sair</button>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="wrap" id="app">
+
+  <!-- 1. Upload -->
+  <div class="card">
+    <div class="card-title"><span class="num">1</span> Enviar escala</div>
+    <label class="upload-area" id="upload-area">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text"><strong>Clique</strong> ou arraste o arquivo Excel da escala</div>
+      <div class="upload-hint">.xls ou .xlsx</div>
+      <input type="file" class="upload-file" id="upload-file" accept=".xls,.xlsx">
+    </label>
+    <div id="file-info-wrap"></div>
+    <div class="month-row" id="month-row" style="display:none">
+      <span class="month-label">Mês de referência:</span>
+      <select class="month-select" id="month-select"></select>
+      <button class="btn-process" onclick="processFile()">Processar</button>
+    </div>
+  </div>
+
+  <!-- 2. Noturnos -->
+  <div class="card section-hidden" id="sec-noturnos">
+    <div class="card-title"><span class="num">2</span> Marcar noturnos acionados</div>
+    <div style="font-size:12px;color:var(--g600);margin-bottom:14px">Marque os plantões noturnos que foram acionados. Os não marcados contam como sobreaviso. As marcações ficam salvas no navegador.</div>
+    <div class="noturnos-list" id="noturnos-list"></div>
+  </div>
+
+  <!-- 3. Resumo -->
+  <div class="card section-hidden" id="sec-resumo">
+    <div class="card-title"><span class="num">3</span> Resumo</div>
+    <div class="stats" id="stats"></div>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-resumo"></table></div>
+    <div class="download-row">
+      <span class="download-hint">Excel contém 3 abas: Resumo, Detalhado e Noturnos</span>
+      <button class="btn-download" onclick="downloadExcel()">⬇ Baixar Excel</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH ──────────────────────────────────────────
+const ADMIN_USER='admin', ADMIN_PASS='admin';
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    localStorage.setItem('einsteinvalid_session','1');
+    showApp();
+  } else {
+    document.getElementById('login-error').textContent='Usuário ou senha incorretos.';
+    document.getElementById('login-pass').value='';
+  }
+}
+function doLogout(){
+  localStorage.removeItem('einsteinvalid_session');
+  document.getElementById('login-overlay').classList.add('show');
+  document.getElementById('topbar').classList.remove('show');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').textContent='';
+}
+function showApp(){
+  document.getElementById('login-overlay').classList.remove('show');
+  document.getElementById('topbar').classList.add('show');
+  document.getElementById('app').classList.add('show');
+  document.getElementById('login-error').textContent='';
+}
+
+// ── REGRAS ────────────────────────────────────────
+const DIAS_PT=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const MESES_PT=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const LOWER_WORDS=new Set(['De','Da','Do','Das','Dos','E']);
+const CAT_MEIO='Meio de semana', CAT_FDS='Fim de semana', CAT_NOITE='Noturno';
+const RATE_FDS=165, RATE_NOT_ACIONADO_H=145, RATE_NOT_SOBREAVISO=522, H_TURNO=6, H_NOITE=12;
+function rateMeioSemana(n){
+  if(n<=6) return 135;
+  if(n<=10) return 145;
+  if(n<=15) return 155;
+  if(n<=19) return 165;
+  return 175;
+}
+
+// ── STATE ─────────────────────────────────────────
+let allPlantoes=[];        // {data:Date, dia_semana, fim_semana, turno, medico}
+let filteredPlantoes=[];   // após filtro de mês
+let noturnosState=new Map(); // key: "YYYY-MM-DD|Médico" → true (acionado)
+let currentMonthKey=null;
+
+// ── UTILS ─────────────────────────────────────────
+function normalizeName(name){
+  if(!name) return null;
+  name=String(name).trim().replace(/\s+/g,' ');
+  if(!name) return null;
+  const words=name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+  return words.map((w,i)=>(i>0 && LOWER_WORDS.has(w))?w.toLowerCase():w).join(' ');
+}
+function parseDate(s){
+  if(!s) return null;
+  if(s instanceof Date) return s;
+  const m=String(s).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if(!m) return null;
+  return new Date(+m[3], +m[2]-1, +m[1]);
+}
+function detectShift(cell){
+  if(!cell) return null;
+  const s=String(cell).toLowerCase();
+  if(s.includes('manhã') || s.includes('manha')) return 'Manhã';
+  if(s.includes('tarde')) return 'Tarde';
+  if(s.includes('noite') || s.includes('noturno')) return 'Noite';
+  return null;
+}
+function categorize(p){
+  if(p.turno==='Noite') return CAT_NOITE;
+  const d=p.data.getDay();
+  return (d===0 || d===6) ? CAT_FDS : CAT_MEIO;
+}
+function dayIdxMon0(d){
+  const js=d.getDay();
+  return js===0 ? 6 : js-1;
+}
+function fmtDate(d){
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+}
+function isoDate(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fmtMoney(v){
+  return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function keyFor(p){
+  return isoDate(p.data)+'|'+p.medico;
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── PARSER ────────────────────────────────────────
+function parseSheet(sheet){
+  const rows=XLSX.utils.sheet_to_json(sheet,{header:1, raw:false, defval:null});
+  const plantoes=[];
+  let i=0;
+  while(i<rows.length){
+    const row=rows[i]||[];
+    if(row.length>=8 && row[1]==='Segunda'){
+      const dateRow=rows[i+1]||[];
+      const datas=[];
+      for(let c=1; c<=7; c++) datas.push(parseDate(dateRow[c]));
+      let j=i+2;
+      while(j<rows.length){
+        const r=rows[j]||[];
+        if(!r.length || r.every(v=>v==null || v==='')) break;
+        const turno=detectShift(r[0]);
+        if(!turno) break;
+        for(let c=0; c<7; c++){
+          const medico=normalizeName(r[c+1]);
+          const data=datas[c];
+          if(medico && data){
+            plantoes.push({
+              data, turno, medico,
+              dia_semana:DIAS_PT[dayIdxMon0(data)],
+              fim_semana:[0,6].includes(data.getDay()),
+            });
+          }
+        }
+        j++;
+      }
+      i=j;
+      continue;
+    }
+    i++;
+  }
+  return plantoes;
+}
+
+// ── UPLOAD ────────────────────────────────────────
+const uploadArea=document.getElementById('upload-area');
+const uploadFile=document.getElementById('upload-file');
+uploadFile.addEventListener('change', handleFileSelect);
+uploadArea.addEventListener('dragover', e=>{e.preventDefault(); uploadArea.classList.add('dragover');});
+uploadArea.addEventListener('dragleave', ()=>uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e=>{
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  if(e.dataTransfer.files[0]){
+    uploadFile.files=e.dataTransfer.files;
+    handleFileSelect();
+  }
+});
+function handleFileSelect(){
+  const f=uploadFile.files[0];
+  if(!f) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      allPlantoes=parseSheet(ws);
+      if(!allPlantoes.length){
+        showToast('Nenhum plantão detectado no arquivo.');
+        return;
+      }
+      showFileInfo(f);
+      populateMonthSelect(f.name);
+      document.getElementById('month-row').style.display='flex';
+      document.getElementById('sec-noturnos').classList.add('section-hidden');
+      document.getElementById('sec-resumo').classList.add('section-hidden');
+    } catch(err){
+      showToast('Erro ao ler arquivo: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+function showFileInfo(f){
+  document.getElementById('file-info-wrap').innerHTML=`
+    <div class="file-info">
+      <span class="file-info-name">✓ ${escapeHtml(f.name)} (${allPlantoes.length} plantões detectados)</span>
+      <button class="file-info-clear" onclick="clearFile()" title="Remover">×</button>
+    </div>`;
+}
+function clearFile(){
+  uploadFile.value='';
+  allPlantoes=[];
+  filteredPlantoes=[];
+  currentMonthKey=null;
+  document.getElementById('file-info-wrap').innerHTML='';
+  document.getElementById('month-row').style.display='none';
+  document.getElementById('sec-noturnos').classList.add('section-hidden');
+  document.getElementById('sec-resumo').classList.add('section-hidden');
+}
+function populateMonthSelect(filename){
+  const sel=document.getElementById('month-select');
+  sel.innerHTML='';
+  let defaultKey=null;
+  const nameMatch=filename && filename.match(/(\d{2})-(\d{2})-(\d{4})/);
+  if(nameMatch) defaultKey=nameMatch[3]+'-'+nameMatch[2];
+  const monthCounts=new Map();
+  allPlantoes.forEach(p=>{
+    const k=p.data.getFullYear()+'-'+String(p.data.getMonth()+1).padStart(2,'0');
+    monthCounts.set(k,(monthCounts.get(k)||0)+1);
+  });
+  const sortedKeys=Array.from(monthCounts.keys()).sort();
+  sortedKeys.forEach(k=>{
+    const [y,m]=k.split('-');
+    const opt=document.createElement('option');
+    opt.value=k;
+    opt.textContent=`${MESES_PT[+m]}/${y} (${monthCounts.get(k)} plantões)`;
+    sel.appendChild(opt);
+  });
+  if(defaultKey && monthCounts.has(defaultKey)) sel.value=defaultKey;
+  else {
+    let best=sortedKeys[0], max=0;
+    monthCounts.forEach((v,k)=>{ if(v>max){max=v; best=k;} });
+    sel.value=best;
+  }
+}
+
+// ── PROCESS ───────────────────────────────────────
+function processFile(){
+  const key=document.getElementById('month-select').value;
+  if(!key) return;
+  currentMonthKey=key;
+  const [y,m]=key.split('-').map(Number);
+  filteredPlantoes=allPlantoes.filter(p=>p.data.getFullYear()===y && p.data.getMonth()+1===m);
+  // Load noturnos state from localStorage
+  const stateKey='noturnos_'+key;
+  try{
+    const saved=localStorage.getItem(stateKey);
+    noturnosState=saved ? new Map(JSON.parse(saved)) : new Map();
+  } catch{ noturnosState=new Map(); }
+  renderNoturnos();
+  renderResumo();
+  document.getElementById('sec-noturnos').classList.remove('section-hidden');
+  document.getElementById('sec-resumo').classList.remove('section-hidden');
+  setTimeout(()=>document.getElementById('sec-noturnos').scrollIntoView({behavior:'smooth', block:'start'}), 120);
+}
+
+function renderNoturnos(){
+  const nots=filteredPlantoes.filter(p=>p.turno==='Noite').sort((a,b)=>a.data-b.data || a.medico.localeCompare(b.medico,'pt-BR'));
+  const el=document.getElementById('noturnos-list');
+  if(!nots.length){
+    el.innerHTML='<div class="empty">Nenhum plantão noturno no mês.</div>';
+    return;
+  }
+  el.innerHTML=nots.map(p=>{
+    const k=keyFor(p);
+    const checked=noturnosState.get(k);
+    return `<label class="not-row${checked?' acionado':''}" data-key="${escapeHtml(k)}">
+      <span class="not-date">${fmtDate(p.data)}</span>
+      <span class="not-day">${p.dia_semana}</span>
+      <span class="not-name">${escapeHtml(p.medico)}</span>
+      <span class="not-check">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggleNoturno('${escapeHtml(k)}', this.checked)">
+        <span class="not-check-label">Acionado</span>
+      </span>
+    </label>`;
+  }).join('');
+}
+function toggleNoturno(key, checked){
+  if(checked) noturnosState.set(key, true);
+  else noturnosState.delete(key);
+  const row=document.querySelector(`.not-row[data-key="${CSS.escape(key)}"]`);
+  if(row) row.classList.toggle('acionado', checked);
+  if(currentMonthKey){
+    localStorage.setItem('noturnos_'+currentMonthKey, JSON.stringify(Array.from(noturnosState.entries())));
+  }
+  renderResumo();
+}
+
+function computeStats(){
+  const medicos=new Map();
+  filteredPlantoes.forEach(p=>{
+    if(!medicos.has(p.medico)) medicos.set(p.medico,{meio:0, fds:0, notAc:0, notNAc:0});
+    const m=medicos.get(p.medico);
+    const cat=categorize(p);
+    if(cat===CAT_MEIO) m.meio++;
+    else if(cat===CAT_FDS) m.fds++;
+    else if(cat===CAT_NOITE){
+      if(noturnosState.get(keyFor(p))) m.notAc++;
+      else m.notNAc++;
+    }
+  });
+  return medicos;
+}
+
+function renderResumo(){
+  const medicos=computeStats();
+  const rows=Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0;
+  const bodyRows=rows.map(([m, c])=>{
+    const rh=rateMeioSemana(c.meio);
+    const vMeio=c.meio*H_TURNO*rh;
+    const vFds=c.fds*H_TURNO*RATE_FDS;
+    const vNAc=c.notNAc*RATE_NOT_SOBREAVISO;
+    const vAc=c.notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+    const total=vMeio+vFds+vNAc+vAc;
+    totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total;
+    const totalPlantoes=c.meio+c.fds+c.notNAc+c.notAc;
+    return `<tr>
+      <td>${escapeHtml(m)}</td>
+      <td class="num">${c.meio}</td>
+      <td class="num">${c.fds}</td>
+      <td class="num">${c.notNAc}</td>
+      <td class="num">${c.notAc}</td>
+      <td class="num" style="font-weight:600">${totalPlantoes}</td>
+      <td class="rate">R$ ${rh}</td>
+      <td class="money">${fmtMoney(vMeio)}</td>
+      <td class="money">${fmtMoney(vFds)}</td>
+      <td class="money">${fmtMoney(vNAc)}</td>
+      <td class="money">${fmtMoney(vAc)}</td>
+      <td class="money total">${fmtMoney(total)}</td>
+    </tr>`;
+  }).join('');
+  const totalPlantoes=totMeio+totFds+totNAc+totAc;
+  document.getElementById('tbl-resumo').innerHTML=`
+    <thead><tr>
+      <th>Médico</th>
+      <th class="num">Meio semana</th>
+      <th class="num">Fim semana</th>
+      <th class="num">Not. n/ acion.</th>
+      <th class="num">Not. acionado</th>
+      <th class="num">Total plantões</th>
+      <th class="num">R$/h MS</th>
+      <th class="num">R$ Meio semana</th>
+      <th class="num">R$ Fim semana</th>
+      <th class="num">R$ Not. n/acion.</th>
+      <th class="num">R$ Not. acionado</th>
+      <th class="num">TOTAL R$</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr>
+      <td>TOTAL</td>
+      <td class="num">${totMeio}</td>
+      <td class="num">${totFds}</td>
+      <td class="num">${totNAc}</td>
+      <td class="num">${totAc}</td>
+      <td class="num">${totalPlantoes}</td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td class="money total">${fmtMoney(totMoney)}</td>
+    </tr></tfoot>`;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${filteredPlantoes.length}</div><div class="stat-lbl">Plantões (mês)</div></div>
+    <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totAc+totNAc}</div><div class="stat-lbl">Noturnos (${totAc} acion.)</div></div>
+    <div class="stat money"><div class="stat-val">${fmtMoney(totMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+}
+
+// ── DOWNLOAD ──────────────────────────────────────
+function downloadExcel(){
+  if(!filteredPlantoes.length) return;
+  const wb=XLSX.utils.book_new();
+  const [y,m]=currentMonthKey.split('-');
+  const periodoLabel=`${MESES_PT[+m]}/${y}`;
+
+  // Detalhado
+  const detHead=['Data','Dia da semana','Turno','Categoria','Médico'];
+  const detRows=filteredPlantoes.slice()
+    .sort((a,b)=>a.data-b.data || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p=>[fmtDate(p.data), p.dia_semana, p.turno, categorize(p), p.medico]);
+  const wsDet=XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
+  wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:22},{wch:42}];
+
+  // Noturnos
+  const notHead=['Data','Dia da semana','Médico','Acionado? (S)'];
+  const notRows=filteredPlantoes.filter(p=>p.turno==='Noite')
+    .sort((a,b)=>a.data-b.data || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p=>[fmtDate(p.data), p.dia_semana, p.medico, noturnosState.get(keyFor(p)) ? 'S' : '']);
+  const wsNot=XLSX.utils.aoa_to_sheet([notHead, ...notRows]);
+  wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:18}];
+
+  // Resumo com fórmulas
+  const medicos=Array.from(computeStats().keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const resHead=['Médico','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','TOTAL R$'];
+  const startRow=5;
+  const bodyRowsExcel=medicos.map((med, i)=>{
+    const r=startRow+i;
+    return [
+      med,
+      {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_MEIO}")`},
+      {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_FDS}")`},
+      {t:'n', f:`COUNTIF(Noturnos!C:C,A${r})-E${r}`},
+      {t:'n', f:`COUNTIFS(Noturnos!C:C,A${r},Noturnos!D:D,"S")`},
+      {t:'n', f:`SUM(B${r}:E${r})`},
+      {t:'n', f:`IF(B${r}<=6,135,IF(B${r}<=10,145,IF(B${r}<=15,155,IF(B${r}<=19,165,175))))`},
+      {t:'n', f:`B${r}*6*G${r}`, z:'R$ #,##0.00'},
+      {t:'n', f:`C${r}*6*165`, z:'R$ #,##0.00'},
+      {t:'n', f:`D${r}*522`, z:'R$ #,##0.00'},
+      {t:'n', f:`E${r}*12*145`, z:'R$ #,##0.00'},
+      {t:'n', f:`SUM(H${r}:K${r})`, z:'R$ #,##0.00'},
+    ];
+  });
+  const totRow=startRow+medicos.length;
+  const totFormulas=['TOTAL',
+    {t:'n', f:`SUM(B${startRow}:B${totRow-1})`},
+    {t:'n', f:`SUM(C${startRow}:C${totRow-1})`},
+    {t:'n', f:`SUM(D${startRow}:D${totRow-1})`},
+    {t:'n', f:`SUM(E${startRow}:E${totRow-1})`},
+    {t:'n', f:`SUM(F${startRow}:F${totRow-1})`},
+    '',
+    {t:'n', f:`SUM(H${startRow}:H${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(I${startRow}:I${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(J${startRow}:J${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(K${startRow}:K${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(L${startRow}:L${totRow-1})`, z:'R$ #,##0.00'},
+  ];
+  const wsRes=XLSX.utils.aoa_to_sheet([
+    [`Conferência de plantões — ${periodoLabel}`],
+    ['Marcar "S" na aba Noturnos para acionados. Vazio = não acionado.'],
+    [],
+    resHead,
+    ...bodyRowsExcel,
+    totFormulas,
+  ]);
+  wsRes['!cols']=[{wch:42},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:15}];
+
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
+  XLSX.utils.book_append_sheet(wb, wsNot, 'Noturnos');
+  XLSX.writeFile(wb, `EinsteinValid_${periodoLabel.replace('/','_')}.xlsx`);
+  showToast('Excel gerado ✓');
+}
+
+// ── INIT ──────────────────────────────────────────
+document.getElementById('login-pass').addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
+document.getElementById('login-user').addEventListener('keydown', e=>{if(e.key==='Enter') document.getElementById('login-pass').focus();});
+if(localStorage.getItem('einsteinvalid_session')==='1') showApp();
+</script>
+</body>
+</html>
