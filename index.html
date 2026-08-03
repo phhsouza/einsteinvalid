@@ -429,6 +429,7 @@ function normalizeName(name){
   return words.map((w,i)=>(i>0 && LOWER_WORDS.has(w))?w.toLowerCase():w).join(' ');
 }
 const _LOWER_LC = new Set(['de','da','do','das','dos','e']);
+// Retorna slug seguro pra path do Firebase (Firebase não aceita "." em chaves — usa "_")
 function slugify(name){
   if(!name) return '';
   const words = String(name).toLowerCase()
@@ -437,7 +438,15 @@ function slugify(name){
     .filter(w => w && !_LOWER_LC.has(w));
   if(words.length === 0) return '';
   if(words.length === 1) return words[0];
-  return words[0] + '.' + words[words.length - 1];
+  return words[0] + '_' + words[words.length - 1];
+}
+// Formato exibido para o usuário (mais bonito, com ponto)
+function displaySlug(slug){
+  return String(slug).replace(/_/g, '.');
+}
+// Normaliza o input de login: aceita ponto, hífen ou underscore
+function normalizeLoginInput(input){
+  return String(input).toLowerCase().trim().replace(/[.-]/g, '_');
 }
 function dateFromIso(iso){
   // Constrói Date local sem shift de timezone (evita bug de UTC)
@@ -555,8 +564,8 @@ async function doLogin(){
       return;
     }
 
-    // MÉDICO
-    const slug = slugify(rawUser);
+    // MÉDICO — normaliza input (aceita "pedro.souza", "pedro_souza" ou "pedro-souza")
+    const slug = normalizeLoginInput(rawUser);
     const snap = await db.ref('usuarios/'+slug).once('value');
     const user = snap.val();
     if(!user){ errEl.textContent='Usuário não encontrado.'; return; }
@@ -892,7 +901,7 @@ async function renderUsuarios(){
     return `<div class="user-row${isAdmin?' admin':''}">
       <div>
         <div class="user-name">${escapeHtml(u.nome)}${isAdmin?' <span class="role admin" style="background:var(--blue-light);color:var(--blue-dark);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;text-transform:uppercase">Admin</span>':''}</div>
-        <div class="user-slug">${escapeHtml(slug)}</div>
+        <div class="user-slug">${escapeHtml(displaySlug(slug))}</div>
       </div>
       <div class="user-status${u.passChanged===false?' pending':''}">${u.passChanged===false?'⚠ senha inicial':'✓ senha definida'}</div>
       <button class="btn-secondary" onclick="resetPassword('${slug}')">Reset senha</button>
@@ -940,7 +949,7 @@ async function createUser(){
     // Checar colisão
     const existSnap = await db.ref('usuarios/'+slug).once('value');
     if(existSnap.exists()){
-      if(!confirm(`Já existe usuário com login "${slug}" (${existSnap.val().nome}). Sobrescrever?`)) return;
+      if(!confirm(`Já existe usuário com login "${displaySlug(slug)}" (${existSnap.val().nome}). Sobrescrever?`)) return;
     }
     const initialPass = generateInitialPass();
     const salt = newSalt();
@@ -950,7 +959,7 @@ async function createUser(){
     });
     document.getElementById('new-user-info').innerHTML = `
       <div class="info-panel">
-        Usuário <strong>${escapeHtml(nome)}</strong> criado. Login: <strong>${slug}</strong> · Senha: <strong>${initialPass}</strong>
+        Usuário <strong>${escapeHtml(nome)}</strong> criado. Login: <strong>${displaySlug(slug)}</strong> · Senha: <strong>${initialPass}</strong>
         <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar a senha no primeiro acesso.</div>
       </div>`;
     showToast('Usuário criado', 'green');
@@ -969,7 +978,7 @@ async function resetPassword(slug){
   await db.ref('usuarios/'+slug).update({salt, passHash, passChanged:false});
   document.getElementById('new-user-info').innerHTML = `
     <div class="info-panel">
-      Nova senha para <strong>${escapeHtml(slug)}</strong>: <strong>${initialPass}</strong>
+      Nova senha para <strong>${escapeHtml(displaySlug(slug))}</strong>: <strong>${initialPass}</strong>
     </div>`;
   showToast('Senha resetada', 'green');
   renderUsuarios();
