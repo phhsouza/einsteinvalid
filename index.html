@@ -428,10 +428,21 @@ function normalizeName(name){
   const words=name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
   return words.map((w,i)=>(i>0 && LOWER_WORDS.has(w))?w.toLowerCase():w).join(' ');
 }
+const _LOWER_LC = new Set(['de','da','do','das','dos','e']);
 function slugify(name){
-  return String(name).toLowerCase()
+  if(!name) return '';
+  const words = String(name).toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g,'')
-    .replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
+    .replace(/[^\w\s]/g,'').trim().split(/\s+/)
+    .filter(w => w && !_LOWER_LC.has(w));
+  if(words.length === 0) return '';
+  if(words.length === 1) return words[0];
+  return words[0] + '.' + words[words.length - 1];
+}
+function dateFromIso(iso){
+  // Constrói Date local sem shift de timezone (evita bug de UTC)
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d);
 }
 function parseDate(s){
   if(!s) return null;
@@ -450,7 +461,7 @@ function detectShift(cell){
 }
 function categorize(p){
   if(p.turno==='Noite') return CAT_NOITE;
-  const d = new Date(p.dataIso).getDay();
+  const d = dateFromIso(p.dataIso).getDay();
   return (d===0 || d===6) ? CAT_FDS : CAT_MEIO;
 }
 function dayIdxMon0(d){
@@ -1007,7 +1018,7 @@ async function renderResumoGeral(){
   plantoes.forEach(p => {
     if(!medicos.has(p.medico)) medicos.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0});
     const m = medicos.get(p.medico);
-    const cat = p.categoria || categorize(p);
+    const cat = categorize(p);
     if(cat === CAT_MEIO) m.meio++;
     else if(cat === CAT_FDS) m.fds++;
     else if(cat === CAT_NOITE){
@@ -1098,7 +1109,7 @@ async function renderMedico(){
   // Stats
   let meio=0, fds=0, notAc=0, notNAc=0;
   plantoes.forEach(p => {
-    const cat = p.categoria || categorize(p);
+    const cat = categorize(p);
     if(cat === CAT_MEIO) meio++;
     else if(cat === CAT_FDS) fds++;
     else if(cat === CAT_NOITE){
@@ -1132,7 +1143,7 @@ async function renderMedico(){
     noturnosEl.innerHTML = noturnos.map(p=>{
       const k = acionamentoKey(p);
       const checked = !!acionamentos[k];
-      const dia = DIAS_PT[dayIdxMon0(new Date(p.dataIso))];
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
       return `<label class="not-row ${isEditable?'editable':'readonly'}${checked?' acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
@@ -1148,8 +1159,8 @@ async function renderMedico(){
   // Tabela detalhada
   const rows = plantoes.slice().sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno))
     .map(p => {
-      const cat = p.categoria || categorize(p);
-      const dia = DIAS_PT[dayIdxMon0(new Date(p.dataIso))];
+      const cat = categorize(p);
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
       let valor = 0;
       if(cat === CAT_MEIO) valor = H_TURNO*rh;
       else if(cat === CAT_FDS) valor = H_TURNO*RATE_FDS;
@@ -1200,7 +1211,7 @@ async function downloadExcel(){
   const detHead=['Data','Dia da semana','Turno','Categoria','Médico'];
   const detRows=plantoes.slice()
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
-    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(new Date(p.dataIso))], p.turno, p.categoria||categorize(p), p.medico]);
+    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turno, categorize(p), p.medico]);
   const wsDet=XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
   wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:22},{wch:42}];
 
@@ -1208,7 +1219,7 @@ async function downloadExcel(){
   const notHead=['Data','Dia da semana','Médico','Acionado? (S)'];
   const notRows=plantoes.filter(p=>p.turno==='Noite')
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.medico.localeCompare(b.medico,'pt-BR'))
-    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(new Date(p.dataIso))], p.medico, acionamentos[acionamentoKey(p)] ? 'S' : '']);
+    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.medico, acionamentos[acionamentoKey(p)] ? 'S' : '']);
   const wsNot=XLSX.utils.aoa_to_sheet([notHead, ...notRows]);
   wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:18}];
 
