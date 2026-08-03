@@ -930,23 +930,35 @@ async function populateNomesDropdown(){
 }
 
 async function createUser(){
-  const nome = document.getElementById('new-user-nome').value;
-  if(!nome){ showToast('Selecione um nome', 'red'); return; }
-  const slug = slugify(nome);
-  if(slug === ADMIN_SLUG){ showToast('Slug reservado', 'red'); return; }
-  const initialPass = generateInitialPass();
-  const salt = newSalt();
-  const passHash = await hashPass(initialPass, salt);
-  await db.ref('usuarios/'+slug).set({
-    nome, role:'medico', salt, passHash, passChanged:false, criadoEm:Date.now(),
-  });
-  document.getElementById('new-user-info').innerHTML = `
-    <div class="info-panel">
-      Usuário <strong>${escapeHtml(nome)}</strong> criado. Senha inicial: <strong>${initialPass}</strong>
-      <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar essa senha no primeiro acesso.</div>
-    </div>`;
-  showToast('Usuário criado', 'green');
-  renderUsuarios();
+  try {
+    const nome = document.getElementById('new-user-nome').value;
+    if(!nome){ showToast('Selecione um nome', 'red'); return; }
+    const slug = slugify(nome);
+    console.log('[createUser] nome=', nome, 'slug=', slug);
+    if(!slug){ showToast('Não consegui gerar login para este nome', 'red'); return; }
+    if(slug === ADMIN_SLUG){ showToast('Slug reservado', 'red'); return; }
+    // Checar colisão
+    const existSnap = await db.ref('usuarios/'+slug).once('value');
+    if(existSnap.exists()){
+      if(!confirm(`Já existe usuário com login "${slug}" (${existSnap.val().nome}). Sobrescrever?`)) return;
+    }
+    const initialPass = generateInitialPass();
+    const salt = newSalt();
+    const passHash = await hashPass(initialPass, salt);
+    await db.ref('usuarios/'+slug).set({
+      nome, role:'medico', salt, passHash, passChanged:false, criadoEm:Date.now(),
+    });
+    document.getElementById('new-user-info').innerHTML = `
+      <div class="info-panel">
+        Usuário <strong>${escapeHtml(nome)}</strong> criado. Login: <strong>${slug}</strong> · Senha: <strong>${initialPass}</strong>
+        <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar a senha no primeiro acesso.</div>
+      </div>`;
+    showToast('Usuário criado', 'green');
+    renderUsuarios();
+  } catch(err) {
+    console.error('[createUser] erro:', err);
+    showToast('Erro: ' + err.message, 'red');
+  }
 }
 
 async function resetPassword(slug){
