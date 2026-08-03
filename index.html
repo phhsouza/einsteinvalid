@@ -1244,6 +1244,7 @@ async function downloadExcel(){
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
+  const prtMap = data.prt || {};
   if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
 
   const wb=XLSX.utils.book_new();
@@ -1259,12 +1260,15 @@ async function downloadExcel(){
   wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:22},{wch:42}];
 
   // Noturnos
-  const notHead=['Data','Dia da semana','Médico','Acionado? (S)'];
+  const notHead=['Data','Dia da semana','Médico','Acionado? (S)','PRT'];
   const notRows=plantoes.filter(p=>p.turno==='Noite')
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.medico.localeCompare(b.medico,'pt-BR'))
-    .map(p=>[fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.medico, acionamentos[acionamentoKey(p)] ? 'S' : '']);
+    .map(p=>{
+      const k=acionamentoKey(p);
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.medico, acionamentos[k] ? 'S' : '', prtMap[k] || ''];
+    });
   const wsNot=XLSX.utils.aoa_to_sheet([notHead, ...notRows]);
-  wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:18}];
+  wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:14},{wch:16}];
 
   // Resumo
   const medSet = new Set();
