@@ -133,6 +133,25 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .not-prt input:focus{border-color:var(--amber);}
 .not-prt input:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed;}
 
+/* Validação */
+.valid-box{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.valid-box.done{background:var(--green-light);border:1px solid var(--green);border-radius:var(--r-sm);padding:14px 16px;margin:-4px 0;}
+.valid-box.pending{background:var(--amber-light);border:1px solid var(--amber);border-radius:var(--r-sm);padding:14px 16px;margin:-4px 0;}
+.valid-icon{font-size:26px;line-height:1;flex-shrink:0;}
+.valid-text{flex:1;min-width:200px;}
+.valid-title{font-size:14px;font-weight:600;color:var(--g900);}
+.valid-sub{font-size:12px;color:var(--g600);margin-top:2px;}
+.valid-box.done .valid-title{color:var(--green-dark);}
+.valid-box.pending .valid-title{color:var(--amber-dark);}
+.valid-btn{background:var(--green);color:white;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
+.valid-btn:hover{background:var(--green-dark);}
+.valid-btn:disabled{background:var(--g200);cursor:not-allowed;}
+.valid-btn-undo{background:transparent;border:1px solid var(--green-dark);color:var(--green-dark);}
+.valid-btn-undo:hover{background:var(--green-light);}
+.valid-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+.valid-chip.ok{background:var(--green-light);color:var(--green-dark);}
+.valid-chip.pending{background:var(--amber-light);color:var(--amber-dark);}
+
 /* Tabela */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r-sm);}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
@@ -345,6 +364,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
       </div>
       <div class="stats" id="medico-stats"></div>
     </div>
+
+    <div class="card" id="medico-validacao-card"></div>
 
     <div class="card">
       <div class="card-title" id="medico-noturnos-title">Meus noturnos</div>
@@ -1039,6 +1060,7 @@ async function renderResumoGeral(){
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
+  const validacoes = data.validacoes || {};
 
   const medicos = new Map();
   plantoes.forEach(p => {
@@ -1054,7 +1076,7 @@ async function renderResumoGeral(){
   });
 
   const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
-  let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0;
+  let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0, totValid=0;
   const bodyRows = rows.map(([m, c])=>{
     const rh=rateMeioSemana(c.meio);
     const vMeio=c.meio*H_TURNO*rh, vFds=c.fds*H_TURNO*RATE_FDS;
@@ -1062,8 +1084,20 @@ async function renderResumoGeral(){
     const total=vMeio+vFds+vNAc+vAc;
     totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total;
     const totP=c.meio+c.fds+c.notNAc+c.notAc;
+    // Validação: procura por slug do médico
+    const medicoSlug = slugify(m);
+    const v = validacoes[medicoSlug];
+    let validCell;
+    if(v){
+      totValid++;
+      const dt = new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      validCell = `<td><span class="valid-chip ok" title="Validado em ${dt}">✓ Validado</span></td>`;
+    } else {
+      validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
+    }
     return `<tr>
       <td>${escapeHtml(m)}</td>
+      ${validCell}
       <td class="num">${c.meio}</td><td class="num">${c.fds}</td>
       <td class="num">${c.notNAc}</td><td class="num">${c.notAc}</td>
       <td class="num" style="font-weight:600">${totP}</td>
@@ -1077,6 +1111,7 @@ async function renderResumoGeral(){
   document.getElementById('tbl-resumo').innerHTML=`
     <thead><tr>
       <th>Médico</th>
+      <th class="num">Validado?</th>
       <th class="num">Meio semana</th><th class="num">Fim semana</th>
       <th class="num">Not. n/ acion.</th><th class="num">Not. acionado</th>
       <th class="num">Total plantões</th><th class="num">R$/h MS</th>
@@ -1087,6 +1122,7 @@ async function renderResumoGeral(){
     <tbody>${bodyRows}</tbody>
     <tfoot><tr>
       <td>TOTAL</td>
+      <td class="num">${totValid}/${medicos.size}</td>
       <td class="num">${totMeio}</td><td class="num">${totFds}</td>
       <td class="num">${totNAc}</td><td class="num">${totAc}</td>
       <td class="num">${totP}</td>
@@ -1096,6 +1132,7 @@ async function renderResumoGeral(){
   document.getElementById('resumo-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat"><div class="stat-val">${totAc+totNAc}</div><div class="stat-lbl">Noturnos (${totAc} acion.)</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(totMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 }
@@ -1132,6 +1169,8 @@ async function renderMedico(){
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome);
   const acionamentos = medicoData.acionamentos || {};
   const prtMap = medicoData.prt || {};
+  const validacoes = medicoData.validacoes || {};
+  const minhaValidacao = validacoes[currentUser.slug];
 
   // Stats
   let meio=0, fds=0, notAc=0, notNAc=0;
@@ -1154,6 +1193,31 @@ async function renderMedico(){
     <div class="stat"><div class="stat-val">${notAc+notNAc}</div><div class="stat-lbl">Noturnos (${notAc} acion.)</div></div>
     <div class="stat"><div class="stat-val">R$ ${rh}</div><div class="stat-lbl">Valor/h Meio semana</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  // Validação
+  const validCard = document.getElementById('medico-validacao-card');
+  if(minhaValidacao){
+    const dt = new Date(minhaValidacao.validadoEm).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    validCard.innerHTML = `
+      <div class="valid-box done">
+        <div class="valid-icon">✅</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato validado</div>
+          <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
+        </div>
+        ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+      </div>`;
+  } else {
+    validCard.innerHTML = `
+      <div class="valid-box pending">
+        <div class="valid-icon">⚠️</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato pendente de validação</div>
+          <div class="valid-sub">Depois de conferir plantões, acionamentos e PRTs, valide o extrato para o admin saber que está conferido.</div>
+        </div>
+        <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
+      </div>`;
+  }
 
   // Noturnos
   const noturnos = plantoes.filter(p => p.turno === 'Noite').sort((a,b)=>a.dataIso.localeCompare(b.dataIso));
@@ -1223,6 +1287,30 @@ async function toggleAcionamento(mesKey, key, checked){
   }
 }
 
+async function validateExtract(mesKey){
+  if(!confirm('Confirmar que você conferiu todos os plantões, acionamentos e PRTs deste mês?')) return;
+  try {
+    await db.ref(`meses/${mesKey}/validacoes/${currentUser.slug}`).set({
+      validadoEm: Date.now(),
+      validadoPor: currentUser.nome,
+    });
+    showToast('Extrato validado ✓', 'green');
+    renderMedico();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+async function unvalidateExtract(mesKey){
+  if(!confirm('Desfazer a validação deste extrato?')) return;
+  try {
+    await db.ref(`meses/${mesKey}/validacoes/${currentUser.slug}`).remove();
+    showToast('Validação desfeita', 'green');
+    renderMedico();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+
 async function savePrt(mesKey, key, value){
   try {
     const v = String(value).trim();
@@ -1245,6 +1333,7 @@ async function downloadExcel(){
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
   const prtMap = data.prt || {};
+  const validacoes = data.validacoes || {};
   if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
 
   const wb=XLSX.utils.book_new();
@@ -1274,46 +1363,50 @@ async function downloadExcel(){
   const medSet = new Set();
   plantoes.forEach(p => medSet.add(p.medico));
   const medicos = Array.from(medSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const resHead=['Médico','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','TOTAL R$'];
+  const resHead=['Médico','Validado?','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','TOTAL R$'];
   const startRow=5;
   const bodyRowsExcel=medicos.map((med, i)=>{
     const r=startRow+i;
+    const v = validacoes[slugify(med)];
+    const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
     return [
       med,
+      validValue,
       {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_MEIO}")`},
       {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_FDS}")`},
-      {t:'n', f:`COUNTIF(Noturnos!C:C,A${r})-E${r}`},
+      {t:'n', f:`COUNTIF(Noturnos!C:C,A${r})-F${r}`},
       {t:'n', f:`COUNTIFS(Noturnos!C:C,A${r},Noturnos!D:D,"S")`},
-      {t:'n', f:`SUM(B${r}:E${r})`},
-      {t:'n', f:`IF(B${r}<=6,135,IF(B${r}<=10,145,IF(B${r}<=15,155,IF(B${r}<=19,165,175))))`},
-      {t:'n', f:`B${r}*6*G${r}`, z:'R$ #,##0.00'},
-      {t:'n', f:`C${r}*6*165`, z:'R$ #,##0.00'},
-      {t:'n', f:`D${r}*522`, z:'R$ #,##0.00'},
-      {t:'n', f:`E${r}*12*145`, z:'R$ #,##0.00'},
-      {t:'n', f:`SUM(H${r}:K${r})`, z:'R$ #,##0.00'},
+      {t:'n', f:`SUM(C${r}:F${r})`},
+      {t:'n', f:`IF(C${r}<=6,135,IF(C${r}<=10,145,IF(C${r}<=15,155,IF(C${r}<=19,165,175))))`},
+      {t:'n', f:`C${r}*6*H${r}`, z:'R$ #,##0.00'},
+      {t:'n', f:`D${r}*6*165`, z:'R$ #,##0.00'},
+      {t:'n', f:`E${r}*522`, z:'R$ #,##0.00'},
+      {t:'n', f:`F${r}*12*145`, z:'R$ #,##0.00'},
+      {t:'n', f:`SUM(I${r}:L${r})`, z:'R$ #,##0.00'},
     ];
   });
   const totRow=startRow+medicos.length;
-  const totFormulas=['TOTAL',
-    {t:'n', f:`SUM(B${startRow}:B${totRow-1})`},
+  // Colunas: A=Médico, B=Validado, C=Meio, D=FDS, E=NotNAc, F=NotAc, G=Total, H=R$/h, I..L=R$ categorias, M=Total R$
+  const totFormulas=['TOTAL','',
     {t:'n', f:`SUM(C${startRow}:C${totRow-1})`},
     {t:'n', f:`SUM(D${startRow}:D${totRow-1})`},
     {t:'n', f:`SUM(E${startRow}:E${totRow-1})`},
     {t:'n', f:`SUM(F${startRow}:F${totRow-1})`},
+    {t:'n', f:`SUM(G${startRow}:G${totRow-1})`},
     '',
-    {t:'n', f:`SUM(H${startRow}:H${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(I${startRow}:I${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(J${startRow}:J${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(K${startRow}:K${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(L${startRow}:L${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(M${startRow}:M${totRow-1})`, z:'R$ #,##0.00'},
   ];
   const wsRes=XLSX.utils.aoa_to_sheet([
     [`Conferência de plantões — ${periodoLabel}`],
-    ['Marcar "S" na aba Noturnos para acionados. Vazio = não acionado.'],
+    ['Marcar "S" na aba Noturnos para acionados. Coluna "Validado?" mostra data em que o médico confirmou o extrato (ou "Pendente").'],
     [],
     resHead, ...bodyRowsExcel, totFormulas,
   ]);
-  wsRes['!cols']=[{wch:42},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:15}];
+  wsRes['!cols']=[{wch:42},{wch:18},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:15}];
 
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
