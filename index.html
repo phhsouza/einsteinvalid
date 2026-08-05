@@ -152,6 +152,22 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .valid-chip.ok{background:var(--green-light);color:var(--green-dark);}
 .valid-chip.pending{background:var(--amber-light);color:var(--amber-dark);}
 
+/* Textarea de observações */
+.obs-textarea{width:100%;min-height:100px;padding:12px 14px;font-size:13px;line-height:1.5;border:1px solid var(--g200);border-radius:8px;font-family:var(--font);outline:none;resize:vertical;background:var(--white);transition:border 0.15s;}
+.obs-textarea:focus{border-color:var(--green);}
+.obs-textarea:disabled{background:var(--g100);color:var(--g600);cursor:not-allowed;}
+.obs-hint{font-size:11px;color:var(--g400);margin-top:6px;}
+
+/* Extras input */
+.extras-input{width:100%;max-width:110px;padding:5px 8px;font-size:12px;border:1px solid var(--g200);border-radius:6px;font-family:var(--mono);outline:none;background:var(--white);text-align:right;}
+.extras-input:focus{border-color:var(--blue);}
+
+/* Lista de observações admin */
+.obs-list{display:flex;flex-direction:column;gap:10px;}
+.obs-item{padding:12px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--g50);}
+.obs-item-head{font-size:13px;font-weight:600;color:var(--g900);margin-bottom:4px;}
+.obs-item-text{font-size:13px;color:var(--g600);line-height:1.4;white-space:pre-wrap;word-break:break-word;}
+
 /* Tabela */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r-sm);}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
@@ -351,6 +367,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
         <button class="btn-download" onclick="downloadExcel()">⬇ Baixar Excel</button>
       </div>
     </div>
+
+    <div class="card" id="admin-obs-card"></div>
   </div>
 
   <!-- ═══ MÉDICO ═══ -->
@@ -377,6 +395,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
       <div class="card-title">Detalhamento</div>
       <div class="tbl-wrap"><table class="tbl" id="medico-tbl"></table></div>
     </div>
+
+    <div class="card" id="medico-obs-card"></div>
   </div>
 
 </div>
@@ -1061,6 +1081,8 @@ async function renderResumoGeral(){
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
   const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
 
   const medicos = new Map();
   plantoes.forEach(p => {
@@ -1076,16 +1098,17 @@ async function renderResumoGeral(){
   });
 
   const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
-  let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0, totValid=0;
+  let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0, totExtras=0, totValid=0;
   const bodyRows = rows.map(([m, c])=>{
     const rh=rateMeioSemana(c.meio);
     const vMeio=c.meio*H_TURNO*rh, vFds=c.fds*H_TURNO*RATE_FDS;
     const vNAc=c.notNAc*RATE_NOT_SOBREAVISO, vAc=c.notAc*H_NOITE*RATE_NOT_ACIONADO_H;
-    const total=vMeio+vFds+vNAc+vAc;
-    totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total;
-    const totP=c.meio+c.fds+c.notNAc+c.notAc;
-    // Validação: procura por slug do médico
     const medicoSlug = slugify(m);
+    const extra = Number(extras[medicoSlug]) || 0;
+    const total=vMeio+vFds+vNAc+vAc+extra;
+    totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total; totExtras+=extra;
+    const totP=c.meio+c.fds+c.notNAc+c.notAc;
+    // Validação
     const v = validacoes[medicoSlug];
     let validCell;
     if(v){
@@ -1104,6 +1127,7 @@ async function renderResumoGeral(){
       <td class="rate">R$ ${rh}</td>
       <td class="money">${fmtMoney(vMeio)}</td><td class="money">${fmtMoney(vFds)}</td>
       <td class="money">${fmtMoney(vNAc)}</td><td class="money">${fmtMoney(vAc)}</td>
+      <td><input type="number" step="0.01" class="extras-input" value="${extra || ''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${medicoSlug}',this.value)"></td>
       <td class="money total">${fmtMoney(total)}</td>
     </tr>`;
   }).join('');
@@ -1117,6 +1141,7 @@ async function renderResumoGeral(){
       <th class="num">Total plantões</th><th class="num">R$/h MS</th>
       <th class="num">R$ Meio semana</th><th class="num">R$ Fim semana</th>
       <th class="num">R$ Not. n/acion.</th><th class="num">R$ Not. acionado</th>
+      <th class="num">Extras (R$)</th>
       <th class="num">TOTAL R$</th>
     </tr></thead>
     <tbody>${bodyRows}</tbody>
@@ -1127,6 +1152,7 @@ async function renderResumoGeral(){
       <td class="num">${totNAc}</td><td class="num">${totAc}</td>
       <td class="num">${totP}</td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td class="money">${fmtMoney(totExtras)}</td>
       <td class="money total">${fmtMoney(totMoney)}</td>
     </tr></tfoot>`;
   document.getElementById('resumo-stats').innerHTML=`
@@ -1135,6 +1161,39 @@ async function renderResumoGeral(){
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat"><div class="stat-val">${totAc+totNAc}</div><div class="stat-lbl">Noturnos (${totAc} acion.)</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(totMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+
+  // Card de observações
+  const obsCard = document.getElementById('admin-obs-card');
+  const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
+  if(!obsEntries.length){
+    obsCard.innerHTML = `<div class="card-title">Observações dos médicos</div><div class="empty">Nenhuma observação escrita neste mês.</div>`;
+  } else {
+    const nomesBySlug = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+    obsCard.innerHTML = `
+      <div class="card-title">Observações dos médicos <span class="right">${obsEntries.length} ${obsEntries.length===1?'médico escreveu':'médicos escreveram'}</span></div>
+      <div class="obs-list">
+        ${obsEntries.map(([slug, texto]) => `
+          <div class="obs-item">
+            <div class="obs-item-head">${escapeHtml(nomesBySlug.get(slug) || slug)}</div>
+            <div class="obs-item-text">${escapeHtml(texto)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+async function saveExtra(mesKey, medicoSlug, value){
+  try {
+    const num = Number(String(value).replace(',','.'));
+    if(!value || isNaN(num) || num === 0){
+      await db.ref(`meses/${mesKey}/extras/${medicoSlug}`).remove();
+    } else {
+      await db.ref(`meses/${mesKey}/extras/${medicoSlug}`).set(num);
+    }
+    showToast('Extra salvo', 'green');
+    renderResumoGeral();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1171,6 +1230,10 @@ async function renderMedico(){
   const prtMap = medicoData.prt || {};
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
+  const observacoesMap = medicoData.observacoes || {};
+  const minhaObs = observacoesMap[currentUser.slug] || '';
+  const extrasMap = medicoData.extras || {};
+  const meuExtra = Number(extrasMap[currentUser.slug]) || 0;
 
   // Stats
   let meio=0, fds=0, notAc=0, notNAc=0;
@@ -1186,12 +1249,13 @@ async function renderMedico(){
   const rh = rateMeioSemana(meio);
   const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
   const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
-  const total = vMeio+vFds+vNAc+vAc;
+  const total = vMeio+vFds+vNAc+vAc + meuExtra;
 
   document.getElementById('medico-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${notAc+notNAc}</div><div class="stat-lbl">Noturnos (${notAc} acion.)</div></div>
     <div class="stat"><div class="stat-val">R$ ${rh}</div><div class="stat-lbl">Valor/h Meio semana</div></div>
+    ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
     <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
 
   // Validação
@@ -1274,7 +1338,32 @@ async function renderMedico(){
   document.getElementById('medico-tbl').innerHTML=`
     <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr></tfoot>`;
+    <tfoot>
+      <tr><td colspan="4">Subtotal plantões</td><td class="money">${fmtMoney(vMeio+vFds+vNAc+vAc)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+    </tfoot>`;
+
+  // Observações do médico (textarea)
+  document.getElementById('medico-obs-card').innerHTML = `
+    <div class="card-title">Observações</div>
+    <textarea class="obs-textarea" id="medico-obs-input" ${isEditable?'':'disabled'} placeholder="Escreva aqui qualquer observação sobre seu extrato deste mês (relatos, dúvidas, contestações). O admin poderá ver.">${escapeHtml(minhaObs)}</textarea>
+    <div class="obs-hint">${isEditable ? 'Salva automaticamente ao sair do campo.' : 'Somente leitura — mês não é o vigente.'}</div>`;
+  const obsInput = document.getElementById('medico-obs-input');
+  if(obsInput && isEditable){
+    obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
+  }
+}
+
+async function saveObs(mesKey, value){
+  try {
+    const v = String(value || '').trim();
+    if(!v) await db.ref(`meses/${mesKey}/observacoes/${currentUser.slug}`).remove();
+    else await db.ref(`meses/${mesKey}/observacoes/${currentUser.slug}`).set(v);
+    showToast('Observação salva', 'green');
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
 }
 
 async function toggleAcionamento(mesKey, key, checked){
@@ -1334,6 +1423,8 @@ async function downloadExcel(){
   const acionamentos = data.acionamentos || {};
   const prtMap = data.prt || {};
   const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
   if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
 
   const wb=XLSX.utils.book_new();
@@ -1363,12 +1454,15 @@ async function downloadExcel(){
   const medSet = new Set();
   plantoes.forEach(p => medSet.add(p.medico));
   const medicos = Array.from(medSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const resHead=['Médico','Validado?','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','TOTAL R$'];
+  const resHead=['Médico','Validado?','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','Extras (R$)','TOTAL R$','Observações'];
   const startRow=5;
   const bodyRowsExcel=medicos.map((med, i)=>{
     const r=startRow+i;
-    const v = validacoes[slugify(med)];
+    const slug = slugify(med);
+    const v = validacoes[slug];
     const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
+    const extraVal = Number(extras[slug]) || 0;
+    const obsTexto = observacoes[slug] || '';
     return [
       med,
       validValue,
@@ -1382,11 +1476,13 @@ async function downloadExcel(){
       {t:'n', f:`D${r}*6*165`, z:'R$ #,##0.00'},
       {t:'n', f:`E${r}*522`, z:'R$ #,##0.00'},
       {t:'n', f:`F${r}*12*145`, z:'R$ #,##0.00'},
-      {t:'n', f:`SUM(I${r}:L${r})`, z:'R$ #,##0.00'},
+      {v: extraVal, t:'n', z:'R$ #,##0.00'},
+      {t:'n', f:`SUM(I${r}:M${r})`, z:'R$ #,##0.00'},
+      obsTexto,
     ];
   });
   const totRow=startRow+medicos.length;
-  // Colunas: A=Médico, B=Validado, C=Meio, D=FDS, E=NotNAc, F=NotAc, G=Total, H=R$/h, I..L=R$ categorias, M=Total R$
+  // Colunas: A=Médico, B=Validado, C=Meio, D=FDS, E=NotNAc, F=NotAc, G=Total, H=R$/h, I..L=R$ categorias, M=Extras, N=Total R$, O=Obs
   const totFormulas=['TOTAL','',
     {t:'n', f:`SUM(C${startRow}:C${totRow-1})`},
     {t:'n', f:`SUM(D${startRow}:D${totRow-1})`},
@@ -1399,14 +1495,16 @@ async function downloadExcel(){
     {t:'n', f:`SUM(K${startRow}:K${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(L${startRow}:L${totRow-1})`, z:'R$ #,##0.00'},
     {t:'n', f:`SUM(M${startRow}:M${totRow-1})`, z:'R$ #,##0.00'},
+    {t:'n', f:`SUM(N${startRow}:N${totRow-1})`, z:'R$ #,##0.00'},
+    '',
   ];
   const wsRes=XLSX.utils.aoa_to_sheet([
     [`Conferência de plantões — ${periodoLabel}`],
-    ['Marcar "S" na aba Noturnos para acionados. Coluna "Validado?" mostra data em que o médico confirmou o extrato (ou "Pendente").'],
+    ['Marcar "S" na aba Noturnos para acionados. Coluna "Validado?" mostra data em que o médico confirmou o extrato (ou "Pendente"). Extras = valores adicionais lançados pelo admin.'],
     [],
     resHead, ...bodyRowsExcel, totFormulas,
   ]);
-  wsRes['!cols']=[{wch:42},{wch:18},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:15}];
+  wsRes['!cols']=[{wch:42},{wch:18},{wch:15},{wch:15},{wch:20},{wch:17},{wch:8},{wch:8},{wch:18},{wch:18},{wch:20},{wch:17},{wch:14},{wch:15},{wch:50}];
 
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
