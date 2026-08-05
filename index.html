@@ -162,6 +162,16 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .extras-input{width:100%;max-width:110px;padding:5px 8px;font-size:12px;border:1px solid var(--g200);border-radius:6px;font-family:var(--mono);outline:none;background:var(--white);text-align:right;}
 .extras-input:focus{border-color:var(--blue);}
 
+/* Inputs editáveis nas contagens/rate */
+.cnt-input,.rate-input{width:100%;max-width:70px;padding:4px 6px;font-size:12px;border:1px solid transparent;border-radius:4px;font-family:var(--mono);outline:none;background:transparent;text-align:center;color:var(--g900);}
+.cnt-input:hover,.rate-input:hover{border-color:var(--g200);background:var(--white);}
+.cnt-input:focus,.rate-input:focus{border-color:var(--blue);background:var(--white);}
+.cnt-input.overridden,.rate-input.overridden{background:var(--amber-light);color:var(--amber-dark);font-weight:600;}
+.cnt-input.overridden:hover,.rate-input.overridden:hover{border-color:var(--amber);}
+.reset-btn{background:transparent;border:none;color:var(--g400);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;}
+.reset-btn:hover{background:var(--red-light);color:var(--red);}
+.reset-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
 /* Lista de observações admin */
 .obs-list{display:flex;flex-direction:column;gap:10px;}
 .obs-item{padding:12px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--g50);}
@@ -1083,6 +1093,11 @@ async function renderResumoGeral(){
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
+  const overrides = data.overrides || {};
+  const getOv = (slug, field) => {
+    const v = overrides[slug]?.[field];
+    return (v === undefined || v === null || v === '') ? null : Number(v);
+  };
 
   const medicos = new Map();
   plantoes.forEach(p => {
@@ -1100,14 +1115,25 @@ async function renderResumoGeral(){
   const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
   let totMeio=0, totFds=0, totNAc=0, totAc=0, totMoney=0, totExtras=0, totValid=0;
   const bodyRows = rows.map(([m, c])=>{
-    const rh=rateMeioSemana(c.meio);
-    const vMeio=c.meio*H_TURNO*rh, vFds=c.fds*H_TURNO*RATE_FDS;
-    const vNAc=c.notNAc*RATE_NOT_SOBREAVISO, vAc=c.notAc*H_NOITE*RATE_NOT_ACIONADO_H;
     const medicoSlug = slugify(m);
+    // Valores efetivos: override se existir, senão calculado da escala
+    const ovMeio = getOv(medicoSlug,'meio');
+    const ovFds = getOv(medicoSlug,'fds');
+    const ovNNAc = getOv(medicoSlug,'notNAc');
+    const ovNAc = getOv(medicoSlug,'notAc');
+    const ovRh = getOv(medicoSlug,'rhMS');
+    const meio = ovMeio !== null ? ovMeio : c.meio;
+    const fds = ovFds !== null ? ovFds : c.fds;
+    const notNAc = ovNNAc !== null ? ovNNAc : c.notNAc;
+    const notAc = ovNAc !== null ? ovNAc : c.notAc;
+    const rh = ovRh !== null ? ovRh : rateMeioSemana(meio);
+    const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
+    const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
     const extra = Number(extras[medicoSlug]) || 0;
-    const total=vMeio+vFds+vNAc+vAc+extra;
-    totMeio+=c.meio; totFds+=c.fds; totNAc+=c.notNAc; totAc+=c.notAc; totMoney+=total; totExtras+=extra;
-    const totP=c.meio+c.fds+c.notNAc+c.notAc;
+    const total = vMeio+vFds+vNAc+vAc+extra;
+    totMeio+=meio; totFds+=fds; totNAc+=notNAc; totAc+=notAc; totMoney+=total; totExtras+=extra;
+    const totP = meio+fds+notNAc+notAc;
+    const hasOverrides = ovMeio!==null || ovFds!==null || ovNNAc!==null || ovNAc!==null || ovRh!==null;
     // Validação
     const v = validacoes[medicoSlug];
     let validCell;
@@ -1118,17 +1144,22 @@ async function renderResumoGeral(){
     } else {
       validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
     }
+    const cntInput = (field, val, isOverridden) =>
+      `<td class="num"><input type="number" min="0" step="1" class="cnt-input${isOverridden?' overridden':''}" value="${val}" title="${isOverridden?'Editado manualmente':'Valor da escala'}" onchange="saveOverride('${mesKey}','${medicoSlug}','${field}',this.value)"></td>`;
     return `<tr>
       <td>${escapeHtml(m)}</td>
       ${validCell}
-      <td class="num">${c.meio}</td><td class="num">${c.fds}</td>
-      <td class="num">${c.notNAc}</td><td class="num">${c.notAc}</td>
+      ${cntInput('meio', meio, ovMeio!==null)}
+      ${cntInput('fds', fds, ovFds!==null)}
+      ${cntInput('notNAc', notNAc, ovNNAc!==null)}
+      ${cntInput('notAc', notAc, ovNAc!==null)}
       <td class="num" style="font-weight:600">${totP}</td>
-      <td class="rate">R$ ${rh}</td>
+      <td class="num"><input type="number" step="1" class="rate-input${ovRh!==null?' overridden':''}" value="${rh}" title="${ovRh!==null?'Editado manualmente':'Faixa progressiva'}" onchange="saveOverride('${mesKey}','${medicoSlug}','rhMS',this.value)"></td>
       <td class="money">${fmtMoney(vMeio)}</td><td class="money">${fmtMoney(vFds)}</td>
       <td class="money">${fmtMoney(vNAc)}</td><td class="money">${fmtMoney(vAc)}</td>
       <td><input type="number" step="0.01" class="extras-input" value="${extra || ''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${medicoSlug}',this.value)"></td>
       <td class="money total">${fmtMoney(total)}</td>
+      <td><button class="reset-btn" ${hasOverrides?'':'disabled'} title="Voltar aos valores da escala" onclick="resetOverrides('${mesKey}','${medicoSlug}')">↺</button></td>
     </tr>`;
   }).join('');
   const totP=totMeio+totFds+totNAc+totAc;
@@ -1143,6 +1174,7 @@ async function renderResumoGeral(){
       <th class="num">R$ Not. n/acion.</th><th class="num">R$ Not. acionado</th>
       <th class="num">Extras (R$)</th>
       <th class="num">TOTAL R$</th>
+      <th></th>
     </tr></thead>
     <tbody>${bodyRows}</tbody>
     <tfoot><tr>
@@ -1154,6 +1186,7 @@ async function renderResumoGeral(){
       <td></td><td></td><td></td><td></td><td></td>
       <td class="money">${fmtMoney(totExtras)}</td>
       <td class="money total">${fmtMoney(totMoney)}</td>
+      <td></td>
     </tr></tfoot>`;
   document.getElementById('resumo-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
@@ -1178,6 +1211,31 @@ async function renderResumoGeral(){
             <div class="obs-item-text">${escapeHtml(texto)}</div>
           </div>`).join('')}
       </div>`;
+  }
+}
+
+async function saveOverride(mesKey, medicoSlug, field, value){
+  try {
+    const s = String(value).trim().replace(',','.');
+    const num = Number(s);
+    if(s === '' || isNaN(num)){
+      await db.ref(`meses/${mesKey}/overrides/${medicoSlug}/${field}`).remove();
+    } else {
+      await db.ref(`meses/${mesKey}/overrides/${medicoSlug}/${field}`).set(num);
+    }
+    renderResumoGeral();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+async function resetOverrides(mesKey, medicoSlug){
+  if(!confirm('Voltar todos os valores deste médico aos calculados pela escala?')) return;
+  try {
+    await db.ref(`meses/${mesKey}/overrides/${medicoSlug}`).remove();
+    showToast('Valores restaurados', 'green');
+    renderResumoGeral();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
   }
 }
 
@@ -1425,6 +1483,11 @@ async function downloadExcel(){
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
+  const overrides = data.overrides || {};
+  const getOv = (slug, field) => {
+    const v = overrides[slug]?.[field];
+    return (v === undefined || v === null || v === '') ? null : Number(v);
+  };
   if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
 
   const wb=XLSX.utils.book_new();
@@ -1456,46 +1519,61 @@ async function downloadExcel(){
   const medicos = Array.from(medSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const resHead=['Médico','Validado?','Meio de semana','Fim de semana','Noturno não acionado','Noturno acionado','Total','R$/h MS','R$ Meio de semana','R$ Fim de semana','R$ Not. não acionado','R$ Not. acionado','Extras (R$)','TOTAL R$','Observações'];
   const startRow=5;
-  const bodyRowsExcel=medicos.map((med, i)=>{
-    const r=startRow+i;
+  // Contagens base a partir da escala (antes de overrides)
+  const baseMap = new Map();
+  plantoes.forEach(p => {
+    if(!baseMap.has(p.medico)) baseMap.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0});
+    const b = baseMap.get(p.medico);
+    const cat = categorize(p);
+    if(cat === CAT_MEIO) b.meio++;
+    else if(cat === CAT_FDS) b.fds++;
+    else if(cat === CAT_NOITE){
+      if(acionamentos[acionamentoKey(p)]) b.notAc++;
+      else b.notNAc++;
+    }
+  });
+  let sumMeio=0, sumFds=0, sumNNAc=0, sumNAc=0, sumTotP=0, sumVMeio=0, sumVFds=0, sumVNAc=0, sumVAc=0, sumExtras=0, sumTotal=0;
+  const bodyRowsExcel=medicos.map((med)=>{
     const slug = slugify(med);
+    const base = baseMap.get(med) || {meio:0,fds:0,notAc:0,notNAc:0};
+    const meio = (getOv(slug,'meio') ?? base.meio);
+    const fds = (getOv(slug,'fds') ?? base.fds);
+    const notNAc = (getOv(slug,'notNAc') ?? base.notNAc);
+    const notAc = (getOv(slug,'notAc') ?? base.notAc);
+    const rh = (getOv(slug,'rhMS') ?? rateMeioSemana(meio));
+    const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
+    const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+    const extraVal = Number(extras[slug]) || 0;
+    const total = vMeio+vFds+vNAc+vAc+extraVal;
+    const totP = meio+fds+notNAc+notAc;
+    sumMeio+=meio; sumFds+=fds; sumNNAc+=notNAc; sumNAc+=notAc; sumTotP+=totP;
+    sumVMeio+=vMeio; sumVFds+=vFds; sumVNAc+=vNAc; sumVAc+=vAc; sumExtras+=extraVal; sumTotal+=total;
     const v = validacoes[slug];
     const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
-    const extraVal = Number(extras[slug]) || 0;
     const obsTexto = observacoes[slug] || '';
     return [
       med,
       validValue,
-      {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_MEIO}")`},
-      {t:'n', f:`COUNTIFS(Detalhado!E:E,A${r},Detalhado!D:D,"${CAT_FDS}")`},
-      {t:'n', f:`COUNTIF(Noturnos!C:C,A${r})-F${r}`},
-      {t:'n', f:`COUNTIFS(Noturnos!C:C,A${r},Noturnos!D:D,"S")`},
-      {t:'n', f:`SUM(C${r}:F${r})`},
-      {t:'n', f:`IF(C${r}<=6,135,IF(C${r}<=10,145,IF(C${r}<=15,155,IF(C${r}<=19,165,175))))`},
-      {t:'n', f:`C${r}*6*H${r}`, z:'R$ #,##0.00'},
-      {t:'n', f:`D${r}*6*165`, z:'R$ #,##0.00'},
-      {t:'n', f:`E${r}*522`, z:'R$ #,##0.00'},
-      {t:'n', f:`F${r}*12*145`, z:'R$ #,##0.00'},
-      {v: extraVal, t:'n', z:'R$ #,##0.00'},
-      {t:'n', f:`SUM(I${r}:M${r})`, z:'R$ #,##0.00'},
+      meio, fds, notNAc, notAc, totP,
+      rh,
+      {v:vMeio, t:'n', z:'R$ #,##0.00'},
+      {v:vFds, t:'n', z:'R$ #,##0.00'},
+      {v:vNAc, t:'n', z:'R$ #,##0.00'},
+      {v:vAc, t:'n', z:'R$ #,##0.00'},
+      {v:extraVal, t:'n', z:'R$ #,##0.00'},
+      {v:total, t:'n', z:'R$ #,##0.00'},
       obsTexto,
     ];
   });
-  const totRow=startRow+medicos.length;
-  // Colunas: A=Médico, B=Validado, C=Meio, D=FDS, E=NotNAc, F=NotAc, G=Total, H=R$/h, I..L=R$ categorias, M=Extras, N=Total R$, O=Obs
   const totFormulas=['TOTAL','',
-    {t:'n', f:`SUM(C${startRow}:C${totRow-1})`},
-    {t:'n', f:`SUM(D${startRow}:D${totRow-1})`},
-    {t:'n', f:`SUM(E${startRow}:E${totRow-1})`},
-    {t:'n', f:`SUM(F${startRow}:F${totRow-1})`},
-    {t:'n', f:`SUM(G${startRow}:G${totRow-1})`},
+    sumMeio, sumFds, sumNNAc, sumNAc, sumTotP,
     '',
-    {t:'n', f:`SUM(I${startRow}:I${totRow-1})`, z:'R$ #,##0.00'},
-    {t:'n', f:`SUM(J${startRow}:J${totRow-1})`, z:'R$ #,##0.00'},
-    {t:'n', f:`SUM(K${startRow}:K${totRow-1})`, z:'R$ #,##0.00'},
-    {t:'n', f:`SUM(L${startRow}:L${totRow-1})`, z:'R$ #,##0.00'},
-    {t:'n', f:`SUM(M${startRow}:M${totRow-1})`, z:'R$ #,##0.00'},
-    {t:'n', f:`SUM(N${startRow}:N${totRow-1})`, z:'R$ #,##0.00'},
+    {v:sumVMeio, t:'n', z:'R$ #,##0.00'},
+    {v:sumVFds, t:'n', z:'R$ #,##0.00'},
+    {v:sumVNAc, t:'n', z:'R$ #,##0.00'},
+    {v:sumVAc, t:'n', z:'R$ #,##0.00'},
+    {v:sumExtras, t:'n', z:'R$ #,##0.00'},
+    {v:sumTotal, t:'n', z:'R$ #,##0.00'},
     '',
   ];
   const wsRes=XLSX.utils.aoa_to_sheet([
