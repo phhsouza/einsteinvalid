@@ -1730,12 +1730,12 @@ async function renderMedico_dermato(){
   // Ordenar plantões cronologicamente
   const ordered = plantoes.slice().sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
 
-  // Cálculos
-  let q4=0, q6=0, semDef=0;
+  // Cálculos — padrão 4h; marca como 6h só se explícito
+  let q6=0;
   ordered.forEach(p => {
-    const d = Number(duracoes[duracaoKey(p)]);
-    if(d===4) q4++; else if(d===6) q6++; else semDef++;
+    if(Number(duracoes[duracaoKey(p)]) === 6) q6++;
   });
+  const q4 = ordered.length - q6;
   const totalHoras = q4*4 + q6*6;
   const valorPlantoes = totalHoras * DERMATO_RATE_H;
   const total = valorPlantoes + meuExtra;
@@ -1744,7 +1744,6 @@ async function renderMedico_dermato(){
   document.getElementById('medico-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${ordered.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${totalHoras}h</div><div class="stat-lbl">Horas totais (${q4}×4h + ${q6}×6h)</div></div>
-    ${semDef ? `<div class="stat"><div class="stat-val" style="color:var(--amber-dark)">${semDef}</div><div class="stat-lbl">Sem duração marcada</div></div>` : ''}
     <div class="stat"><div class="stat-val">R$ ${DERMATO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
     ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
     <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
@@ -1785,39 +1784,32 @@ async function renderMedico_dermato(){
   } else {
     noturnosEl.innerHTML = ordered.map(p=>{
       const k = duracaoKey(p);
-      const d = Number(duracoes[k]);
+      const is6 = Number(duracoes[k]) === 6;
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-      const idBase = `dur-${p.dataIso.replace(/-/g,'')}-${p.turno.charAt(0)}`;
-      return `<div class="not-row ${d?'acionado':''}">
+      return `<div class="not-row ${is6?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
-        <span class="not-name">${p.turno}</span>
+        <span class="not-name">${p.turno} <span style="color:var(--g400);font-size:11px;margin-left:6px">(padrão 4h)</span></span>
         <span class="not-check">
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
-            <input type="radio" name="${idBase}" value="4" ${d===4?'checked':''} ${isEditable?'':'disabled'} onchange="saveDuracao('${mesKey}','${k}',4)">
-            <span class="not-check-label">4h</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:12px">
-            <input type="radio" name="${idBase}" value="6" ${d===6?'checked':''} ${isEditable?'':'disabled'} onchange="saveDuracao('${mesKey}','${k}',6)">
-            <span class="not-check-label">6h</span>
-          </label>
+          <input type="checkbox" ${is6?'checked':''} ${isEditable?'':'disabled'} onchange="toggle6h('${mesKey}','${k}',this.checked)">
+          <span class="not-check-label">Marcar como 6h</span>
         </span>
       </div>`;
     }).join('');
   }
 
-  // Tabela detalhada
+  // Tabela detalhada — todos os plantões contam (default 4h)
   const rows = ordered.map(p => {
-    const d = Number(duracoes[duracaoKey(p)]);
+    const is6 = Number(duracoes[duracaoKey(p)]) === 6;
     const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-    const valor = d ? d*DERMATO_RATE_H : 0;
-    const durLabel = d ? `${d}h` : '<span style="color:var(--amber-dark)">—</span>';
+    const dur = is6 ? 6 : 4;
+    const valor = dur * DERMATO_RATE_H;
     return `<tr>
       <td>${fmtDate(p.dataIso)}</td>
       <td>${dia}</td>
       <td>${p.turno}</td>
-      <td class="num">${durLabel}</td>
-      <td class="money">${d ? fmtMoney(valor) : '—'}</td>
+      <td class="num">${dur}h${is6?' <span style="color:var(--amber-dark);font-size:10px">(6h)</span>':''}</td>
+      <td class="money">${fmtMoney(valor)}</td>
     </tr>`;
   }).join('');
   document.getElementById('medico-tbl').innerHTML=`
@@ -1840,9 +1832,10 @@ async function renderMedico_dermato(){
   }
 }
 
-async function saveDuracao(mesKey, key, d){
+async function toggle6h(mesKey, key, checked){
   try {
-    await db.ref(spath(`meses/${mesKey}/duracoes/${key}`)).set(Number(d));
+    if(checked) await db.ref(spath(`meses/${mesKey}/duracoes/${key}`)).set(6);
+    else await db.ref(spath(`meses/${mesKey}/duracoes/${key}`)).remove();
     renderMedico();
   } catch(err) {
     showToast('Erro: '+err.message, 'red');
@@ -1870,24 +1863,22 @@ async function renderResumoGeral_dermato(){
   // Agrega por médico
   const medicos = new Map();
   plantoes.forEach(p => {
-    if(!medicos.has(p.medico)) medicos.set(p.medico, {q4:0, q6:0, semDef:0, total:0});
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {q6:0, total:0});
     const m = medicos.get(p.medico);
     m.total++;
-    const d = Number(duracoes[duracaoKey(p)]);
-    if(d===4) m.q4++;
-    else if(d===6) m.q6++;
-    else m.semDef++;
+    if(Number(duracoes[duracaoKey(p)]) === 6) m.q6++;
   });
 
   const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
-  let sumTotP=0, sumQ4=0, sumQ6=0, sumSem=0, sumMoney=0, sumExtras=0, sumVal=0, totValid=0;
+  let sumTotP=0, sumQ4=0, sumQ6=0, sumMoney=0, sumExtras=0, sumVal=0, totValid=0;
   const bodyRows = rows.map(([m, c])=>{
     const slug = slugify(m);
-    const totalHoras = c.q4*4 + c.q6*6;
+    const q4 = c.total - c.q6;
+    const totalHoras = q4*4 + c.q6*6;
     const vPlantoes = totalHoras * DERMATO_RATE_H;
     const extra = Number(extras[slug]) || 0;
     const total = vPlantoes + extra;
-    sumTotP+=c.total; sumQ4+=c.q4; sumQ6+=c.q6; sumSem+=c.semDef;
+    sumTotP+=c.total; sumQ4+=q4; sumQ6+=c.q6;
     sumMoney+=total; sumExtras+=extra; sumVal+=vPlantoes;
     const v = validacoes[slug];
     let validCell;
@@ -1898,16 +1889,12 @@ async function renderResumoGeral_dermato(){
     } else {
       validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
     }
-    const semDefCell = c.semDef > 0
-      ? `<td class="num" style="color:var(--amber-dark);font-weight:600">${c.semDef}</td>`
-      : `<td class="num">0</td>`;
     return `<tr>
       <td>${escapeHtml(m)}</td>
       ${validCell}
       <td class="num">${c.total}</td>
-      <td class="num">${c.q4}</td>
+      <td class="num">${q4}</td>
       <td class="num">${c.q6}</td>
-      ${semDefCell}
       <td class="num">${totalHoras}h</td>
       <td class="rate">R$ ${DERMATO_RATE_H}</td>
       <td class="money">${fmtMoney(vPlantoes)}</td>
@@ -1920,9 +1907,8 @@ async function renderResumoGeral_dermato(){
       <th>Médico</th>
       <th class="num">Validado?</th>
       <th class="num">Total plantões</th>
-      <th class="num">4h</th>
+      <th class="num">4h (padrão)</th>
       <th class="num">6h</th>
-      <th class="num">Sem marcar</th>
       <th class="num">Horas</th>
       <th class="num">R$/h</th>
       <th class="num">R$ Plantões</th>
@@ -1936,7 +1922,6 @@ async function renderResumoGeral_dermato(){
       <td class="num">${sumTotP}</td>
       <td class="num">${sumQ4}</td>
       <td class="num">${sumQ6}</td>
-      <td class="num">${sumSem}</td>
       <td class="num">${sumQ4*4+sumQ6*6}h</td>
       <td></td>
       <td class="money">${fmtMoney(sumVal)}</td>
@@ -1947,7 +1932,6 @@ async function renderResumoGeral_dermato(){
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
-    ${sumSem ? `<div class="stat"><div class="stat-val" style="color:var(--amber-dark)">${sumSem}</div><div class="stat-lbl">Sem duração</div></div>` : ''}
     <div class="stat money"><div class="stat-val">${fmtMoney(sumMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
   // Card de observações
@@ -1990,51 +1974,52 @@ async function downloadExcel_dermato(){
   const detRows=plantoes.slice()
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
     .map(p => {
-      const d = Number(duracoes[duracaoKey(p)]) || 0;
+      const is6 = Number(duracoes[duracaoKey(p)]) === 6;
+      const d = is6 ? 6 : 4;
       const val = d * DERMATO_RATE_H;
-      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turno, p.medico, d || '', {v:val, t:'n', z:'R$ #,##0.00'}];
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turno, p.medico, d, {v:val, t:'n', z:'R$ #,##0.00'}];
     });
   const wsDet=XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
   wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:42},{wch:12},{wch:14}];
 
-  // Resumo por médico
+  // Resumo por médico — padrão 4h, marca 6h
   const medicos = new Map();
   plantoes.forEach(p => {
-    if(!medicos.has(p.medico)) medicos.set(p.medico, {q4:0, q6:0, semDef:0, total:0});
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {q6:0, total:0});
     const mm = medicos.get(p.medico);
     mm.total++;
-    const d = Number(duracoes[duracaoKey(p)]);
-    if(d===4) mm.q4++; else if(d===6) mm.q6++; else mm.semDef++;
+    if(Number(duracoes[duracaoKey(p)]) === 6) mm.q6++;
   });
   const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const resHead=['Médico','Validado?','Total plantões','4h','6h','Sem marcar','Horas','R$/h','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
-  let sT=0,s4=0,s6=0,sS=0,sV=0,sE=0,sTot=0;
+  const resHead=['Médico','Validado?','Total plantões','4h (padrão)','6h','Horas','R$/h','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
+  let sT=0,s4=0,s6=0,sV=0,sE=0,sTot=0;
   const bodyRowsExcel = medNames.map(med => {
     const c = medicos.get(med);
     const slug = slugify(med);
-    const horas = c.q4*4 + c.q6*6;
+    const q4 = c.total - c.q6;
+    const horas = q4*4 + c.q6*6;
     const vPl = horas * DERMATO_RATE_H;
     const ext = Number(extras[slug]) || 0;
     const tot = vPl + ext;
-    sT+=c.total; s4+=c.q4; s6+=c.q6; sS+=c.semDef; sV+=vPl; sE+=ext; sTot+=tot;
+    sT+=c.total; s4+=q4; s6+=c.q6; sV+=vPl; sE+=ext; sTot+=tot;
     const v = validacoes[slug];
     const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
-    return [med, validValue, c.total, c.q4, c.q6, c.semDef, horas, DERMATO_RATE_H,
+    return [med, validValue, c.total, q4, c.q6, horas, DERMATO_RATE_H,
       {v:vPl, t:'n', z:'R$ #,##0.00'},
       {v:ext, t:'n', z:'R$ #,##0.00'},
       {v:tot, t:'n', z:'R$ #,##0.00'},
       observacoes[slug] || ''];
   });
-  const totFormulas = ['TOTAL','',sT,s4,s6,sS,s4*4+s6*6,'',
+  const totFormulas = ['TOTAL','',sT,s4,s6,s4*4+s6*6,'',
     {v:sV, t:'n', z:'R$ #,##0.00'},
     {v:sE, t:'n', z:'R$ #,##0.00'},
     {v:sTot, t:'n', z:'R$ #,##0.00'},''];
   const wsRes=XLSX.utils.aoa_to_sheet([
     [`Dermatologia — ${periodoLabel}`],
-    ['Duração marcada pelo médico (4h ou 6h). "Sem marcar" indica plantão sem duração definida ainda.'],
+    ['Duração padrão de todos os plantões é 4h; médicos podem marcar 6h para plantões específicos.'],
     [], resHead, ...bodyRowsExcel, totFormulas,
   ]);
-  wsRes['!cols']=[{wch:42},{wch:18},{wch:14},{wch:6},{wch:6},{wch:12},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14},{wch:50}];
+  wsRes['!cols']=[{wch:42},{wch:18},{wch:14},{wch:12},{wch:6},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14},{wch:50}];
 
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
