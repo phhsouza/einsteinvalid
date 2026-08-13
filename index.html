@@ -546,8 +546,8 @@ function parseDate(s){
 function detectShift(cell){
   if(!cell) return null;
   const s=String(cell).toLowerCase();
-  if(s.includes('manhã')||s.includes('manha')) return 'Manhã';
-  if(s.includes('tarde')) return 'Tarde';
+  if(s.includes('manhã')||s.includes('manha')||s.includes('matutino')) return 'Manhã';
+  if(s.includes('tarde')||s.includes('vespertino')) return 'Tarde';
   if(s.includes('noite')||s.includes('noturno')) return 'Noite';
   return null;
 }
