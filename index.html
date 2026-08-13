@@ -62,6 +62,10 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .conn-badge.offline .conn-dot{background:var(--g400);}
 
 /* Tabs bar */
+.sector-bar{background:linear-gradient(90deg, var(--blue) 0%, var(--blue-dark) 100%);color:white;padding:10px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:65px;z-index:99;}
+.sector-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;opacity:0.85;}
+.sector-select{padding:6px 10px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.3);border-radius:6px;background:rgba(255,255,255,0.15);color:white;font-family:var(--font);cursor:pointer;outline:none;}
+.sector-select option{background:var(--white);color:var(--g900);}
 .tabs-bar{background:var(--white);border-bottom:1px solid var(--bd);display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:65px;z-index:99;}
 .tabs-bar.show{display:flex;}
 .tabs-bar::-webkit-scrollbar{display:none;}
@@ -305,6 +309,12 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   </div>
 </div>
 
+<!-- ══ SELETOR DE SETOR (só admin) ══ -->
+<div class="sector-bar" id="sector-bar" style="display:none">
+  <label class="sector-label">Setor ativo:</label>
+  <select class="sector-select" id="sector-select" onchange="switchSector(this.value)"></select>
+</div>
+
 <!-- ══ TABS ADMIN ══ -->
 <div class="tabs-bar" id="admin-tabs">
   <button class="tab-btn active" id="tab-btn-escala" onclick="switchAdminTab('escala')">📄 Escala</button>
@@ -342,7 +352,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   <!-- ═══ ADMIN: USUÁRIOS ═══ -->
   <div class="screen" id="screen-usuarios">
     <div class="card">
-      <div class="card-title">Criar novo usuário</div>
+      <div class="card-title">Criar novo usuário <span class="right" id="new-user-setor-label"></span></div>
       <div class="form-row">
         <div class="form-field">
           <label>Nome do médico (deve bater com o da escala)</label>
@@ -465,6 +475,23 @@ const CAT_MEIO='Meio de semana', CAT_FDS='Fim de semana', CAT_NOITE='Noturno';
 const RATE_FDS=165, RATE_NOT_ACIONADO_H=145, RATE_NOT_SOBREAVISO=522, H_TURNO=6, H_NOITE=12;
 const ADMIN_SLUG='admin';
 const ADMIN_INITIAL_PASS='admin';
+
+// ── SETORES ────────────────────────────────────────
+// Cada setor tem seu próprio conjunto de dados (meses, plantões, etc.)
+// e regras de cálculo específicas via `tipo`.
+const SETORES_LIST = {
+  radiologia:   { label: 'Radiologia',   tipo: 'radiologia' },
+  dermatologia: { label: 'Dermatologia', tipo: 'dermatologia' },
+};
+const DEFAULT_SETOR = 'radiologia';
+// Setor ativo: admin muda pelo seletor; médico vem do usuário
+let currentSector = DEFAULT_SETOR;
+// Helper: monta path Firebase para o setor ativo
+function spath(sub){ return `setores/${currentSector}/${sub}`; }
+function getSectorTipo(){ return SETORES_LIST[currentSector]?.tipo || 'radiologia'; }
+
+// Regras da dermatologia
+const DERMATO_RATE_H = 150;
 
 function rateMeioSemana(n){
   if(n<=6) return 135;
@@ -677,18 +704,27 @@ async function afterLogin(){
   const userEl = document.getElementById('topbar-user');
   userEl.innerHTML = `${escapeHtml(currentUser.nome)}<span class="role${currentUser.role==='admin'?' admin':''}">${currentUser.role==='admin'?'Admin':'Médico'}</span>`;
 
-  // Setup listeners globais
-  attachGlobalListeners();
-
   if(currentUser.role === 'admin'){
+    // Executa migração one-shot dos dados legados (raiz → setores/radiologia)
+    await migrateLegacyIfNeeded();
+    // Setor: admin usa o último selecionado ou o default; mostra seletor
+    currentSector = localStorage.getItem('einsteinvalid_lastSector') || DEFAULT_SETOR;
+    if(!SETORES_LIST[currentSector]) currentSector = DEFAULT_SETOR;
+    setupSectorSelector();
+    document.getElementById('sector-bar').style.display = 'flex';
     document.getElementById('admin-tabs').classList.add('show');
     document.getElementById('screen-medico').classList.remove('active');
+    attachGlobalListeners();
     switchAdminTab('escala');
   } else {
+    // Médico: setor vem do próprio usuário
+    currentSector = currentUser.setor || DEFAULT_SETOR;
+    document.getElementById('sector-bar').style.display = 'none';
     document.getElementById('admin-tabs').classList.remove('show');
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('screen-medico').classList.add('active');
     document.getElementById('medico-nome-label').textContent = currentUser.nome;
+    attachGlobalListeners();
     renderMedicoInit();
   }
 
@@ -696,6 +732,62 @@ async function afterLogin(){
   if(currentUser.passChanged === false){
     openPwdModal(true);
   }
+}
+
+function setupSectorSelector(){
+  const sel = document.getElementById('sector-select');
+  sel.innerHTML = '';
+  Object.entries(SETORES_LIST).forEach(([key, s]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = s.label;
+    sel.appendChild(opt);
+  });
+  sel.value = currentSector;
+}
+
+function switchSector(newSector){
+  if(!SETORES_LIST[newSector]) return;
+  currentSector = newSector;
+  localStorage.setItem('einsteinvalid_lastSector', currentSector);
+  // Re-attach listeners para o novo setor
+  detachSectorListeners();
+  attachGlobalListeners();
+  // Re-render aba atual
+  const activeTab = document.querySelector('.tab-btn.active')?.id?.replace('tab-btn-','') || 'escala';
+  switchAdminTab(activeTab);
+}
+
+// Migração one-shot: se houver dados em raiz (`meses/*` ou `mesVigente`),
+// move para `setores/radiologia/*` e marca como migrated
+async function migrateLegacyIfNeeded(){
+  const flagSnap = await db.ref('_migrated').once('value');
+  if(flagSnap.val()) return;
+  const legacyMeses = await db.ref('meses').once('value');
+  const legacyVig = await db.ref('mesVigente').once('value');
+  const hasData = legacyMeses.exists() || legacyVig.exists();
+  if(hasData){
+    console.log('[migration] movendo dados legados para setores/radiologia/');
+    const updates = {};
+    if(legacyMeses.exists()) updates['setores/radiologia/meses'] = legacyMeses.val();
+    if(legacyVig.exists()) updates['setores/radiologia/mesVigente'] = legacyVig.val();
+    await db.ref().update(updates);
+    // Apaga raiz
+    await db.ref('meses').remove();
+    await db.ref('mesVigente').remove();
+  }
+  // Adiciona setor='radiologia' aos usuários que ainda não têm
+  const usersSnap = await db.ref('usuarios').once('value');
+  const users = usersSnap.val() || {};
+  const userUpdates = {};
+  Object.entries(users).forEach(([slug, u]) => {
+    if(u.role !== 'admin' && !u.setor){
+      userUpdates[`usuarios/${slug}/setor`] = 'radiologia';
+    }
+  });
+  if(Object.keys(userUpdates).length) await db.ref().update(userUpdates);
+  await db.ref('_migrated').set(Date.now());
+  console.log('[migration] concluída');
 }
 
 // ══════════════════════════════════════════════════════
@@ -863,7 +955,11 @@ async function uploadEscala(){
   const mesKey=document.getElementById('month-select').value;
   if(!mesKey || !uploadedPlantoes.length){ showToast('Selecione um mês', 'red'); return; }
   const [y,m]=mesKey.split('-').map(Number);
-  const plantoesMes = uploadedPlantoes.filter(p=>{
+  // No dermato, ignoramos plantões noturnos (só manhã/tarde)
+  const plantoesFiltered = getSectorTipo() === 'dermatologia'
+    ? uploadedPlantoes.filter(p => p.turno !== 'Noite')
+    : uploadedPlantoes;
+  const plantoesMes = plantoesFiltered.filter(p=>{
     const [py,pm]=p.dataIso.split('-').map(Number);
     return py===y && pm===m;
   });
@@ -878,12 +974,12 @@ async function uploadEscala(){
   });
 
   try {
-    await db.ref(`meses/${mesKey}/meta`).set({
+    await db.ref(spath(`meses/${mesKey}/meta`)).set({
       uploadedAt: Date.now(),
       uploadedBy: currentUser.slug,
       count: plantoesMes.length,
     });
-    await db.ref(`meses/${mesKey}/plantoes`).set(plantoesObj);
+    await db.ref(spath(`meses/${mesKey}/plantoes`)).set(plantoesObj);
     showToast(`Escala de ${MESES_PT[m]}/${y} salva`, 'green');
     clearFile();
     renderMesesList();
@@ -895,8 +991,8 @@ async function uploadEscala(){
 async function renderMesesList(){
   const el = document.getElementById('meses-list');
   const [snap, vigSnap] = await Promise.all([
-    db.ref('meses').once('value'),
-    db.ref('mesVigente').once('value'),
+    db.ref(spath('meses')).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
   ]);
   const meses = snap.val() || {};
   const vigente = vigSnap.val();
@@ -920,15 +1016,15 @@ async function renderMesesList(){
 }
 
 async function setMesVigente(k){
-  await db.ref('mesVigente').set(k);
+  await db.ref(spath('mesVigente')).set(k);
   showToast(`Mês vigente: ${labelMes(k)}`, 'green');
   renderMesesList();
 }
 async function deleteMes(k){
   if(!confirm(`Apagar todos os dados de ${labelMes(k)}? Esta ação não pode ser desfeita.`)) return;
-  await db.ref(`meses/${k}`).remove();
-  const vig = (await db.ref('mesVigente').once('value')).val();
-  if(vig === k) await db.ref('mesVigente').remove();
+  await db.ref(spath(`meses/${k}`)).remove();
+  const vig = (await db.ref(spath('mesVigente')).once('value')).val();
+  if(vig === k) await db.ref(spath('mesVigente')).remove();
   showToast('Mês apagado', 'green');
   renderMesesList();
 }
@@ -941,22 +1037,30 @@ function labelMes(key){
 //  ADMIN: USUÁRIOS
 // ══════════════════════════════════════════════════════
 async function renderUsuarios(){
-  // Popular dropdown de nomes com médicos detectados no último mês
+  // Label do setor no card de criar
+  const lbl = document.getElementById('new-user-setor-label');
+  if(lbl) lbl.textContent = `Novos serão criados em ${SETORES_LIST[currentSector].label}`;
+  // Popular dropdown de nomes com médicos detectados no último mês DO SETOR
   await populateNomesDropdown();
   const snap = await db.ref('usuarios').once('value');
   const users = snap.val() || {};
   const list = document.getElementById('users-list');
-  const entries = Object.entries(users).sort((a,b)=>{
+  // Filtra: admin sempre visível; médicos só do setor atual
+  const entries = Object.entries(users).filter(([_, u]) => {
+    if(u.role === 'admin') return true;
+    return (u.setor || 'radiologia') === currentSector;
+  }).sort((a,b)=>{
     if(a[1].role==='admin') return -1;
     if(b[1].role==='admin') return 1;
     return a[1].nome.localeCompare(b[1].nome,'pt-BR');
   });
-  if(!entries.length){ list.innerHTML = '<div class="empty">Nenhum usuário cadastrado.</div>'; return; }
+  if(!entries.length){ list.innerHTML = '<div class="empty">Nenhum usuário cadastrado neste setor.</div>'; return; }
   list.innerHTML = entries.map(([slug, u]) => {
     const isAdmin = u.role === 'admin';
+    const setorLabel = isAdmin ? '' : (SETORES_LIST[u.setor||'radiologia']?.label || u.setor || '');
     return `<div class="user-row${isAdmin?' admin':''}">
       <div>
-        <div class="user-name">${escapeHtml(u.nome)}${isAdmin?' <span class="role admin" style="background:var(--blue-light);color:var(--blue-dark);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;text-transform:uppercase">Admin</span>':''}</div>
+        <div class="user-name">${escapeHtml(u.nome)}${isAdmin?' <span class="role admin" style="background:var(--blue-light);color:var(--blue-dark);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;text-transform:uppercase">Admin</span>':` <span style="background:var(--g100);color:var(--g600);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;margin-left:6px">${escapeHtml(setorLabel)}</span>`}</div>
         <div class="user-slug">${escapeHtml(displaySlug(slug))}</div>
       </div>
       <div class="user-status${u.passChanged===false?' pending':''}">${u.passChanged===false?'⚠ senha inicial':'✓ senha definida'}</div>
@@ -970,7 +1074,7 @@ async function populateNomesDropdown(){
   const sel = document.getElementById('new-user-nome');
   sel.innerHTML = '<option value="">Selecione…</option>';
   // Pega o mês mais recente salvo
-  const snap = await db.ref('meses').once('value');
+  const snap = await db.ref(spath('meses')).once('value');
   const meses = snap.val() || {};
   const keys = Object.keys(meses).sort().reverse();
   if(!keys.length){
@@ -1011,11 +1115,11 @@ async function createUser(){
     const salt = newSalt();
     const passHash = await hashPass(initialPass, salt);
     await db.ref('usuarios/'+slug).set({
-      nome, role:'medico', salt, passHash, passChanged:false, criadoEm:Date.now(),
+      nome, role:'medico', setor: currentSector, salt, passHash, passChanged:false, criadoEm:Date.now(),
     });
     document.getElementById('new-user-info').innerHTML = `
       <div class="info-panel">
-        Usuário <strong>${escapeHtml(nome)}</strong> criado. Login: <strong>${displaySlug(slug)}</strong> · Senha: <strong>${initialPass}</strong>
+        Usuário <strong>${escapeHtml(nome)}</strong> criado no setor <strong>${escapeHtml(SETORES_LIST[currentSector].label)}</strong>. Login: <strong>${displaySlug(slug)}</strong> · Senha: <strong>${initialPass}</strong>
         <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar a senha no primeiro acesso.</div>
       </div>`;
     showToast('Usuário criado', 'green');
@@ -1053,8 +1157,8 @@ async function deleteUser(slug){
 async function populateMesesSelect(selectId, defaultVigente){
   const sel = document.getElementById(selectId);
   const [snap, vigSnap] = await Promise.all([
-    db.ref('meses').once('value'),
-    db.ref('mesVigente').once('value'),
+    db.ref(spath('meses')).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
   ]);
   const meses = snap.val() || {};
   const vigente = vigSnap.val();
@@ -1076,6 +1180,7 @@ async function populateMesesSelect(selectId, defaultVigente){
 
 async function renderResumoGeral(){
   if(!document.getElementById('screen-resumo').classList.contains('active')) return;
+  if(getSectorTipo() === 'dermatologia') return renderResumoGeral_dermato();
   const sel = document.getElementById('resumo-mes-select');
   if(!sel.options.length){
     await populateMesesSelect('resumo-mes-select', true);
@@ -1086,7 +1191,7 @@ async function renderResumoGeral(){
     document.getElementById('resumo-stats').innerHTML = '';
     return;
   }
-  const snap = await db.ref(`meses/${mesKey}`).once('value');
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
@@ -1219,9 +1324,9 @@ async function saveOverride(mesKey, medicoSlug, field, value){
     const s = String(value).trim().replace(',','.');
     const num = Number(s);
     if(s === '' || isNaN(num)){
-      await db.ref(`meses/${mesKey}/overrides/${medicoSlug}/${field}`).remove();
+      await db.ref(spath(`meses/${mesKey}/overrides/${medicoSlug}/${field}`)).remove();
     } else {
-      await db.ref(`meses/${mesKey}/overrides/${medicoSlug}/${field}`).set(num);
+      await db.ref(spath(`meses/${mesKey}/overrides/${medicoSlug}/${field}`)).set(num);
     }
     renderResumoGeral();
   } catch(err) {
@@ -1231,7 +1336,7 @@ async function saveOverride(mesKey, medicoSlug, field, value){
 async function resetOverrides(mesKey, medicoSlug){
   if(!confirm('Voltar todos os valores deste médico aos calculados pela escala?')) return;
   try {
-    await db.ref(`meses/${mesKey}/overrides/${medicoSlug}`).remove();
+    await db.ref(spath(`meses/${mesKey}/overrides/${medicoSlug}`)).remove();
     showToast('Valores restaurados', 'green');
     renderResumoGeral();
   } catch(err) {
@@ -1243,9 +1348,9 @@ async function saveExtra(mesKey, medicoSlug, value){
   try {
     const num = Number(String(value).replace(',','.'));
     if(!value || isNaN(num) || num === 0){
-      await db.ref(`meses/${mesKey}/extras/${medicoSlug}`).remove();
+      await db.ref(spath(`meses/${mesKey}/extras/${medicoSlug}`)).remove();
     } else {
-      await db.ref(`meses/${mesKey}/extras/${medicoSlug}`).set(num);
+      await db.ref(spath(`meses/${mesKey}/extras/${medicoSlug}`)).set(num);
     }
     showToast('Extra salvo', 'green');
     renderResumoGeral();
@@ -1272,12 +1377,13 @@ async function renderMedicoInit(){
 }
 
 async function renderMedico(){
+  if(getSectorTipo() === 'dermatologia') return renderMedico_dermato();
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
   medicoCurrentMes = mesKey;
   const [snap, vigSnap] = await Promise.all([
-    db.ref(`meses/${mesKey}`).once('value'),
-    db.ref('mesVigente').once('value'),
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
   ]);
   medicoData = snap.val() || {};
   const vigente = vigSnap.val();
@@ -1416,8 +1522,8 @@ async function renderMedico(){
 async function saveObs(mesKey, value){
   try {
     const v = String(value || '').trim();
-    if(!v) await db.ref(`meses/${mesKey}/observacoes/${currentUser.slug}`).remove();
-    else await db.ref(`meses/${mesKey}/observacoes/${currentUser.slug}`).set(v);
+    if(!v) await db.ref(spath(`meses/${mesKey}/observacoes/${currentUser.slug}`)).remove();
+    else await db.ref(spath(`meses/${mesKey}/observacoes/${currentUser.slug}`)).set(v);
     showToast('Observação salva', 'green');
   } catch(err) {
     showToast('Erro: '+err.message, 'red');
@@ -1426,8 +1532,8 @@ async function saveObs(mesKey, value){
 
 async function toggleAcionamento(mesKey, key, checked){
   try {
-    if(checked) await db.ref(`meses/${mesKey}/acionamentos/${key}`).set(true);
-    else await db.ref(`meses/${mesKey}/acionamentos/${key}`).remove();
+    if(checked) await db.ref(spath(`meses/${mesKey}/acionamentos/${key}`)).set(true);
+    else await db.ref(spath(`meses/${mesKey}/acionamentos/${key}`)).remove();
     renderMedico();
   } catch(err) {
     showToast('Erro ao salvar: '+err.message, 'red');
@@ -1437,7 +1543,7 @@ async function toggleAcionamento(mesKey, key, checked){
 async function validateExtract(mesKey){
   if(!confirm('Confirmar que você conferiu todos os plantões, acionamentos e PRTs deste mês?')) return;
   try {
-    await db.ref(`meses/${mesKey}/validacoes/${currentUser.slug}`).set({
+    await db.ref(spath(`meses/${mesKey}/validacoes/${currentUser.slug}`)).set({
       validadoEm: Date.now(),
       validadoPor: currentUser.nome,
     });
@@ -1450,7 +1556,7 @@ async function validateExtract(mesKey){
 async function unvalidateExtract(mesKey){
   if(!confirm('Desfazer a validação deste extrato?')) return;
   try {
-    await db.ref(`meses/${mesKey}/validacoes/${currentUser.slug}`).remove();
+    await db.ref(spath(`meses/${mesKey}/validacoes/${currentUser.slug}`)).remove();
     showToast('Validação desfeita', 'green');
     renderMedico();
   } catch(err) {
@@ -1461,8 +1567,8 @@ async function unvalidateExtract(mesKey){
 async function savePrt(mesKey, key, value){
   try {
     const v = String(value).trim();
-    if(!v) await db.ref(`meses/${mesKey}/prt/${key}`).remove();
-    else await db.ref(`meses/${mesKey}/prt/${key}`).set(v);
+    if(!v) await db.ref(spath(`meses/${mesKey}/prt/${key}`)).remove();
+    else await db.ref(spath(`meses/${mesKey}/prt/${key}`)).set(v);
     showToast('PRT salvo', 'green');
   } catch(err) {
     showToast('Erro ao salvar PRT: '+err.message, 'red');
@@ -1473,9 +1579,10 @@ async function savePrt(mesKey, key, value){
 //  DOWNLOAD EXCEL (mesmo formato de antes)
 // ══════════════════════════════════════════════════════
 async function downloadExcel(){
+  if(getSectorTipo() === 'dermatologia') return downloadExcel_dermato();
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
-  const snap = await db.ref(`meses/${mesKey}`).once('value');
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const acionamentos = data.acionamentos || {};
@@ -1592,14 +1699,356 @@ async function downloadExcel(){
 }
 
 // ══════════════════════════════════════════════════════
+//  DERMATOLOGIA
+// ══════════════════════════════════════════════════════
+// Chave estável para duração de um plantão de dermato
+function duracaoKey(p){
+  return `${p.dataIso}|${slugify(p.medico)}|${p.turno}`;
+}
+
+async function renderMedico_dermato(){
+  const mesKey = document.getElementById('medico-mes-select').value;
+  if(!mesKey) return;
+  medicoCurrentMes = mesKey;
+  const [snap, vigSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
+  ]);
+  medicoData = snap.val() || {};
+  const vigente = vigSnap.val();
+  const isEditable = mesKey === vigente;
+
+  const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome);
+  const duracoes = medicoData.duracoes || {};
+  const validacoes = medicoData.validacoes || {};
+  const minhaValidacao = validacoes[currentUser.slug];
+  const observacoesMap = medicoData.observacoes || {};
+  const minhaObs = observacoesMap[currentUser.slug] || '';
+  const extrasMap = medicoData.extras || {};
+  const meuExtra = Number(extrasMap[currentUser.slug]) || 0;
+
+  // Ordenar plantões cronologicamente
+  const ordered = plantoes.slice().sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
+
+  // Cálculos
+  let q4=0, q6=0, semDef=0;
+  ordered.forEach(p => {
+    const d = Number(duracoes[duracaoKey(p)]);
+    if(d===4) q4++; else if(d===6) q6++; else semDef++;
+  });
+  const totalHoras = q4*4 + q6*6;
+  const valorPlantoes = totalHoras * DERMATO_RATE_H;
+  const total = valorPlantoes + meuExtra;
+
+  // Stats
+  document.getElementById('medico-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${ordered.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${totalHoras}h</div><div class="stat-lbl">Horas totais (${q4}×4h + ${q6}×6h)</div></div>
+    ${semDef ? `<div class="stat"><div class="stat-val" style="color:var(--amber-dark)">${semDef}</div><div class="stat-lbl">Sem duração marcada</div></div>` : ''}
+    <div class="stat"><div class="stat-val">R$ ${DERMATO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
+    ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
+    <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  // Card de validação
+  const validCard = document.getElementById('medico-validacao-card');
+  if(minhaValidacao){
+    const dt = new Date(minhaValidacao.validadoEm).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    validCard.innerHTML = `
+      <div class="valid-box done">
+        <div class="valid-icon">✅</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato validado</div>
+          <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
+        </div>
+        ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+      </div>`;
+  } else {
+    validCard.innerHTML = `
+      <div class="valid-box pending">
+        <div class="valid-icon">⚠️</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato pendente de validação</div>
+          <div class="valid-sub">Marque a duração (4h ou 6h) de cada plantão e depois valide o extrato.</div>
+        </div>
+        <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
+      </div>`;
+  }
+
+  // Lista de plantões com radio 4h/6h
+  const noturnosEl = document.getElementById('medico-noturnos');
+  const titleEl = document.getElementById('medico-noturnos-title');
+  const hintEl = document.getElementById('medico-noturnos-hint');
+  titleEl.innerHTML = `Meus plantões ${isEditable ? '' : '<span class="right" style="color:var(--amber-dark);font-size:12px">🔒 leitura</span>'}`;
+  hintEl.textContent = isEditable ? 'Marque a duração de cada plantão.' : `Este mês não é o vigente. Marcações estão bloqueadas.`;
+  if(!ordered.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
+  } else {
+    noturnosEl.innerHTML = ordered.map(p=>{
+      const k = duracaoKey(p);
+      const d = Number(duracoes[k]);
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+      const idBase = `dur-${p.dataIso.replace(/-/g,'')}-${p.turno.charAt(0)}`;
+      return `<div class="not-row ${d?'acionado':''}">
+        <span class="not-date">${fmtDate(p.dataIso)}</span>
+        <span class="not-day">${dia}</span>
+        <span class="not-name">${p.turno}</span>
+        <span class="not-check">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="radio" name="${idBase}" value="4" ${d===4?'checked':''} ${isEditable?'':'disabled'} onchange="saveDuracao('${mesKey}','${k}',4)">
+            <span class="not-check-label">4h</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:12px">
+            <input type="radio" name="${idBase}" value="6" ${d===6?'checked':''} ${isEditable?'':'disabled'} onchange="saveDuracao('${mesKey}','${k}',6)">
+            <span class="not-check-label">6h</span>
+          </label>
+        </span>
+      </div>`;
+    }).join('');
+  }
+
+  // Tabela detalhada
+  const rows = ordered.map(p => {
+    const d = Number(duracoes[duracaoKey(p)]);
+    const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+    const valor = d ? d*DERMATO_RATE_H : 0;
+    const durLabel = d ? `${d}h` : '<span style="color:var(--amber-dark)">—</span>';
+    return `<tr>
+      <td>${fmtDate(p.dataIso)}</td>
+      <td>${dia}</td>
+      <td>${p.turno}</td>
+      <td class="num">${durLabel}</td>
+      <td class="money">${d ? fmtMoney(valor) : '—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('medico-tbl').innerHTML=`
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Duração</th><th class="num">Valor</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr><td colspan="4">Subtotal plantões (${totalHoras}h × R$${DERMATO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+    </tfoot>`;
+
+  // Observações
+  document.getElementById('medico-obs-card').innerHTML = `
+    <div class="card-title">Observações</div>
+    <textarea class="obs-textarea" id="medico-obs-input" ${isEditable?'':'disabled'} placeholder="Escreva aqui qualquer observação sobre seu extrato deste mês.">${escapeHtml(minhaObs)}</textarea>
+    <div class="obs-hint">${isEditable ? 'Salva automaticamente ao sair do campo.' : 'Somente leitura — mês não é o vigente.'}</div>`;
+  const obsInput = document.getElementById('medico-obs-input');
+  if(obsInput && isEditable){
+    obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
+  }
+}
+
+async function saveDuracao(mesKey, key, d){
+  try {
+    await db.ref(spath(`meses/${mesKey}/duracoes/${key}`)).set(Number(d));
+    renderMedico();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+
+async function renderResumoGeral_dermato(){
+  const sel = document.getElementById('resumo-mes-select');
+  if(!sel.options.length) await populateMesesSelect('resumo-mes-select', true);
+  const mesKey = sel.value;
+  if(!mesKey){
+    document.getElementById('tbl-resumo').innerHTML='<tbody><tr><td class="empty">Nenhum mês para exibir.</td></tr></tbody>';
+    document.getElementById('resumo-stats').innerHTML='';
+    document.getElementById('admin-obs-card').innerHTML='';
+    return;
+  }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const duracoes = data.duracoes || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+
+  // Agrega por médico
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {q4:0, q6:0, semDef:0, total:0});
+    const m = medicos.get(p.medico);
+    m.total++;
+    const d = Number(duracoes[duracaoKey(p)]);
+    if(d===4) m.q4++;
+    else if(d===6) m.q6++;
+    else m.semDef++;
+  });
+
+  const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  let sumTotP=0, sumQ4=0, sumQ6=0, sumSem=0, sumMoney=0, sumExtras=0, sumVal=0, totValid=0;
+  const bodyRows = rows.map(([m, c])=>{
+    const slug = slugify(m);
+    const totalHoras = c.q4*4 + c.q6*6;
+    const vPlantoes = totalHoras * DERMATO_RATE_H;
+    const extra = Number(extras[slug]) || 0;
+    const total = vPlantoes + extra;
+    sumTotP+=c.total; sumQ4+=c.q4; sumQ6+=c.q6; sumSem+=c.semDef;
+    sumMoney+=total; sumExtras+=extra; sumVal+=vPlantoes;
+    const v = validacoes[slug];
+    let validCell;
+    if(v){
+      totValid++;
+      const dt = new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      validCell = `<td><span class="valid-chip ok" title="Validado em ${dt}">✓ Validado</span></td>`;
+    } else {
+      validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
+    }
+    const semDefCell = c.semDef > 0
+      ? `<td class="num" style="color:var(--amber-dark);font-weight:600">${c.semDef}</td>`
+      : `<td class="num">0</td>`;
+    return `<tr>
+      <td>${escapeHtml(m)}</td>
+      ${validCell}
+      <td class="num">${c.total}</td>
+      <td class="num">${c.q4}</td>
+      <td class="num">${c.q6}</td>
+      ${semDefCell}
+      <td class="num">${totalHoras}h</td>
+      <td class="rate">R$ ${DERMATO_RATE_H}</td>
+      <td class="money">${fmtMoney(vPlantoes)}</td>
+      <td><input type="number" step="0.01" class="extras-input" value="${extra||''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${slug}',this.value)"></td>
+      <td class="money total">${fmtMoney(total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbl-resumo').innerHTML=`
+    <thead><tr>
+      <th>Médico</th>
+      <th class="num">Validado?</th>
+      <th class="num">Total plantões</th>
+      <th class="num">4h</th>
+      <th class="num">6h</th>
+      <th class="num">Sem marcar</th>
+      <th class="num">Horas</th>
+      <th class="num">R$/h</th>
+      <th class="num">R$ Plantões</th>
+      <th class="num">Extras (R$)</th>
+      <th class="num">TOTAL R$</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr>
+      <td>TOTAL</td>
+      <td class="num">${totValid}/${medicos.size}</td>
+      <td class="num">${sumTotP}</td>
+      <td class="num">${sumQ4}</td>
+      <td class="num">${sumQ6}</td>
+      <td class="num">${sumSem}</td>
+      <td class="num">${sumQ4*4+sumQ6*6}h</td>
+      <td></td>
+      <td class="money">${fmtMoney(sumVal)}</td>
+      <td class="money">${fmtMoney(sumExtras)}</td>
+      <td class="money total">${fmtMoney(sumMoney)}</td>
+    </tr></tfoot>`;
+  document.getElementById('resumo-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
+    ${sumSem ? `<div class="stat"><div class="stat-val" style="color:var(--amber-dark)">${sumSem}</div><div class="stat-lbl">Sem duração</div></div>` : ''}
+    <div class="stat money"><div class="stat-val">${fmtMoney(sumMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+
+  // Card de observações
+  const obsCard = document.getElementById('admin-obs-card');
+  const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
+  if(!obsEntries.length){
+    obsCard.innerHTML = `<div class="card-title">Observações dos médicos</div><div class="empty">Nenhuma observação escrita neste mês.</div>`;
+  } else {
+    const nomesBySlug = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+    obsCard.innerHTML = `
+      <div class="card-title">Observações dos médicos <span class="right">${obsEntries.length} ${obsEntries.length===1?'médico escreveu':'médicos escreveram'}</span></div>
+      <div class="obs-list">
+        ${obsEntries.map(([slug, texto]) => `
+          <div class="obs-item">
+            <div class="obs-item-head">${escapeHtml(nomesBySlug.get(slug) || slug)}</div>
+            <div class="obs-item-text">${escapeHtml(texto)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+async function downloadExcel_dermato(){
+  const mesKey = document.getElementById('resumo-mes-select').value;
+  if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const duracoes = data.duracoes || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+  if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
+
+  const wb=XLSX.utils.book_new();
+  const [y,m]=mesKey.split('-');
+  const periodoLabel=`${MESES_PT[+m]}/${y}`;
+
+  // Detalhado
+  const detHead=['Data','Dia da semana','Turno','Médico','Duração (h)','Valor R$'];
+  const detRows=plantoes.slice()
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p => {
+      const d = Number(duracoes[duracaoKey(p)]) || 0;
+      const val = d * DERMATO_RATE_H;
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turno, p.medico, d || '', {v:val, t:'n', z:'R$ #,##0.00'}];
+    });
+  const wsDet=XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
+  wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:42},{wch:12},{wch:14}];
+
+  // Resumo por médico
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {q4:0, q6:0, semDef:0, total:0});
+    const mm = medicos.get(p.medico);
+    mm.total++;
+    const d = Number(duracoes[duracaoKey(p)]);
+    if(d===4) mm.q4++; else if(d===6) mm.q6++; else mm.semDef++;
+  });
+  const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const resHead=['Médico','Validado?','Total plantões','4h','6h','Sem marcar','Horas','R$/h','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
+  let sT=0,s4=0,s6=0,sS=0,sV=0,sE=0,sTot=0;
+  const bodyRowsExcel = medNames.map(med => {
+    const c = medicos.get(med);
+    const slug = slugify(med);
+    const horas = c.q4*4 + c.q6*6;
+    const vPl = horas * DERMATO_RATE_H;
+    const ext = Number(extras[slug]) || 0;
+    const tot = vPl + ext;
+    sT+=c.total; s4+=c.q4; s6+=c.q6; sS+=c.semDef; sV+=vPl; sE+=ext; sTot+=tot;
+    const v = validacoes[slug];
+    const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
+    return [med, validValue, c.total, c.q4, c.q6, c.semDef, horas, DERMATO_RATE_H,
+      {v:vPl, t:'n', z:'R$ #,##0.00'},
+      {v:ext, t:'n', z:'R$ #,##0.00'},
+      {v:tot, t:'n', z:'R$ #,##0.00'},
+      observacoes[slug] || ''];
+  });
+  const totFormulas = ['TOTAL','',sT,s4,s6,sS,s4*4+s6*6,'',
+    {v:sV, t:'n', z:'R$ #,##0.00'},
+    {v:sE, t:'n', z:'R$ #,##0.00'},
+    {v:sTot, t:'n', z:'R$ #,##0.00'},''];
+  const wsRes=XLSX.utils.aoa_to_sheet([
+    [`Dermatologia — ${periodoLabel}`],
+    ['Duração marcada pelo médico (4h ou 6h). "Sem marcar" indica plantão sem duração definida ainda.'],
+    [], resHead, ...bodyRowsExcel, totFormulas,
+  ]);
+  wsRes['!cols']=[{wch:42},{wch:18},{wch:14},{wch:6},{wch:6},{wch:12},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14},{wch:50}];
+
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Detalhado');
+  XLSX.writeFile(wb, `EinsteinValid_Dermato_${periodoLabel.replace('/','_')}.xlsx`);
+  showToast('Excel gerado ✓', 'green');
+}
+
+// ══════════════════════════════════════════════════════
 //  LISTENERS GLOBAIS (atualiza UI ao vivo)
 // ══════════════════════════════════════════════════════
-let listenersAttached = false;
+let attachedRefs = [];
 function attachGlobalListeners(){
-  if(listenersAttached) return;
-  listenersAttached = true;
-  // Atualiza a tela do médico quando acionamentos mudam
-  db.ref('meses').on('value', () => {
+  const rMeses = db.ref(spath('meses'));
+  const cbMeses = () => {
     if(currentUser?.role === 'medico' && document.getElementById('screen-medico').classList.contains('active')){
       renderMedico();
     }
@@ -1607,11 +2056,19 @@ function attachGlobalListeners(){
       if(document.getElementById('screen-escala').classList.contains('active')) renderMesesList();
       if(document.getElementById('screen-resumo').classList.contains('active')) renderResumoGeral();
     }
-  });
-  db.ref('mesVigente').on('value', () => {
+  };
+  const rVig = db.ref(spath('mesVigente'));
+  const cbVig = () => {
     if(currentUser?.role === 'admin' && document.getElementById('screen-escala').classList.contains('active')) renderMesesList();
     if(currentUser?.role === 'medico') renderMedico();
-  });
+  };
+  rMeses.on('value', cbMeses);
+  rVig.on('value', cbVig);
+  attachedRefs.push({ref:rMeses, cb:cbMeses}, {ref:rVig, cb:cbVig});
+}
+function detachSectorListeners(){
+  attachedRefs.forEach(({ref, cb}) => ref.off('value', cb));
+  attachedRefs = [];
 }
 
 // ══════════════════════════════════════════════════════
