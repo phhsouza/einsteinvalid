@@ -527,9 +527,15 @@ function rateMeioSemana(n){
 // ══════════════════════════════════════════════════════
 function normalizeName(name){
   if(!name) return null;
-  name=String(name).trim().replace(/\s+/g,' ');
-  if(!name) return null;
-  const words=name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+  let s = String(name);
+  // Alguns setores (ex: eco) trazem o nome com quebra de linha + horário do plantão embutido.
+  // Ex: "THAIS PEREIRA DE ALMEIDA\n07:30 / 11:30" → só o nome.
+  s = s.split(/[\n\r]/)[0];
+  // Remove qualquer horário HH:MM (com ou sem intervalo) que tenha sobrado na mesma linha.
+  s = s.replace(/\d{1,2}\s*[:h]\s*\d{2}(\s*[\/–\-]\s*\d{1,2}\s*[:h]\s*\d{2})?/g, '');
+  s = s.trim().replace(/\s+/g,' ');
+  if(!s) return null;
+  const words = s.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
   return words.map((w,i)=>(i>0 && LOWER_WORDS.has(w))?w.toLowerCase():w).join(' ');
 }
 const _LOWER_LC = new Set(['de','da','do','das','dos','e']);
