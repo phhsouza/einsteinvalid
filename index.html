@@ -176,12 +176,15 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .reset-btn:hover{background:var(--red-light);color:var(--red);}
 .reset-btn:disabled{opacity:0.3;cursor:not-allowed;}
 
-/* Horas extras input (eco) */
-.he-input{width:90px;padding:8px 12px;font-size:15px;border:2px solid var(--g200);border-radius:8px;font-family:var(--mono);font-weight:600;outline:none;background:var(--white);text-align:center;color:var(--g900);}
-.he-input:focus{border-color:var(--blue);}
-.he-input:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed;}
+/* Horas extras — botões +/− (eco) */
+.he-controls{display:inline-flex;align-items:center;gap:8px;}
+.he-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--g200);background:var(--white);color:var(--g900);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);transition:all 0.12s;padding:0;line-height:1;}
+.he-btn:hover:not(:disabled){background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);}
+.he-btn:active:not(:disabled){transform:scale(0.94);}
+.he-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.he-display{font-size:15px;font-weight:700;color:var(--green-dark);font-family:var(--mono);min-width:56px;text-align:center;}
+.he-badge{font-size:11px;color:var(--amber-dark);font-weight:600;margin-left:4px;}
 .he-label{font-size:12px;color:var(--g600);font-weight:600;margin-right:6px;}
-.he-total{font-size:13px;color:var(--green-dark);font-weight:700;margin-left:10px;}
 
 /* Produtividade */
 .prod-add{display:grid;grid-template-columns:150px 1fr auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);align-items:end;}
@@ -2145,14 +2148,19 @@ async function renderMedico_eco(){
       const he = Number(horasExtras[k]) || 0;
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
       const totH = ECO_BASE_H + he;
+      const disMinus = !isEditable || he <= 0;
+      const disPlus  = !isEditable || he >= 12;
       return `<div class="not-row ${he>0?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
         <span class="not-name">${p.turno}</span>
         <span class="not-check">
-          <span class="he-label">+ Horas extras:</span>
-          <input type="number" class="he-input" min="0" max="12" step="0.5" value="${he}" ${isEditable?'':'disabled'} onchange="saveHorasExtras('${mesKey}','${k}',this.value)">
-          <span class="he-total">= ${totH}h</span>
+          <span class="he-label">Horas extras:</span>
+          <span class="he-controls">
+            <button class="he-btn" ${disMinus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',-0.5)" title="Remover 0,5h">−</button>
+            <span class="he-display">${totH}h${he>0?`<span class="he-badge">(+${he})</span>`:''}</span>
+            <button class="he-btn" ${disPlus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',0.5)" title="Adicionar 0,5h">+</button>
+          </span>
         </span>
       </div>`;
     }).join('');
@@ -2227,9 +2235,27 @@ async function saveHorasExtras(mesKey, key, value){
     if(!v || isNaN(v) || v <= 0){
       await db.ref(spath(`meses/${mesKey}/horasExtras/${key}`)).remove();
     } else {
-      // arredonda pra múltiplo de 0.5
       const rounded = Math.round(v * 2) / 2;
       await db.ref(spath(`meses/${mesKey}/horasExtras/${key}`)).set(rounded);
+    }
+    renderMedico();
+  } catch(err) {
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+
+async function adjustHE(mesKey, key, delta){
+  try {
+    const snap = await db.ref(spath(`meses/${mesKey}/horasExtras/${key}`)).once('value');
+    const current = Number(snap.val()) || 0;
+    let next = current + delta;
+    if(next < 0) next = 0;
+    if(next > 12) next = 12;
+    next = Math.round(next * 2) / 2;
+    if(next === 0){
+      await db.ref(spath(`meses/${mesKey}/horasExtras/${key}`)).remove();
+    } else {
+      await db.ref(spath(`meses/${mesKey}/horasExtras/${key}`)).set(next);
     }
     renderMedico();
   } catch(err) {
