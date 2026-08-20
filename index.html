@@ -1244,7 +1244,9 @@ async function renderMesesList(){
         <div class="user-slug">${count} plantões · atualizado ${m.meta?.uploadedAt ? new Date(m.meta.uploadedAt).toLocaleString('pt-BR') : '—'}</div>
       </div>
       <div></div>
-      <button class="btn-secondary" onclick="setMesVigente('${k}')">${isVig?'Manter vigente':'Definir vigente'}</button>
+      ${isVig
+        ? `<button class="btn-danger" onclick="clearMesVigente()">Remover vigente</button>`
+        : `<button class="btn-secondary" onclick="setMesVigente('${k}')">Definir vigente</button>`}
       <button class="btn-danger" onclick="deleteMes('${k}')">Apagar</button>
     </div>`;
   }).join('');
@@ -1253,6 +1255,12 @@ async function renderMesesList(){
 async function setMesVigente(k){
   await db.ref(spath('mesVigente')).set(k);
   showToast(`Mês vigente: ${labelMes(k)}`, 'green');
+  renderMesesList();
+}
+async function clearMesVigente(){
+  if(!confirm('Remover o mês vigente? Nenhum mês ficará marcado como vigente e os médicos não poderão editar.')) return;
+  await db.ref(spath('mesVigente')).remove();
+  showToast('Mês vigente removido', 'green');
   renderMesesList();
 }
 async function deleteMes(k){
