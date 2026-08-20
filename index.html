@@ -801,12 +801,14 @@ async function afterLogin(){
 function setupSectorSelector(){
   const sel = document.getElementById('sector-select');
   sel.innerHTML = '';
-  Object.entries(SETORES_LIST).forEach(([key, s]) => {
-    const opt = document.createElement('option');
-    opt.value = key;
-    opt.textContent = s.label;
-    sel.appendChild(opt);
-  });
+  Object.entries(SETORES_LIST)
+    .sort((a,b)=>a[1].label.localeCompare(b[1].label,'pt-BR'))
+    .forEach(([key, s]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
   sel.value = currentSector;
 }
 
