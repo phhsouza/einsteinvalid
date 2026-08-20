@@ -577,13 +577,35 @@ function parseDate(s){
   if(!m) return null;
   return new Date(+m[3], +m[2]-1, +m[1]);
 }
+// Retorna {turno, label, horaInicio} ou null.
+// - turno: 'Manhã' | 'Tarde' | 'Noite' (bucket usado no cálculo)
+// - label: rótulo curto exibido na UI (ex: "Atendimento matutino", "Retorno")
+// - horaInicio: "HH:MM" do primeiro horário no rótulo (usado pra desambiguar)
 function detectShift(cell){
   if(!cell) return null;
-  const s=String(cell).toLowerCase();
-  if(s.includes('manhã')||s.includes('manha')||s.includes('matutino')) return 'Manhã';
-  if(s.includes('tarde')||s.includes('vespertino')) return 'Tarde';
-  if(s.includes('noite')||s.includes('noturno')) return 'Noite';
-  return null;
+  const raw = String(cell);
+  const s = raw.toLowerCase();
+  // Extrai horário inicial (se houver): "HH:MM" ou "HHhMM"
+  const mHora = s.match(/(\d{1,2})\s*[:h]\s*(\d{2})/);
+  const horaInicio = mHora ? `${String(+mHora[1]).padStart(2,'0')}:${mHora[2]}` : null;
+  // Determina bucket por palavras-chave, ou por horário como fallback
+  let turno = null;
+  if(s.includes('manhã')||s.includes('manha')||s.includes('matutino')) turno = 'Manhã';
+  else if(s.includes('tarde')||s.includes('vespertino')) turno = 'Tarde';
+  else if(s.includes('noite')||s.includes('noturno')) turno = 'Noite';
+  else if(mHora){
+    const h = parseInt(mHora[1], 10);
+    if(h >= 5 && h < 12) turno = 'Manhã';
+    else if(h >= 12 && h < 19) turno = 'Tarde';
+    else turno = 'Noite';
+  }
+  if(!turno) return null;
+  // Label limpo: remove horário e traços do rótulo original
+  let label = raw.split(/[\n\r]/)[0]
+    .replace(/\d{1,2}\s*[:h]\s*\d{2}(\s*[\/–\-]\s*\d{1,2}\s*[:h]\s*\d{2})?/g, '')
+    .replace(/[-–—]+\s*$/, '').trim();
+  if(!label) label = turno;
+  return {turno, label, horaInicio};
 }
 function categorize(p){
   if(p.turno==='Noite') return CAT_NOITE;
@@ -877,17 +899,20 @@ function parseSheet(sheet){
       while(j<rows.length){
         const r=rows[j]||[];
         if(!r.length || r.every(v=>v==null || v==='')) break;
-        const turno=detectShift(r[0]);
-        if(!turno) break;
+        const info=detectShift(r[0]);
+        if(!info) break;
         for(let c=0; c<7; c++){
           const medico=normalizeName(r[c+1]);
           const data=datas[c];
           if(medico && data){
-            plantoes.push({
+            const p = {
               dataIso: isoDateFromDate(data),
-              turno,
+              turno: info.turno,
               medico,
-            });
+            };
+            if(info.label && info.label !== info.turno) p.turnoLabel = info.label;
+            if(info.horaInicio) p.horaInicio = info.horaInicio;
+            plantoes.push(p);
           }
         }
         j++;
@@ -1533,7 +1558,7 @@ async function renderMedico(){
       return `<tr>
         <td>${fmtDate(p.dataIso)}</td>
         <td>${dia}</td>
-        <td>${p.turno}</td>
+        <td>${p.turnoLabel || p.turno}</td>
         <td>${cat}${cat===CAT_NOITE && acionamentos[acionamentoKey(p)] ? ' (acionado)' : ''}</td>
         <td class="money">${fmtMoney(valor)}</td>
       </tr>`;
@@ -1744,7 +1769,7 @@ async function downloadExcel(){
 // ══════════════════════════════════════════════════════
 // Chave estável para duração de um plantão de dermato
 function duracaoKey(p){
-  return `${p.dataIso}|${slugify(p.medico)}|${p.turno}`;
+  return `${p.dataIso}|${slugify(p.medico)}|${p.turnoLabel || p.turno}`;
 }
 
 async function renderMedico_dermato(){
@@ -1831,7 +1856,7 @@ async function renderMedico_dermato(){
       return `<div class="not-row ${is6?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
-        <span class="not-name">${p.turno} <span style="color:var(--g400);font-size:11px;margin-left:6px">(padrão 4h)</span></span>
+        <span class="not-name">${p.turnoLabel || p.turno} <span style="color:var(--g400);font-size:11px;margin-left:6px">(padrão 4h)</span></span>
         <span class="not-check">
           <input type="checkbox" ${is6?'checked':''} ${isEditable?'':'disabled'} onchange="toggle6h('${mesKey}','${k}',this.checked)">
           <span class="not-check-label">Marcar como 6h</span>
@@ -1849,7 +1874,7 @@ async function renderMedico_dermato(){
     return `<tr>
       <td>${fmtDate(p.dataIso)}</td>
       <td>${dia}</td>
-      <td>${p.turno}</td>
+      <td>${p.turnoLabel || p.turno}</td>
       <td class="num">${dur}h${is6?' <span style="color:var(--amber-dark);font-size:10px">(6h)</span>':''}</td>
       <td class="money">${fmtMoney(valor)}</td>
     </tr>`;
@@ -2072,7 +2097,10 @@ async function downloadExcel_dermato(){
 // ══════════════════════════════════════════════════════
 //  ECOCARDIOGRAFIA
 // ══════════════════════════════════════════════════════
-function heKey(p){ return `${p.dataIso}|${slugify(p.medico)}|${p.turno}`; }
+function heKey(p){
+  const extra = p.horaInicio ? '|' + p.horaInicio : '';
+  return `${p.dataIso}|${slugify(p.medico)}|${p.turnoLabel || p.turno}${extra}`;
+}
 
 async function renderMedico_eco(){
   const mesKey = document.getElementById('medico-mes-select').value;
@@ -2160,7 +2188,7 @@ async function renderMedico_eco(){
       return `<div class="not-row ${he>0?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
-        <span class="not-name">${p.turno}</span>
+        <span class="not-name">${p.turnoLabel || p.turno}</span>
         <span class="not-check">
           <span class="he-label">Horas extras:</span>
           <span class="he-controls">
@@ -2210,7 +2238,7 @@ async function renderMedico_eco(){
     return `<tr>
       <td>${fmtDate(p.dataIso)}</td>
       <td>${dia}</td>
-      <td>${p.turno}</td>
+      <td>${p.turnoLabel || p.turno}</td>
       <td class="num">${totH}h${he>0?` <span style="color:var(--amber-dark);font-size:10px">(+${he}h)</span>`:''}</td>
       <td class="money">${fmtMoney(valor)}</td>
     </tr>`;
@@ -2596,7 +2624,7 @@ async function renderMedico_clinicos(){
       return `<div class="not-row ${he>0?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
-        <span class="not-name">${p.turno}</span>
+        <span class="not-name">${p.turnoLabel || p.turno}</span>
         <span class="not-check">
           <span class="he-label">Horas extras:</span>
           <span class="he-controls">
@@ -2618,7 +2646,7 @@ async function renderMedico_clinicos(){
     return `<tr>
       <td>${fmtDate(p.dataIso)}</td>
       <td>${dia}</td>
-      <td>${p.turno}</td>
+      <td>${p.turnoLabel || p.turno}</td>
       <td class="num">${totH}h${he>0?` <span style="color:var(--amber-dark);font-size:10px">(+${he}h)</span>`:''}</td>
       <td class="money">${fmtMoney(valor)}</td>
     </tr>`;
