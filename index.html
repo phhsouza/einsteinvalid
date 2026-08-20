@@ -503,6 +503,7 @@ const SETORES_LIST = {
   dermatologia:      { label: 'Dermatologia',       tipo: 'dermatologia' },
   ecocardiografia:   { label: 'Ecocardiografia',    tipo: 'ecocardiografia' },
   clinicos_checkup:  { label: 'Clínicos Check-up',  tipo: 'clinicos' },
+  ginecologia:       { label: 'Ginecologia',        tipo: 'ginecologia' },
 };
 const DEFAULT_SETOR = 'radiologia';
 // Setor ativo: admin muda pelo seletor; médico vem do usuário
@@ -520,6 +521,9 @@ const ECO_EXAME_EXTRA = 400;
 // Regras dos clínicos check-up
 const CLINICOS_RATE_H = 150;
 const CLINICOS_BASE_H = 5.5;
+// Regras da ginecologia
+const GINECO_RATE_H = 150;
+const GINECO_BASE_H = 4;
 
 function rateMeioSemana(n){
   if(n<=6) return 135;
@@ -1242,6 +1246,7 @@ async function renderResumoGeral(){
   if(getSectorTipo() === 'dermatologia') return renderResumoGeral_dermato();
   if(getSectorTipo() === 'ecocardiografia') return renderResumoGeral_eco();
   if(getSectorTipo() === 'clinicos') return renderResumoGeral_clinicos();
+  if(getSectorTipo() === 'ginecologia') return renderResumoGeral_gineco();
   const sel = document.getElementById('resumo-mes-select');
   if(!sel.options.length){
     await populateMesesSelect('resumo-mes-select', true);
@@ -1441,6 +1446,7 @@ async function renderMedico(){
   if(getSectorTipo() === 'dermatologia') return renderMedico_dermato();
   if(getSectorTipo() === 'ecocardiografia') return renderMedico_eco();
   if(getSectorTipo() === 'clinicos') return renderMedico_clinicos();
+  if(getSectorTipo() === 'ginecologia') return renderMedico_gineco();
   document.getElementById('medico-prod-card')?.classList.add('section-hidden');
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
@@ -1646,6 +1652,7 @@ async function downloadExcel(){
   if(getSectorTipo() === 'dermatologia') return downloadExcel_dermato();
   if(getSectorTipo() === 'ecocardiografia') return downloadExcel_eco();
   if(getSectorTipo() === 'clinicos') return downloadExcel_clinicos();
+  if(getSectorTipo() === 'ginecologia') return downloadExcel_gineco();
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
   const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
@@ -2845,6 +2852,307 @@ async function downloadExcel_clinicos(){
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
   XLSX.writeFile(wb, `EinsteinValid_Clinicos_${periodoLabel.replace('/','_')}.xlsx`);
+  showToast('Excel gerado ✓', 'green');
+}
+
+// ══════════════════════════════════════════════════════
+//  GINECOLOGIA
+// ══════════════════════════════════════════════════════
+async function renderMedico_gineco(){
+  document.getElementById('medico-prod-card')?.classList.add('section-hidden');
+  const mesKey = document.getElementById('medico-mes-select').value;
+  if(!mesKey) return;
+  medicoCurrentMes = mesKey;
+  const [snap, vigSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
+  ]);
+  medicoData = snap.val() || {};
+  const vigente = vigSnap.val();
+  const isEditable = mesKey === vigente;
+
+  const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome).sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
+  const horasExtras = medicoData.horasExtras || {};
+  const validacoes = medicoData.validacoes || {};
+  const minhaValidacao = validacoes[currentUser.slug];
+  const observacoesMap = medicoData.observacoes || {};
+  const minhaObs = observacoesMap[currentUser.slug] || '';
+  const extrasMap = medicoData.extras || {};
+  const meuExtra = Number(extrasMap[currentUser.slug]) || 0;
+
+  let horasTotais = 0;
+  plantoes.forEach(p => {
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    horasTotais += GINECO_BASE_H + he;
+  });
+  const valorPlantoes = horasTotais * GINECO_RATE_H;
+  const total = valorPlantoes + meuExtra;
+
+  document.getElementById('medico-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${horasTotais}h</div><div class="stat-lbl">Horas totais (${plantoes.length}×${GINECO_BASE_H}h + extras)</div></div>
+    <div class="stat"><div class="stat-val">R$ ${GINECO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
+    ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
+    <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  const validCard = document.getElementById('medico-validacao-card');
+  if(minhaValidacao){
+    const dt = new Date(minhaValidacao.validadoEm).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    validCard.innerHTML = `
+      <div class="valid-box done">
+        <div class="valid-icon">✅</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato validado</div>
+          <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
+        </div>
+        ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+      </div>`;
+  } else {
+    validCard.innerHTML = `
+      <div class="valid-box pending">
+        <div class="valid-icon">⚠️</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato pendente de validação</div>
+          <div class="valid-sub">Confira as horas extras dos plantões antes de validar.</div>
+        </div>
+        <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
+      </div>`;
+  }
+
+  const noturnosEl = document.getElementById('medico-noturnos');
+  document.getElementById('medico-noturnos-title').innerHTML = `Meus plantões ${isEditable ? '' : '<span class="right" style="color:var(--amber-dark);font-size:12px">🔒 leitura</span>'}`;
+  document.getElementById('medico-noturnos-hint').textContent = isEditable
+    ? `Cada plantão vale ${GINECO_BASE_H}h por padrão. Adicione horas extras (0,5 em 0,5) se atendeu além do horário.`
+    : 'Somente leitura — mês não é o vigente.';
+  if(!plantoes.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
+  } else {
+    noturnosEl.innerHTML = plantoes.map(p => {
+      const k = heKey(p);
+      const he = Number(horasExtras[k]) || 0;
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+      const totH = GINECO_BASE_H + he;
+      const disMinus = !isEditable || he <= 0;
+      const disPlus  = !isEditable || he >= 12;
+      return `<div class="not-row ${he>0?'acionado':''}">
+        <span class="not-date">${fmtDate(p.dataIso)}</span>
+        <span class="not-day">${dia}</span>
+        <span class="not-name">${p.turnoLabel || p.turno}</span>
+        <span class="not-check">
+          <span class="he-label">Horas extras:</span>
+          <span class="he-controls">
+            <button class="he-btn" ${disMinus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',-0.5)" title="Remover 0,5h">−</button>
+            <span class="he-display">${totH}h${he>0?`<span class="he-badge">(+${he})</span>`:''}</span>
+            <button class="he-btn" ${disPlus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',0.5)" title="Adicionar 0,5h">+</button>
+          </span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+
+  const rows = plantoes.map(p => {
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+    const totH = GINECO_BASE_H + he;
+    const valor = totH * GINECO_RATE_H;
+    return `<tr>
+      <td>${fmtDate(p.dataIso)}</td>
+      <td>${dia}</td>
+      <td>${p.turnoLabel || p.turno}</td>
+      <td class="num">${totH}h${he>0?` <span style="color:var(--amber-dark);font-size:10px">(+${he}h)</span>`:''}</td>
+      <td class="money">${fmtMoney(valor)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('medico-tbl').innerHTML=`
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas</th><th class="num">Valor</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr><td colspan="4">Subtotal plantões (${horasTotais}h × R$${GINECO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+    </tfoot>`;
+
+  document.getElementById('medico-obs-card').innerHTML = `
+    <div class="card-title">Observações</div>
+    <textarea class="obs-textarea" id="medico-obs-input" ${isEditable?'':'disabled'} placeholder="Escreva aqui qualquer observação sobre seu extrato deste mês.">${escapeHtml(minhaObs)}</textarea>
+    <div class="obs-hint">${isEditable ? 'Salva automaticamente ao sair do campo.' : 'Somente leitura — mês não é o vigente.'}</div>`;
+  const obsInput = document.getElementById('medico-obs-input');
+  if(obsInput && isEditable){
+    obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
+  }
+}
+
+async function renderResumoGeral_gineco(){
+  const sel = document.getElementById('resumo-mes-select');
+  if(!sel.options.length) await populateMesesSelect('resumo-mes-select', true);
+  const mesKey = sel.value;
+  if(!mesKey){
+    document.getElementById('tbl-resumo').innerHTML='<tbody><tr><td class="empty">Nenhum mês para exibir.</td></tr></tbody>';
+    document.getElementById('resumo-stats').innerHTML='';
+    document.getElementById('admin-obs-card').innerHTML='';
+    return;
+  }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const horasExtras = data.horasExtras || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    const m = medicos.get(p.medico);
+    m.total++;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    m.horas += GINECO_BASE_H + he;
+    m.hExtras += he;
+  });
+
+  const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0, totValid=0;
+  const bodyRows = rows.map(([m, c]) => {
+    const slug = slugify(m);
+    const vP = c.horas * GINECO_RATE_H;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    let validCell;
+    if(v){
+      totValid++;
+      const dt = new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      validCell = `<td><span class="valid-chip ok" title="Validado em ${dt}">✓ Validado</span></td>`;
+    } else {
+      validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
+    }
+    return `<tr>
+      <td>${escapeHtml(m)}</td>
+      ${validCell}
+      <td class="num">${c.total}</td>
+      <td class="num">${c.horas}h</td>
+      <td class="num">${c.hExtras>0?`+${c.hExtras}h`:'0'}</td>
+      <td class="money">${fmtMoney(vP)}</td>
+      <td><input type="number" step="0.01" class="extras-input" value="${extra||''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${slug}',this.value)"></td>
+      <td class="money total">${fmtMoney(total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbl-resumo').innerHTML = `
+    <thead><tr>
+      <th>Médico</th>
+      <th class="num">Validado?</th>
+      <th class="num">Plantões</th>
+      <th class="num">Horas</th>
+      <th class="num">Extras (h)</th>
+      <th class="num">R$ Plantões</th>
+      <th class="num">Extras (R$)</th>
+      <th class="num">TOTAL R$</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr>
+      <td>TOTAL</td>
+      <td class="num">${totValid}/${medicos.size}</td>
+      <td class="num">${sT}</td>
+      <td class="num">${sH}h</td>
+      <td class="num">${sHE>0?`+${sHE}h`:'0'}</td>
+      <td class="money">${fmtMoney(sVP)}</td>
+      <td class="money">${fmtMoney(sExtras)}</td>
+      <td class="money total">${fmtMoney(sTot)}</td>
+    </tr></tfoot>`;
+  document.getElementById('resumo-stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
+    <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+
+  const obsCard = document.getElementById('admin-obs-card');
+  const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
+  if(!obsEntries.length){
+    obsCard.innerHTML = `<div class="card-title">Observações dos médicos</div><div class="empty">Nenhuma observação escrita neste mês.</div>`;
+  } else {
+    const nomesBySlug = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+    obsCard.innerHTML = `
+      <div class="card-title">Observações dos médicos <span class="right">${obsEntries.length} ${obsEntries.length===1?'médico escreveu':'médicos escreveram'}</span></div>
+      <div class="obs-list">
+        ${obsEntries.map(([slug, texto]) => `
+          <div class="obs-item">
+            <div class="obs-item-head">${escapeHtml(nomesBySlug.get(slug) || slug)}</div>
+            <div class="obs-item-text">${escapeHtml(texto)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+async function downloadExcel_gineco(){
+  const mesKey = document.getElementById('resumo-mes-select').value;
+  if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const horasExtras = data.horasExtras || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+  if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const [y,m] = mesKey.split('-');
+  const periodoLabel = `${MESES_PT[+m]}/${y}`;
+
+  const detHead=['Data','Dia da semana','Turno','Médico','Horas base','Horas extras','Total horas','Valor R$'];
+  const detRows = plantoes.slice()
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p => {
+      const he = Number(horasExtras[heKey(p)]) || 0;
+      const tot = GINECO_BASE_H + he;
+      const val = tot * GINECO_RATE_H;
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turnoLabel || p.turno, p.medico, GINECO_BASE_H, he, tot, {v:val, t:'n', z:'R$ #,##0.00'}];
+    });
+  const wsDet = XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
+  wsDet['!cols'] = [{wch:12},{wch:14},{wch:20},{wch:42},{wch:10},{wch:12},{wch:12},{wch:14}];
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    const c = medicos.get(p.medico);
+    c.total++;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    c.horas += GINECO_BASE_H + he;
+    c.hExtras += he;
+  });
+  const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const resHead = ['Médico','Validado?','Plantões','Horas','Extras (h)','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
+  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0;
+  const bodyRows = medNames.map(m => {
+    const c = medicos.get(m);
+    const slug = slugify(m);
+    const vP = c.horas * GINECO_RATE_H;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
+    return [m, validValue, c.total, c.horas, c.hExtras,
+      {v:vP, t:'n', z:'R$ #,##0.00'},
+      {v:extra, t:'n', z:'R$ #,##0.00'},
+      {v:total, t:'n', z:'R$ #,##0.00'},
+      observacoes[slug] || ''];
+  });
+  const totFormulas = ['TOTAL','',sT,sH,sHE,
+    {v:sVP, t:'n', z:'R$ #,##0.00'},
+    {v:sExtras, t:'n', z:'R$ #,##0.00'},
+    {v:sTot, t:'n', z:'R$ #,##0.00'},''];
+  const wsRes = XLSX.utils.aoa_to_sheet([
+    [`Ginecologia — ${periodoLabel}`],
+    [`Cada plantão vale ${GINECO_BASE_H}h × R$${GINECO_RATE_H} = ${fmtMoney(GINECO_BASE_H*GINECO_RATE_H)}. Horas extras em incrementos de 0,5h.`],
+    [], resHead, ...bodyRows, totFormulas,
+  ]);
+  wsRes['!cols'] = [{wch:42},{wch:18},{wch:10},{wch:8},{wch:10},{wch:14},{wch:14},{wch:14},{wch:50}];
+
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
+  XLSX.writeFile(wb, `EinsteinValid_Gineco_${periodoLabel.replace('/','_')}.xlsx`);
   showToast('Excel gerado ✓', 'green');
 }
 
