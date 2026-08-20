@@ -3517,7 +3517,6 @@ async function renderMedico_endo(){
 
   document.getElementById('medico-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${pagos.length}</div><div class="stat-lbl">Períodos (${horasTotais}h)</div></div>
-    ${naoPagos.length ? `<div class="stat"><div class="stat-val" style="color:var(--g600)">${naoPagos.length}</div><div class="stat-lbl">Sobreavisos (só produtividade)</div></div>` : ''}
     <div class="stat"><div class="stat-val">${nExames}</div><div class="stat-lbl">Exames extras (R$${ENDO_EXAME_EXTRA} cada)</div></div>
     <div class="stat"><div class="stat-val">R$ ${ENDO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
     ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
@@ -3548,24 +3547,22 @@ async function renderMedico_endo(){
       </div>`;
   }
 
-  // Plantões (badge visual "Período" ou "Sobreaviso")
+  // Plantões — só mostra os períodos remunerados; sobreavisos ficam ocultos pro médico
   const noturnosEl = document.getElementById('medico-noturnos');
-  document.getElementById('medico-noturnos-title').innerHTML = 'Meus plantões';
-  document.getElementById('medico-noturnos-hint').innerHTML = `<strong>Períodos</strong> (seg-sex manhã/tarde) são pagos por 6h × R$${ENDO_RATE_H}. <strong>Sobreavisos</strong> (noturnos + fins de semana) não são remunerados, mas você pode registrar exames extras na produtividade.`;
-  if(!plantoes.length){
-    noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
+  document.getElementById('medico-noturnos-title').innerHTML = 'Meus períodos';
+  document.getElementById('medico-noturnos-hint').innerHTML = `Cada período vale ${ENDO_BASE_H}h × R$${ENDO_RATE_H} = ${fmtMoney(ENDO_BASE_H*ENDO_RATE_H)}. Sobreavisos não aparecem aqui — o pagamento deles é feito exclusivamente pelos exames extras registrados na produtividade.`;
+  if(!pagos.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum período remunerado no mês.</div>';
   } else {
-    noturnosEl.innerHTML = plantoes.map(p => {
+    noturnosEl.innerHTML = pagos.map(p => {
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-      const pago = isEndoPago(p);
-      const badge = pago
-        ? `<span style="background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Período ${ENDO_BASE_H}h</span>`
-        : `<span style="background:var(--g100);color:var(--g600);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Sobreaviso</span>`;
-      return `<div class="not-row ${pago?'acionado':''}">
+      return `<div class="not-row acionado">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
         <span class="not-name">${p.turnoLabel || p.turno}</span>
-        <span class="not-check">${badge}</span>
+        <span class="not-check">
+          <span style="background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">${ENDO_BASE_H}h × R$${ENDO_RATE_H}</span>
+        </span>
       </div>`;
     }).join('');
   }
@@ -3598,22 +3595,21 @@ async function renderMedico_endo(){
     </table></div>
     ${addForm}`;
 
-  // Detalhamento — só plantões pagos entram no cálculo
-  const rows = plantoes.map(p => {
+  // Detalhamento — só períodos pagos aparecem
+  const rows = pagos.map(p => {
     const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-    const pago = isEndoPago(p);
-    const valor = pago ? ENDO_BASE_H * ENDO_RATE_H : 0;
+    const valor = ENDO_BASE_H * ENDO_RATE_H;
     return `<tr>
       <td>${fmtDate(p.dataIso)}</td>
       <td>${dia}</td>
       <td>${p.turnoLabel || p.turno}</td>
-      <td class="num">${pago ? `${ENDO_BASE_H}h` : '<span style="color:var(--g400)">—</span>'}</td>
-      <td class="money">${pago ? fmtMoney(valor) : '<span style="color:var(--g400)">—</span>'}</td>
+      <td class="num">${ENDO_BASE_H}h</td>
+      <td class="money">${fmtMoney(valor)}</td>
     </tr>`;
   }).join('');
   document.getElementById('medico-tbl').innerHTML=`
     <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas</th><th class="num">Valor</th></tr></thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows || '<tr><td colspan="5" class="empty">Nenhum período no mês.</td></tr>'}</tbody>
     <tfoot>
       <tr><td colspan="4">Subtotal períodos (${horasTotais}h × R$${ENDO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
       <tr><td colspan="4">Subtotal exames extras (${nExames} × R$${ENDO_EXAME_EXTRA})</td><td class="money">${fmtMoney(valorExames)}</td></tr>
