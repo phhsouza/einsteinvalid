@@ -3481,9 +3481,9 @@ async function downloadExcel_uro(){
 
 // ══════════════════════════════════════════════════════
 //  ENDOSCOPIA
-//  - Plantões seg-sex manhã/tarde: pagos (6h × R$150)
-//  - Demais (noturnos + sáb/dom): NÃO pagos, mas médico pode
-//    registrar exames extras (R$650/exame) na produtividade
+//  - Períodos (seg-sex manhã/tarde): pagos 6h × R$150
+//  - Sobreavisos (noturnos + sáb/dom): não remunerados;
+//    o médico registra exames extras (R$650/exame) na produtividade
 // ══════════════════════════════════════════════════════
 async function renderMedico_endo(){
   const mesKey = document.getElementById('medico-mes-select').value;
@@ -3516,8 +3516,8 @@ async function renderMedico_endo(){
   const total = valorPlantoes + valorExames + meuExtra;
 
   document.getElementById('medico-stats').innerHTML=`
-    <div class="stat"><div class="stat-val">${pagos.length}</div><div class="stat-lbl">Plantões pagos (${horasTotais}h)</div></div>
-    ${naoPagos.length ? `<div class="stat"><div class="stat-val" style="color:var(--g600)">${naoPagos.length}</div><div class="stat-lbl">Não remunerados (só produtividade)</div></div>` : ''}
+    <div class="stat"><div class="stat-val">${pagos.length}</div><div class="stat-lbl">Períodos (${horasTotais}h)</div></div>
+    ${naoPagos.length ? `<div class="stat"><div class="stat-val" style="color:var(--g600)">${naoPagos.length}</div><div class="stat-lbl">Sobreavisos (só produtividade)</div></div>` : ''}
     <div class="stat"><div class="stat-val">${nExames}</div><div class="stat-lbl">Exames extras (R$${ENDO_EXAME_EXTRA} cada)</div></div>
     <div class="stat"><div class="stat-val">R$ ${ENDO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
     ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
@@ -3548,10 +3548,10 @@ async function renderMedico_endo(){
       </div>`;
   }
 
-  // Plantões (com badge visual "Pago" ou "Não remunerado")
+  // Plantões (badge visual "Período" ou "Sobreaviso")
   const noturnosEl = document.getElementById('medico-noturnos');
   document.getElementById('medico-noturnos-title').innerHTML = 'Meus plantões';
-  document.getElementById('medico-noturnos-hint').innerHTML = `Plantões de <strong>seg a sex, manhã/tarde</strong> são pagos (6h × R$${ENDO_RATE_H}). Demais (noturnos + fins de semana) <strong>não são pagos</strong>, mas você pode registrar exames extras na produtividade.`;
+  document.getElementById('medico-noturnos-hint').innerHTML = `<strong>Períodos</strong> (seg-sex manhã/tarde) são pagos por 6h × R$${ENDO_RATE_H}. <strong>Sobreavisos</strong> (noturnos + fins de semana) não são remunerados, mas você pode registrar exames extras na produtividade.`;
   if(!plantoes.length){
     noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
   } else {
@@ -3559,8 +3559,8 @@ async function renderMedico_endo(){
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
       const pago = isEndoPago(p);
       const badge = pago
-        ? `<span style="background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Pago ${ENDO_BASE_H}h</span>`
-        : `<span style="background:var(--g100);color:var(--g600);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Não remunerado</span>`;
+        ? `<span style="background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Período ${ENDO_BASE_H}h</span>`
+        : `<span style="background:var(--g100);color:var(--g600);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Sobreaviso</span>`;
       return `<div class="not-row ${pago?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
@@ -3612,10 +3612,10 @@ async function renderMedico_endo(){
     </tr>`;
   }).join('');
   document.getElementById('medico-tbl').innerHTML=`
-    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas pagas</th><th class="num">Valor</th></tr></thead>
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas</th><th class="num">Valor</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot>
-      <tr><td colspan="4">Subtotal plantões (${horasTotais}h × R$${ENDO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      <tr><td colspan="4">Subtotal períodos (${horasTotais}h × R$${ENDO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
       <tr><td colspan="4">Subtotal exames extras (${nExames} × R$${ENDO_EXAME_EXTRA})</td><td class="money">${fmtMoney(valorExames)}</td></tr>
       ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
       <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
@@ -3699,10 +3699,10 @@ async function renderResumoGeral_endo(){
     <thead><tr>
       <th>Médico</th>
       <th class="num">Validado?</th>
-      <th class="num">Plantões pagos</th>
-      <th class="num">Não pagos</th>
+      <th class="num">Períodos</th>
+      <th class="num">Sobreavisos</th>
       <th class="num">Horas</th>
-      <th class="num">R$ Plantões</th>
+      <th class="num">R$ Períodos</th>
       <th class="num">Exames extras</th>
       <th class="num">R$ Exames</th>
       <th class="num">Extras (R$)</th>
@@ -3723,7 +3723,7 @@ async function renderResumoGeral_endo(){
     </tr></tfoot>`;
   document.getElementById('resumo-stats').innerHTML = `
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
-    <div class="stat"><div class="stat-val">${sP}</div><div class="stat-lbl">Pagos (${sNP} não remun.)</div></div>
+    <div class="stat"><div class="stat-val">${sP}</div><div class="stat-lbl">Períodos (${sNP} sobreavisos)</div></div>
     <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat"><div class="stat-val">${sEx}</div><div class="stat-lbl">Exames extras</div></div>
@@ -3764,14 +3764,14 @@ async function downloadExcel_endo(){
   const periodoLabel = `${MESES_PT[+m]}/${y}`;
 
   // Plantões
-  const detHead=['Data','Dia da semana','Turno','Médico','Pago?','Horas','Valor R$'];
+  const detHead=['Data','Dia da semana','Turno','Médico','Tipo','Horas','Valor R$'];
   const detRows = plantoes.slice()
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
     .map(p => {
       const pago = isEndoPago(p);
       const h = pago ? ENDO_BASE_H : 0;
       const val = h * ENDO_RATE_H;
-      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turnoLabel || p.turno, p.medico, pago?'Sim':'Não', h, {v:val, t:'n', z:'R$ #,##0.00'}];
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turnoLabel || p.turno, p.medico, pago?'Período':'Sobreaviso', h, {v:val, t:'n', z:'R$ #,##0.00'}];
     });
   const wsDet = XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
   wsDet['!cols'] = [{wch:12},{wch:14},{wch:20},{wch:42},{wch:8},{wch:8},{wch:14}];
@@ -3799,7 +3799,7 @@ async function downloadExcel_endo(){
     examesByMedico.set(e.medicoSlug, (examesByMedico.get(e.medicoSlug) || 0) + 1);
   });
   const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const resHead = ['Médico','Validado?','Plantões pagos','Não pagos','Horas','R$ Plantões','Exames extras','R$ Exames','Extras (R$)','TOTAL R$','Observações'];
+  const resHead = ['Médico','Validado?','Períodos','Sobreavisos','Horas','R$ Períodos','Exames extras','R$ Exames','Extras (R$)','TOTAL R$','Observações'];
   let sP=0, sNP=0, sH=0, sEx=0, sVP=0, sVE=0, sExtras=0, sTot=0;
   const bodyRows = medNames.map(m => {
     const c = medicos.get(m);
@@ -3829,7 +3829,7 @@ async function downloadExcel_endo(){
     {v:sTot, t:'n', z:'R$ #,##0.00'},''];
   const wsRes = XLSX.utils.aoa_to_sheet([
     [`Endoscopia — ${periodoLabel}`],
-    [`Só plantões seg-sex manhã/tarde são pagos (${ENDO_BASE_H}h × R$${ENDO_RATE_H}). Cada exame extra vale R$${ENDO_EXAME_EXTRA}.`],
+    [`Períodos (seg-sex manhã/tarde) valem ${ENDO_BASE_H}h × R$${ENDO_RATE_H}. Sobreavisos (noturnos e fins de semana) não são remunerados, mas geram produtividade a R$${ENDO_EXAME_EXTRA}/exame.`],
     [], resHead, ...bodyRows, totFormulas,
   ]);
   wsRes['!cols'] = [{wch:42},{wch:18},{wch:14},{wch:10},{wch:8},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:50}];
