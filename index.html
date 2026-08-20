@@ -833,7 +833,18 @@ function switchSector(newSector){
   // Re-attach listeners para o novo setor
   detachSectorListeners();
   attachGlobalListeners();
-  // Re-render aba atual
+  // Limpa os selects de mês para forçar repopulação com dados do setor novo
+  const resumoSel = document.getElementById('resumo-mes-select');
+  if(resumoSel) resumoSel.innerHTML = '';
+  const medicoSel = document.getElementById('medico-mes-select');
+  if(medicoSel) medicoSel.innerHTML = '';
+  // Limpa estado da tela (evita mostrar dados do setor anterior por instante)
+  ['tbl-resumo','resumo-stats','admin-obs-card','meses-list','users-list','new-user-info','file-info-wrap'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = '';
+  });
+  const monthRow = document.getElementById('month-row'); if(monthRow) monthRow.style.display = 'none';
+  uploadedPlantoes = []; uploadedFileName = '';
+  // Re-render aba atual (força novo carregamento)
   const activeTab = document.querySelector('.tab-btn.active')?.id?.replace('tab-btn-','') || 'escala';
   switchAdminTab(activeTab);
 }
