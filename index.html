@@ -193,6 +193,15 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .prod-btn{background:var(--green);color:white;border:none;padding:9px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
 .prod-btn:hover{background:var(--green-dark);}
 
+/* Credenciais geradas */
+.creds-list{display:flex;flex-direction:column;gap:8px;}
+.cred-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 14px;background:var(--amber-light);border:1px solid var(--amber);border-radius:8px;}
+.cred-nome{font-size:13px;font-weight:600;color:var(--g900);}
+.cred-info{font-size:12px;color:var(--g600);margin-top:4px;font-family:var(--mono);}
+.cred-copy{background:var(--green);color:white;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.cred-copy:hover{background:var(--green-dark);}
+.cred-copy.copied{background:var(--g400);}
+
 /* Lista de observações admin */
 .obs-list{display:flex;flex-direction:column;gap:10px;}
 .obs-item{padding:12px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--g50);}
@@ -392,11 +401,24 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
           <label>Nome do médico (deve bater com o da escala)</label>
           <select id="new-user-nome"><option value="">Selecione…</option></select>
         </div>
-        <div style="align-self:end">
+        <div style="align-self:end;display:flex;gap:8px">
           <button class="btn-primary" onclick="createUser()">+ Criar usuário</button>
+          <button class="btn-secondary" onclick="createAllPending()" title="Cria usuários para todos os médicos da escala que ainda não têm login">🔑 Criar todos pendentes</button>
         </div>
       </div>
       <div id="new-user-info"></div>
+    </div>
+
+    <div class="card section-hidden" id="creds-panel">
+      <div class="card-title">
+        🔑 Credenciais geradas nesta sessão
+        <span class="right" style="display:flex;gap:6px">
+          <button class="btn-secondary" onclick="copyAllCredentials()">📋 Copiar todas</button>
+          <button class="btn-secondary" onclick="dismissPendingCreds()">Fechar</button>
+        </span>
+      </div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:12px">Copie a mensagem de cada médico e envie por WhatsApp/e-mail. As senhas não podem ser recuperadas depois — se perder, é preciso resetar.</div>
+      <div class="creds-list" id="creds-list"></div>
     </div>
 
     <div class="card">
@@ -1341,15 +1363,16 @@ async function populateNomesDropdown(){
   });
 }
 
+// Credenciais geradas nesta sessão (memória; some no reload)
+let _pendingCreds = [];
+
 async function createUser(){
   try {
     const nome = document.getElementById('new-user-nome').value;
     if(!nome){ showToast('Selecione um nome', 'red'); return; }
     const slug = slugify(nome);
-    console.log('[createUser] nome=', nome, 'slug=', slug);
     if(!slug){ showToast('Não consegui gerar login para este nome', 'red'); return; }
     if(slug === ADMIN_SLUG){ showToast('Slug reservado', 'red'); return; }
-    // Checar colisão
     const existSnap = await db.ref('usuarios/'+slug).once('value');
     if(existSnap.exists()){
       if(!confirm(`Já existe usuário com login "${displaySlug(slug)}" (${existSnap.val().nome}). Sobrescrever?`)) return;
@@ -1360,15 +1383,50 @@ async function createUser(){
     await db.ref('usuarios/'+slug).set({
       nome, role:'medico', setor: currentSector, salt, passHash, passChanged:false, criadoEm:Date.now(),
     });
-    document.getElementById('new-user-info').innerHTML = `
-      <div class="info-panel">
-        Usuário <strong>${escapeHtml(nome)}</strong> criado no setor <strong>${escapeHtml(SETORES_LIST[currentSector].label)}</strong>. Login: <strong>${displaySlug(slug)}</strong> · Senha: <strong>${initialPass}</strong>
-        <div style="margin-top:4px;font-size:11px;color:var(--g600)">O médico deve trocar a senha no primeiro acesso.</div>
-      </div>`;
-    showToast('Usuário criado', 'green');
+    addPendingCred({slug, nome, senha:initialPass, setor:currentSector});
+    showToast('Usuário criado — copie a credencial abaixo', 'green');
     renderUsuarios();
   } catch(err) {
     console.error('[createUser] erro:', err);
+    showToast('Erro: ' + err.message, 'red');
+  }
+}
+
+async function createAllPending(){
+  try {
+    // Nomes da escala do mês mais recente do setor atual
+    const mesesSnap = await db.ref(spath('meses')).once('value');
+    const meses = mesesSnap.val() || {};
+    const keys = Object.keys(meses).sort().reverse();
+    if(!keys.length){ showToast('Faça upload de uma escala primeiro', 'red'); return; }
+    const nomesSet = new Set();
+    keys.forEach(k => {
+      Object.values(meses[k].plantoes || {}).forEach(p => nomesSet.add(p.medico));
+    });
+    // Usuários já cadastrados (global)
+    const usuariosSnap = await db.ref('usuarios').once('value');
+    const existentes = new Set(Object.keys(usuariosSnap.val() || {}));
+    const pendentes = Array.from(nomesSet).filter(nome => {
+      const slug = slugify(nome);
+      return slug && slug !== ADMIN_SLUG && !existentes.has(slug);
+    });
+    if(!pendentes.length){ showToast('Nenhum pendente — todos os médicos já têm login', 'green'); return; }
+    if(!confirm(`Criar ${pendentes.length} usuário(s) no setor ${SETORES_LIST[currentSector].label}?`)) return;
+
+    for(const nome of pendentes){
+      const slug = slugify(nome);
+      const initialPass = generateInitialPass();
+      const salt = newSalt();
+      const passHash = await hashPass(initialPass, salt);
+      await db.ref('usuarios/'+slug).set({
+        nome, role:'medico', setor: currentSector, salt, passHash, passChanged:false, criadoEm:Date.now(),
+      });
+      addPendingCred({slug, nome, senha:initialPass, setor:currentSector});
+    }
+    showToast(`${pendentes.length} usuários criados`, 'green');
+    renderUsuarios();
+  } catch(err) {
+    console.error('[createAllPending] erro:', err);
     showToast('Erro: ' + err.message, 'red');
   }
 }
@@ -1379,12 +1437,72 @@ async function resetPassword(slug){
   const salt = newSalt();
   const passHash = await hashPass(initialPass, salt);
   await db.ref('usuarios/'+slug).update({salt, passHash, passChanged:false});
-  document.getElementById('new-user-info').innerHTML = `
-    <div class="info-panel">
-      Nova senha para <strong>${escapeHtml(displaySlug(slug))}</strong>: <strong>${initialPass}</strong>
-    </div>`;
-  showToast('Senha resetada', 'green');
+  const uSnap = await db.ref('usuarios/'+slug).once('value');
+  const u = uSnap.val() || {};
+  addPendingCred({slug, nome:u.nome||slug, senha:initialPass, setor:u.setor||currentSector});
+  showToast('Senha resetada — copie a credencial abaixo', 'green');
   renderUsuarios();
+}
+
+function addPendingCred(cred){
+  // Remove duplicata anterior desse slug (se resetou 2x)
+  _pendingCreds = _pendingCreds.filter(c => c.slug !== cred.slug);
+  _pendingCreds.push(cred);
+  renderPendingCreds();
+}
+
+function renderPendingCreds(){
+  const card = document.getElementById('creds-panel');
+  const list = document.getElementById('creds-list');
+  if(!_pendingCreds.length){ card.classList.add('section-hidden'); return; }
+  card.classList.remove('section-hidden');
+  list.innerHTML = _pendingCreds.map((c, i) => `
+    <div class="cred-item">
+      <div>
+        <div class="cred-nome">${escapeHtml(c.nome)} <span style="font-size:11px;color:var(--g600);font-weight:normal">· ${escapeHtml(SETORES_LIST[c.setor]?.label || c.setor)}</span></div>
+        <div class="cred-info">Login: ${escapeHtml(displaySlug(c.slug))} · Senha: ${escapeHtml(c.senha)}</div>
+      </div>
+      <button class="cred-copy" data-idx="${i}" onclick="copyCredentials(${i}, this)">📋 Copiar mensagem</button>
+    </div>`).join('');
+}
+
+function credMessage(c){
+  const url = location.origin || 'https://einsteinvalid.vercel.app';
+  return `Olá ${c.nome},\n\nSeu acesso ao EinsteinValid (conferência de plantões):\n\n🔗 ${url}\n👤 Login: ${displaySlug(c.slug)}\n🔑 Senha: ${c.senha}\n\nNo primeiro acesso o sistema pedirá para você trocar a senha.`;
+}
+
+async function copyCredentials(idx, btn){
+  const c = _pendingCreds[idx];
+  if(!c) return;
+  try {
+    await navigator.clipboard.writeText(credMessage(c));
+    if(btn){
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = originalText; btn.classList.remove('copied'); }, 2000);
+    }
+    showToast('Mensagem copiada', 'green');
+  } catch(err) {
+    showToast('Erro ao copiar: '+err.message, 'red');
+  }
+}
+
+async function copyAllCredentials(){
+  if(!_pendingCreds.length) return;
+  const text = _pendingCreds.map(credMessage).join('\n\n---\n\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`${_pendingCreds.length} mensagens copiadas`, 'green');
+  } catch(err) {
+    showToast('Erro ao copiar: '+err.message, 'red');
+  }
+}
+
+function dismissPendingCreds(){
+  if(_pendingCreds.length && !confirm('Fechar o painel? As senhas em texto claro serão perdidas — se ainda não copiou, faça agora.')) return;
+  _pendingCreds = [];
+  renderPendingCreds();
 }
 
 async function deleteUser(slug){
