@@ -529,14 +529,18 @@ const GINECO_BASE_H = 4;
 // Regras da urologia
 const URO_RATE_H = 150;
 const URO_BASE_H = 4;
-// Regras da endoscopia — só matutino/vespertino de seg-sex são pagos; demais só geram produtividade
+// Regras da endoscopia — só matutino/vespertino de seg-sex são pagos; demais só geram produtividade.
+// Exceção: sábado manhã conta como período pago a partir de 15/08/2026.
 const ENDO_RATE_H = 150;
 const ENDO_BASE_H = 6;
 const ENDO_EXAME_EXTRA = 650;
+const ENDO_SAB_MANHA_START = '2026-08-15';
 function isEndoPago(p){
   if(p.turno === 'Noite') return false;
   const d = dateFromIso(p.dataIso).getDay(); // 0=dom, 6=sáb
-  return d >= 1 && d <= 5;
+  if(d >= 1 && d <= 5) return true; // seg-sex manhã/tarde
+  if(d === 6 && p.turno === 'Manhã' && p.dataIso >= ENDO_SAB_MANHA_START) return true;
+  return false;
 }
 
 function rateMeioSemana(n){
