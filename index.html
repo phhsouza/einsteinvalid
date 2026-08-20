@@ -505,6 +505,7 @@ const SETORES_LIST = {
   clinicos_checkup:  { label: 'Clínicos Check-up',  tipo: 'clinicos' },
   ginecologia:       { label: 'Ginecologia',        tipo: 'ginecologia' },
   urologia:          { label: 'Urologia',           tipo: 'urologia' },
+  endoscopia:        { label: 'Endoscopia',         tipo: 'endoscopia' },
 };
 const DEFAULT_SETOR = 'radiologia';
 // Setor ativo: admin muda pelo seletor; médico vem do usuário
@@ -528,6 +529,15 @@ const GINECO_BASE_H = 4;
 // Regras da urologia
 const URO_RATE_H = 150;
 const URO_BASE_H = 4;
+// Regras da endoscopia — só matutino/vespertino de seg-sex são pagos; demais só geram produtividade
+const ENDO_RATE_H = 150;
+const ENDO_BASE_H = 6;
+const ENDO_EXAME_EXTRA = 650;
+function isEndoPago(p){
+  if(p.turno === 'Noite') return false;
+  const d = dateFromIso(p.dataIso).getDay(); // 0=dom, 6=sáb
+  return d >= 1 && d <= 5;
+}
 
 function rateMeioSemana(n){
   if(n<=6) return 135;
@@ -1254,6 +1264,7 @@ async function renderResumoGeral(){
   if(getSectorTipo() === 'clinicos') return renderResumoGeral_clinicos();
   if(getSectorTipo() === 'ginecologia') return renderResumoGeral_gineco();
   if(getSectorTipo() === 'urologia') return renderResumoGeral_uro();
+  if(getSectorTipo() === 'endoscopia') return renderResumoGeral_endo();
   const sel = document.getElementById('resumo-mes-select');
   if(!sel.options.length){
     await populateMesesSelect('resumo-mes-select', true);
@@ -1455,6 +1466,7 @@ async function renderMedico(){
   if(getSectorTipo() === 'clinicos') return renderMedico_clinicos();
   if(getSectorTipo() === 'ginecologia') return renderMedico_gineco();
   if(getSectorTipo() === 'urologia') return renderMedico_uro();
+  if(getSectorTipo() === 'endoscopia') return renderMedico_endo();
   document.getElementById('medico-prod-card')?.classList.add('section-hidden');
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
@@ -1662,6 +1674,7 @@ async function downloadExcel(){
   if(getSectorTipo() === 'clinicos') return downloadExcel_clinicos();
   if(getSectorTipo() === 'ginecologia') return downloadExcel_gineco();
   if(getSectorTipo() === 'urologia') return downloadExcel_uro();
+  if(getSectorTipo() === 'endoscopia') return downloadExcel_endo();
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
   const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
@@ -3463,6 +3476,368 @@ async function downloadExcel_uro(){
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
   XLSX.writeFile(wb, `EinsteinValid_Uro_${periodoLabel.replace('/','_')}.xlsx`);
+  showToast('Excel gerado ✓', 'green');
+}
+
+// ══════════════════════════════════════════════════════
+//  ENDOSCOPIA
+//  - Plantões seg-sex manhã/tarde: pagos (6h × R$150)
+//  - Demais (noturnos + sáb/dom): NÃO pagos, mas médico pode
+//    registrar exames extras (R$650/exame) na produtividade
+// ══════════════════════════════════════════════════════
+async function renderMedico_endo(){
+  const mesKey = document.getElementById('medico-mes-select').value;
+  if(!mesKey) return;
+  medicoCurrentMes = mesKey;
+  const [snap, vigSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
+  ]);
+  medicoData = snap.val() || {};
+  const vigente = vigSnap.val();
+  const isEditable = mesKey === vigente;
+
+  const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome).sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
+  const produtividade = medicoData.produtividade || {};
+  const meusExames = Object.entries(produtividade).filter(([_,e]) => e.medicoSlug === currentUser.slug);
+  const validacoes = medicoData.validacoes || {};
+  const minhaValidacao = validacoes[currentUser.slug];
+  const observacoesMap = medicoData.observacoes || {};
+  const minhaObs = observacoesMap[currentUser.slug] || '';
+  const extrasMap = medicoData.extras || {};
+  const meuExtra = Number(extrasMap[currentUser.slug]) || 0;
+
+  const pagos = plantoes.filter(isEndoPago);
+  const naoPagos = plantoes.filter(p => !isEndoPago(p));
+  const horasTotais = pagos.length * ENDO_BASE_H;
+  const valorPlantoes = horasTotais * ENDO_RATE_H;
+  const nExames = meusExames.length;
+  const valorExames = nExames * ENDO_EXAME_EXTRA;
+  const total = valorPlantoes + valorExames + meuExtra;
+
+  document.getElementById('medico-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${pagos.length}</div><div class="stat-lbl">Plantões pagos (${horasTotais}h)</div></div>
+    ${naoPagos.length ? `<div class="stat"><div class="stat-val" style="color:var(--g600)">${naoPagos.length}</div><div class="stat-lbl">Não remunerados (só produtividade)</div></div>` : ''}
+    <div class="stat"><div class="stat-val">${nExames}</div><div class="stat-lbl">Exames extras (R$${ENDO_EXAME_EXTRA} cada)</div></div>
+    <div class="stat"><div class="stat-val">R$ ${ENDO_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
+    ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
+    <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  // Validação
+  const validCard = document.getElementById('medico-validacao-card');
+  if(minhaValidacao){
+    const dt = new Date(minhaValidacao.validadoEm).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    validCard.innerHTML = `
+      <div class="valid-box done">
+        <div class="valid-icon">✅</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato validado</div>
+          <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
+        </div>
+        ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+      </div>`;
+  } else {
+    validCard.innerHTML = `
+      <div class="valid-box pending">
+        <div class="valid-icon">⚠️</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato pendente de validação</div>
+          <div class="valid-sub">Confira plantões e exames de produtividade antes de validar.</div>
+        </div>
+        <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
+      </div>`;
+  }
+
+  // Plantões (com badge visual "Pago" ou "Não remunerado")
+  const noturnosEl = document.getElementById('medico-noturnos');
+  document.getElementById('medico-noturnos-title').innerHTML = 'Meus plantões';
+  document.getElementById('medico-noturnos-hint').innerHTML = `Plantões de <strong>seg a sex, manhã/tarde</strong> são pagos (6h × R$${ENDO_RATE_H}). Demais (noturnos + fins de semana) <strong>não são pagos</strong>, mas você pode registrar exames extras na produtividade.`;
+  if(!plantoes.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
+  } else {
+    noturnosEl.innerHTML = plantoes.map(p => {
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+      const pago = isEndoPago(p);
+      const badge = pago
+        ? `<span style="background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Pago ${ENDO_BASE_H}h</span>`
+        : `<span style="background:var(--g100);color:var(--g600);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600">Não remunerado</span>`;
+      return `<div class="not-row ${pago?'acionado':''}">
+        <span class="not-date">${fmtDate(p.dataIso)}</span>
+        <span class="not-day">${dia}</span>
+        <span class="not-name">${p.turnoLabel || p.turno}</span>
+        <span class="not-check">${badge}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Produtividade
+  const prodCard = document.getElementById('medico-prod-card');
+  prodCard.classList.remove('section-hidden');
+  const sorted = meusExames.slice().sort((a,b)=>a[1].dataIso.localeCompare(b[1].dataIso));
+  const prodRows = sorted.length
+    ? sorted.map(([id,e]) => `<tr>
+        <td>${fmtDate(e.dataIso)}</td>
+        <td style="font-family:var(--mono)">${escapeHtml(e.prt||'')}</td>
+        <td class="money">${fmtMoney(ENDO_EXAME_EXTRA)}</td>
+        <td>${isEditable ? `<button class="btn-danger" style="padding:4px 10px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button>` : ''}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" class="empty">Nenhum exame extra registrado.</td></tr>';
+  const todayIso = new Date().toISOString().slice(0,10);
+  const addForm = isEditable ? `
+    <div class="prod-add">
+      <input type="date" id="prod-data" value="${todayIso}">
+      <input type="text" id="prod-prt" placeholder="PRT do exame">
+      <button class="prod-btn" onclick="addProdutividade('${mesKey}')">+ Adicionar exame</button>
+    </div>` : '';
+  prodCard.innerHTML = `
+    <div class="card-title">Produtividade — Exames extras <span class="right">${nExames} exame${nExames===1?'':'s'} · ${fmtMoney(valorExames)}</span></div>
+    <div style="font-size:12px;color:var(--g600);margin-bottom:12px">Cada exame extra vale ${fmtMoney(ENDO_EXAME_EXTRA)}. Registre com data e PRT.</div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Data</th><th>PRT</th><th class="num">Valor</th><th></th></tr></thead>
+      <tbody>${prodRows}</tbody>
+    </table></div>
+    ${addForm}`;
+
+  // Detalhamento — só plantões pagos entram no cálculo
+  const rows = plantoes.map(p => {
+    const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+    const pago = isEndoPago(p);
+    const valor = pago ? ENDO_BASE_H * ENDO_RATE_H : 0;
+    return `<tr>
+      <td>${fmtDate(p.dataIso)}</td>
+      <td>${dia}</td>
+      <td>${p.turnoLabel || p.turno}</td>
+      <td class="num">${pago ? `${ENDO_BASE_H}h` : '<span style="color:var(--g400)">—</span>'}</td>
+      <td class="money">${pago ? fmtMoney(valor) : '<span style="color:var(--g400)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('medico-tbl').innerHTML=`
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas pagas</th><th class="num">Valor</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr><td colspan="4">Subtotal plantões (${horasTotais}h × R$${ENDO_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      <tr><td colspan="4">Subtotal exames extras (${nExames} × R$${ENDO_EXAME_EXTRA})</td><td class="money">${fmtMoney(valorExames)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+    </tfoot>`;
+
+  // Observações
+  document.getElementById('medico-obs-card').innerHTML = `
+    <div class="card-title">Observações</div>
+    <textarea class="obs-textarea" id="medico-obs-input" ${isEditable?'':'disabled'} placeholder="Escreva aqui qualquer observação sobre seu extrato deste mês.">${escapeHtml(minhaObs)}</textarea>
+    <div class="obs-hint">${isEditable ? 'Salva automaticamente ao sair do campo.' : 'Somente leitura — mês não é o vigente.'}</div>`;
+  const obsInput = document.getElementById('medico-obs-input');
+  if(obsInput && isEditable){
+    obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
+  }
+}
+
+async function renderResumoGeral_endo(){
+  const sel = document.getElementById('resumo-mes-select');
+  if(!sel.options.length) await populateMesesSelect('resumo-mes-select', true);
+  const mesKey = sel.value;
+  if(!mesKey){
+    document.getElementById('tbl-resumo').innerHTML='<tbody><tr><td class="empty">Nenhum mês para exibir.</td></tr></tbody>';
+    document.getElementById('resumo-stats').innerHTML='';
+    document.getElementById('admin-obs-card').innerHTML='';
+    return;
+  }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const produtividade = data.produtividade || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {pagos:0, naoPagos:0});
+    const m = medicos.get(p.medico);
+    if(isEndoPago(p)) m.pagos++;
+    else m.naoPagos++;
+  });
+  const examesByMedico = new Map();
+  Object.values(produtividade).forEach(e => {
+    examesByMedico.set(e.medicoSlug, (examesByMedico.get(e.medicoSlug) || 0) + 1);
+  });
+
+  const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  let sP=0, sNP=0, sH=0, sEx=0, sVP=0, sVE=0, sExtras=0, sTot=0, totValid=0;
+  const bodyRows = rows.map(([m, c])=>{
+    const slug = slugify(m);
+    const horas = c.pagos * ENDO_BASE_H;
+    const nEx = examesByMedico.get(slug) || 0;
+    const vP = horas * ENDO_RATE_H;
+    const vE = nEx * ENDO_EXAME_EXTRA;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + vE + extra;
+    sP+=c.pagos; sNP+=c.naoPagos; sH+=horas; sEx+=nEx; sVP+=vP; sVE+=vE; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    let validCell;
+    if(v){
+      totValid++;
+      const dt = new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      validCell = `<td><span class="valid-chip ok" title="Validado em ${dt}">✓ Validado</span></td>`;
+    } else {
+      validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
+    }
+    return `<tr>
+      <td>${escapeHtml(m)}</td>
+      ${validCell}
+      <td class="num">${c.pagos}</td>
+      <td class="num">${c.naoPagos>0?`<span style="color:var(--g600)">${c.naoPagos}</span>`:'0'}</td>
+      <td class="num">${horas}h</td>
+      <td class="money">${fmtMoney(vP)}</td>
+      <td class="num">${nEx}</td>
+      <td class="money">${fmtMoney(vE)}</td>
+      <td><input type="number" step="0.01" class="extras-input" value="${extra||''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${slug}',this.value)"></td>
+      <td class="money total">${fmtMoney(total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbl-resumo').innerHTML = `
+    <thead><tr>
+      <th>Médico</th>
+      <th class="num">Validado?</th>
+      <th class="num">Plantões pagos</th>
+      <th class="num">Não pagos</th>
+      <th class="num">Horas</th>
+      <th class="num">R$ Plantões</th>
+      <th class="num">Exames extras</th>
+      <th class="num">R$ Exames</th>
+      <th class="num">Extras (R$)</th>
+      <th class="num">TOTAL R$</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr>
+      <td>TOTAL</td>
+      <td class="num">${totValid}/${medicos.size}</td>
+      <td class="num">${sP}</td>
+      <td class="num">${sNP}</td>
+      <td class="num">${sH}h</td>
+      <td class="money">${fmtMoney(sVP)}</td>
+      <td class="num">${sEx}</td>
+      <td class="money">${fmtMoney(sVE)}</td>
+      <td class="money">${fmtMoney(sExtras)}</td>
+      <td class="money total">${fmtMoney(sTot)}</td>
+    </tr></tfoot>`;
+  document.getElementById('resumo-stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${sP}</div><div class="stat-lbl">Pagos (${sNP} não remun.)</div></div>
+    <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
+    <div class="stat"><div class="stat-val">${sEx}</div><div class="stat-lbl">Exames extras</div></div>
+    <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+
+  const obsCard = document.getElementById('admin-obs-card');
+  const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
+  if(!obsEntries.length){
+    obsCard.innerHTML = `<div class="card-title">Observações dos médicos</div><div class="empty">Nenhuma observação escrita neste mês.</div>`;
+  } else {
+    const nomesBySlug = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+    obsCard.innerHTML = `
+      <div class="card-title">Observações dos médicos <span class="right">${obsEntries.length} ${obsEntries.length===1?'médico escreveu':'médicos escreveram'}</span></div>
+      <div class="obs-list">
+        ${obsEntries.map(([slug, texto]) => `
+          <div class="obs-item">
+            <div class="obs-item-head">${escapeHtml(nomesBySlug.get(slug) || slug)}</div>
+            <div class="obs-item-text">${escapeHtml(texto)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+async function downloadExcel_endo(){
+  const mesKey = document.getElementById('resumo-mes-select').value;
+  if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const produtividade = data.produtividade || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+  if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const [y,m] = mesKey.split('-');
+  const periodoLabel = `${MESES_PT[+m]}/${y}`;
+
+  // Plantões
+  const detHead=['Data','Dia da semana','Turno','Médico','Pago?','Horas','Valor R$'];
+  const detRows = plantoes.slice()
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p => {
+      const pago = isEndoPago(p);
+      const h = pago ? ENDO_BASE_H : 0;
+      const val = h * ENDO_RATE_H;
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turnoLabel || p.turno, p.medico, pago?'Sim':'Não', h, {v:val, t:'n', z:'R$ #,##0.00'}];
+    });
+  const wsDet = XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
+  wsDet['!cols'] = [{wch:12},{wch:14},{wch:20},{wch:42},{wch:8},{wch:8},{wch:14}];
+
+  // Produtividade
+  const nomesMap = new Map();
+  Array.from(new Set(plantoes.map(p => p.medico))).forEach(n => nomesMap.set(slugify(n), n));
+  const prodHead = ['Data','Médico','PRT','Valor R$'];
+  const prodRows = Object.values(produtividade)
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || (nomesMap.get(a.medicoSlug)||'').localeCompare(nomesMap.get(b.medicoSlug)||'','pt-BR'))
+    .map(e => [fmtDate(e.dataIso), nomesMap.get(e.medicoSlug) || e.medicoSlug, e.prt || '', {v:ENDO_EXAME_EXTRA, t:'n', z:'R$ #,##0.00'}]);
+  const wsProd = XLSX.utils.aoa_to_sheet([prodHead, ...prodRows]);
+  wsProd['!cols'] = [{wch:12},{wch:42},{wch:18},{wch:14}];
+
+  // Resumo
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {pagos:0, naoPagos:0});
+    const c = medicos.get(p.medico);
+    if(isEndoPago(p)) c.pagos++;
+    else c.naoPagos++;
+  });
+  const examesByMedico = new Map();
+  Object.values(produtividade).forEach(e => {
+    examesByMedico.set(e.medicoSlug, (examesByMedico.get(e.medicoSlug) || 0) + 1);
+  });
+  const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const resHead = ['Médico','Validado?','Plantões pagos','Não pagos','Horas','R$ Plantões','Exames extras','R$ Exames','Extras (R$)','TOTAL R$','Observações'];
+  let sP=0, sNP=0, sH=0, sEx=0, sVP=0, sVE=0, sExtras=0, sTot=0;
+  const bodyRows = medNames.map(m => {
+    const c = medicos.get(m);
+    const slug = slugify(m);
+    const horas = c.pagos * ENDO_BASE_H;
+    const nEx = examesByMedico.get(slug) || 0;
+    const vP = horas * ENDO_RATE_H;
+    const vE = nEx * ENDO_EXAME_EXTRA;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + vE + extra;
+    sP+=c.pagos; sNP+=c.naoPagos; sH+=horas; sEx+=nEx; sVP+=vP; sVE+=vE; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
+    return [m, validValue, c.pagos, c.naoPagos, horas,
+      {v:vP, t:'n', z:'R$ #,##0.00'},
+      nEx,
+      {v:vE, t:'n', z:'R$ #,##0.00'},
+      {v:extra, t:'n', z:'R$ #,##0.00'},
+      {v:total, t:'n', z:'R$ #,##0.00'},
+      observacoes[slug] || ''];
+  });
+  const totFormulas = ['TOTAL','',sP,sNP,sH,
+    {v:sVP, t:'n', z:'R$ #,##0.00'},
+    sEx,
+    {v:sVE, t:'n', z:'R$ #,##0.00'},
+    {v:sExtras, t:'n', z:'R$ #,##0.00'},
+    {v:sTot, t:'n', z:'R$ #,##0.00'},''];
+  const wsRes = XLSX.utils.aoa_to_sheet([
+    [`Endoscopia — ${periodoLabel}`],
+    [`Só plantões seg-sex manhã/tarde são pagos (${ENDO_BASE_H}h × R$${ENDO_RATE_H}). Cada exame extra vale R$${ENDO_EXAME_EXTRA}.`],
+    [], resHead, ...bodyRows, totFormulas,
+  ]);
+  wsRes['!cols'] = [{wch:42},{wch:18},{wch:14},{wch:10},{wch:8},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:50}];
+
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
+  XLSX.utils.book_append_sheet(wb, wsProd, 'Produtividade');
+  XLSX.writeFile(wb, `EinsteinValid_Endo_${periodoLabel.replace('/','_')}.xlsx`);
   showToast('Excel gerado ✓', 'green');
 }
 
