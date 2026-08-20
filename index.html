@@ -330,6 +330,23 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 <div class="sector-bar" id="sector-bar" style="display:none">
   <label class="sector-label">Setor ativo:</label>
   <select class="sector-select" id="sector-select" onchange="switchSector(this.value)"></select>
+  <button class="sector-select" style="margin-left:auto;cursor:pointer;font-weight:600" onclick="openExportModal()">⬇ Exportar consolidado</button>
+</div>
+
+<!-- ══ MODAL: EXPORTAR CONSOLIDADO ══ -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal-box">
+    <div class="modal-title">Exportar consolidado</div>
+    <div class="modal-sub">Compila os totais a receber de todos os médicos de todos os setores do mês escolhido.</div>
+    <div class="modal-field">
+      <label class="login-label">Mês de referência</label>
+      <input class="login-input" id="export-mes" type="month">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="document.getElementById('export-modal').classList.remove('show')">Cancelar</button>
+      <button class="btn-primary" onclick="exportConsolidado()">Gerar Excel</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ TABS ADMIN ══ -->
@@ -824,6 +841,130 @@ function setupSectorSelector(){
       sel.appendChild(opt);
     });
   sel.value = currentSector;
+}
+
+function openExportModal(){
+  const inp = document.getElementById('export-mes');
+  // default = mês atual
+  const now = new Date();
+  inp.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('export-modal').classList.add('show');
+}
+
+// Calcula total a receber de um médico dado o tipo do setor e os dados do mês.
+function calcTotalMedico(tipo, medicoNome, data){
+  const plantoes = Object.values(data.plantoes || {}).filter(p => p.medico === medicoNome);
+  const acionamentos = data.acionamentos || {};
+  const duracoes = data.duracoes || {};
+  const horasExtras = data.horasExtras || {};
+  const produtividade = data.produtividade || {};
+  const extras = data.extras || {};
+  const overrides = data.overrides || {};
+  const slug = slugify(medicoNome);
+  const extra = Number(extras[slug]) || 0;
+
+  if(tipo === 'radiologia'){
+    let meio=0, fds=0, notNAc=0, notAc=0;
+    plantoes.forEach(p => {
+      const cat = categorize(p);
+      if(cat === CAT_MEIO) meio++;
+      else if(cat === CAT_FDS) fds++;
+      else if(cat === CAT_NOITE){
+        if(acionamentos[acionamentoKey(p)]) notAc++;
+        else notNAc++;
+      }
+    });
+    const getOv = (f) => {
+      const v = overrides[slug]?.[f];
+      return (v === undefined || v === null || v === '') ? null : Number(v);
+    };
+    meio = getOv('meio') ?? meio;
+    fds = getOv('fds') ?? fds;
+    notNAc = getOv('notNAc') ?? notNAc;
+    notAc = getOv('notAc') ?? notAc;
+    const rh = getOv('rhMS') ?? rateMeioSemana(meio);
+    return meio*H_TURNO*rh + fds*H_TURNO*RATE_FDS + notNAc*RATE_NOT_SOBREAVISO + notAc*H_NOITE*RATE_NOT_ACIONADO_H + extra;
+  }
+  if(tipo === 'dermatologia'){
+    let q6=0;
+    plantoes.forEach(p => { if(Number(duracoes[duracaoKey(p)]) === 6) q6++; });
+    const q4 = plantoes.length - q6;
+    return (q4*4 + q6*6) * DERMATO_RATE_H + extra;
+  }
+  if(tipo === 'ecocardiografia'){
+    let horas = 0;
+    plantoes.forEach(p => { horas += ECO_BASE_H + (Number(horasExtras[heKey(p)]) || 0); });
+    const nExames = Object.values(produtividade).filter(e => e.medicoSlug === slug).length;
+    return horas*ECO_RATE_H + nExames*ECO_EXAME_EXTRA + extra;
+  }
+  if(tipo === 'clinicos'){
+    let horas = 0;
+    plantoes.forEach(p => { horas += CLINICOS_BASE_H + (Number(horasExtras[heKey(p)]) || 0); });
+    return horas*CLINICOS_RATE_H + extra;
+  }
+  if(tipo === 'ginecologia'){
+    let horas = 0;
+    plantoes.forEach(p => { horas += GINECO_BASE_H + (Number(horasExtras[heKey(p)]) || 0); });
+    return horas*GINECO_RATE_H + extra;
+  }
+  if(tipo === 'urologia'){
+    let horas = 0;
+    plantoes.forEach(p => { horas += URO_BASE_H + (Number(horasExtras[heKey(p)]) || 0); });
+    return horas*URO_RATE_H + extra;
+  }
+  if(tipo === 'endoscopia'){
+    const pagos = plantoes.filter(isEndoPago).length;
+    const horas = pagos * ENDO_BASE_H;
+    const nExames = Object.values(produtividade).filter(e => e.medicoSlug === slug).length;
+    return horas*ENDO_RATE_H + nExames*ENDO_EXAME_EXTRA + extra;
+  }
+  return 0;
+}
+
+async function exportConsolidado(){
+  const mesKey = document.getElementById('export-mes').value;
+  if(!mesKey){ showToast('Escolha um mês', 'red'); return; }
+
+  const rows = []; // {medico, setor, total}
+  for(const [sectorKey, sectorInfo] of Object.entries(SETORES_LIST)){
+    const snap = await db.ref(`setores/${sectorKey}/meses/${mesKey}`).once('value');
+    const data = snap.val();
+    if(!data || !data.plantoes) continue;
+    const medicos = new Set();
+    Object.values(data.plantoes).forEach(p => medicos.add(p.medico));
+    medicos.forEach(m => {
+      const total = calcTotalMedico(sectorInfo.tipo, m, data);
+      if(total > 0 || Object.values(data.plantoes).some(p => p.medico === m)){
+        rows.push({medico:m, setor:sectorInfo.label, total});
+      }
+    });
+  }
+
+  if(!rows.length){
+    showToast(`Nenhum dado encontrado para ${mesKey}`, 'red');
+    return;
+  }
+  rows.sort((a,b) => a.medico.localeCompare(b.medico,'pt-BR') || a.setor.localeCompare(b.setor,'pt-BR'));
+
+  const [y,m] = mesKey.split('-');
+  const periodoLabel = `${MESES_PT[+m]}/${y}`;
+
+  const wb = XLSX.utils.book_new();
+  const head = ['Médico','Setor','Total a receber'];
+  const body = rows.map(r => [r.medico, r.setor, {v:r.total, t:'n', z:'R$ #,##0.00'}]);
+  const totalGeral = rows.reduce((s,r)=>s+r.total, 0);
+  const totRow = ['TOTAL GERAL','', {v:totalGeral, t:'n', z:'R$ #,##0.00'}];
+  const ws = XLSX.utils.aoa_to_sheet([
+    [`Consolidado — ${periodoLabel}`],
+    [`${rows.length} médicos · ${new Set(rows.map(r=>r.setor)).size} setores`],
+    [],
+    head, ...body, totRow,
+  ]);
+  ws['!cols'] = [{wch:42},{wch:22},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Consolidado');
+  XLSX.writeFile(wb, `EinsteinValid_Consolidado_${periodoLabel.replace('/','_')}.xlsx`);
+  document.getElementById('export-modal').classList.remove('show');
+  showToast(`Exportado: ${rows.length} médicos, ${fmtMoney(totalGeral)}`, 'green');
 }
 
 function switchSector(newSector){
