@@ -340,6 +340,32 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   <label class="sector-label">Setor ativo:</label>
   <select class="sector-select" id="sector-select" onchange="switchSector(this.value)"></select>
   <button class="sector-select" style="margin-left:auto;cursor:pointer;font-weight:600" onclick="openExportModal()">⬇ Exportar consolidado</button>
+  <button class="sector-select" style="cursor:pointer;font-weight:600" onclick="openBackupModal()" title="Baixar backup ou restaurar dados">💾 Backup</button>
+</div>
+
+<!-- ══ MODAL: BACKUP / RESTORE ══ -->
+<div class="modal-overlay" id="backup-modal">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-title">Backup e restauração</div>
+    <div class="modal-sub">Baixe um snapshot completo do banco para preservar os dados, ou restaure a partir de um backup anterior.</div>
+
+    <div style="border:1px solid var(--bd);border-radius:8px;padding:14px;margin:16px 0">
+      <div style="font-weight:600;font-size:13px;color:var(--g900);margin-bottom:8px">Baixar backup</div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:10px">Gera um arquivo JSON com todos os usuários, escalas, marcações, extras, observações e overrides de todos os setores.</div>
+      <button class="btn-primary" onclick="downloadBackup()">⬇ Baixar backup agora</button>
+    </div>
+
+    <div style="border:1px solid var(--red);border-radius:8px;padding:14px;background:var(--red-light)">
+      <div style="font-weight:600;font-size:13px;color:var(--red);margin-bottom:8px">⚠ Restaurar de backup</div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:10px">Substitui <strong>todos</strong> os dados atuais pelos do arquivo. Ação irreversível.</div>
+      <input type="file" id="restore-file" accept="application/json,.json" style="display:none" onchange="restoreBackup(this.files[0])">
+      <button class="btn-danger" onclick="document.getElementById('restore-file').click()">Selecionar arquivo…</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="document.getElementById('backup-modal').classList.remove('show')">Fechar</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ MODAL: EXPORTAR CONSOLIDADO ══ -->
@@ -863,6 +889,77 @@ function setupSectorSelector(){
       sel.appendChild(opt);
     });
   sel.value = currentSector;
+}
+
+function openBackupModal(){
+  document.getElementById('backup-modal').classList.add('show');
+}
+
+async function downloadBackup(){
+  try {
+    showToast('Preparando backup…');
+    const [uSnap, sSnap] = await Promise.all([
+      db.ref('usuarios').once('value'),
+      db.ref('setores').once('value'),
+    ]);
+    const backup = {
+      version: 1,
+      exportedAt: Date.now(),
+      exportedBy: currentUser?.nome || 'admin',
+      usuarios: uSnap.val() || {},
+      setores: sSnap.val() || {},
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    a.href = url;
+    a.download = `einsteinvalid_backup_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+    const nMedicos = Object.keys(backup.usuarios).length;
+    const nSetores = Object.keys(backup.setores).length;
+    showToast(`Backup salvo · ${nMedicos} usuários · ${nSetores} setores`, 'green');
+  } catch(err) {
+    console.error('[downloadBackup] erro:', err);
+    showToast('Erro: '+err.message, 'red');
+  }
+}
+
+async function restoreBackup(file){
+  if(!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data || typeof data !== 'object' || (!data.usuarios && !data.setores)){
+      showToast('Arquivo inválido — não parece ser um backup EinsteinValid', 'red');
+      return;
+    }
+    const dt = data.exportedAt ? new Date(data.exportedAt).toLocaleString('pt-BR') : '(sem data)';
+    const nMedicos = Object.keys(data.usuarios || {}).length;
+    const nSetores = Object.keys(data.setores || {}).length;
+    const msg = `Restaurar backup?\n\nGerado em: ${dt}\nUsuários: ${nMedicos}\nSetores: ${nSetores}\n\n⚠ TODOS os dados atuais serão substituídos.\n\nDigite RESTAURAR para confirmar:`;
+    const confirm1 = prompt(msg);
+    if(confirm1 !== 'RESTAURAR'){
+      showToast('Restauração cancelada', 'red');
+      return;
+    }
+    showToast('Restaurando…');
+    const updates = {};
+    if(data.usuarios) updates['usuarios'] = data.usuarios;
+    if(data.setores) updates['setores'] = data.setores;
+    await db.ref().update(updates);
+    showToast('Backup restaurado — recarregando…', 'green');
+    setTimeout(() => location.reload(), 1500);
+  } catch(err) {
+    console.error('[restoreBackup] erro:', err);
+    showToast('Erro ao restaurar: '+err.message, 'red');
+  } finally {
+    // Limpa o input pra permitir re-selecionar o mesmo arquivo
+    document.getElementById('restore-file').value = '';
+  }
 }
 
 function openExportModal(){
