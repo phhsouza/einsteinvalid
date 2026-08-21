@@ -1,0 +1,59 @@
+name: Backup Firebase
+
+on:
+  schedule:
+    # 06:00 UTC = 03:00 em São Paulo (baixo tráfego)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # permite disparar manualmente pelo GitHub
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout branch backups
+        uses: actions/checkout@v4
+        with:
+          ref: backups
+          fetch-depth: 1
+
+      - name: Checkout script from main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: _tools
+          sparse-checkout: |
+            scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: _tools/scripts
+        run: npm install --no-audit --no-fund
+
+      - name: Run backup
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node _tools/scripts/backup.mjs
+
+      - name: Clean up tools directory
+        run: rm -rf _tools
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "Nenhuma mudança — backup do dia já existe (rodou 2x hoje?)"
+          else
+            DATE=$(TZ=America/Sao_Paulo date +%Y-%m-%d)
+            git commit -m "backup: ${DATE}"
+            git push origin backups
+            echo "✓ Backup commitado: ${DATE}"
+          fi
