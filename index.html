@@ -1575,7 +1575,8 @@ function renderPendingCreds(){
 
 function credMessage(c){
   const url = location.origin || 'https://einsteinvalid.vercel.app';
-  return `Olá ${c.nome},\n\nSeu acesso ao EinsteinValid (conferência de plantões):\n\n🔗 ${url}\n👤 Login: ${displaySlug(c.slug)}\n🔑 Senha: ${c.senha}\n\nNo primeiro acesso o sistema pedirá para você trocar a senha.`;
+  const videoUrl = `${url}/demos/${c.setor}.mp4`;
+  return `Olá ${c.nome},\n\nSeu acesso ao EinsteinValid (conferência de plantões):\n\n🔗 ${url}\n👤 Login: ${displaySlug(c.slug)}\n🔑 Senha: ${c.senha}\n\nNo primeiro acesso o sistema pedirá para você trocar a senha.\n\n🎬 Vídeo de apresentação: ${videoUrl}`;
 }
 
 async function copyCredentials(idx, btn){
