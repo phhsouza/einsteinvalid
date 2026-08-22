@@ -27,18 +27,18 @@ const SETORES = {
   endoscopia:        { label: 'Endoscopia' },
 };
 
-// ── Helpers de overlay ────────────────────────────────
+// ── Helpers de overlay (dimensionados para mobile 390x844) ─────────────
 async function caption(page, text, ms = 2600){
   await page.evaluate((t) => {
     let el = document.getElementById('__caption');
     if(!el){
       el = document.createElement('div');
       el.id = '__caption';
-      el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);'
-        + 'background:rgba(0,0,0,0.85);color:white;padding:14px 24px;border-radius:12px;'
-        + 'font-family:system-ui,sans-serif;font-size:20px;font-weight:600;'
-        + 'z-index:999999;box-shadow:0 8px 32px rgba(0,0,0,0.4);'
-        + 'transition:opacity 0.3s;opacity:0;pointer-events:none;max-width:80%;text-align:center;';
+      el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);'
+        + 'background:rgba(0,0,0,0.88);color:white;padding:11px 18px;border-radius:10px;'
+        + 'font-family:system-ui,sans-serif;font-size:15px;font-weight:600;line-height:1.35;'
+        + 'z-index:999999;box-shadow:0 6px 24px rgba(0,0,0,0.4);'
+        + 'transition:opacity 0.3s;opacity:0;pointer-events:none;max-width:88%;text-align:center;';
       document.body.appendChild(el);
     }
     el.textContent = t;
@@ -61,14 +61,23 @@ async function pointArrow(page, selector, ms = 1500){
     if(!arrow){
       arrow = document.createElement('div');
       arrow.id = '__arrow';
-      arrow.style.cssText = 'position:fixed;font-size:44px;z-index:999998;'
+      arrow.style.cssText = 'position:fixed;font-size:30px;z-index:999998;'
         + 'transition:all 0.35s;pointer-events:none;'
-        + 'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));opacity:0;';
+        + 'filter:drop-shadow(0 3px 6px rgba(0,0,0,0.5));opacity:0;';
       arrow.textContent = '👉';
       document.body.appendChild(arrow);
     }
-    arrow.style.left = (rect.left - 60) + 'px';
-    arrow.style.top = (rect.top + rect.height/2 - 22) + 'px';
+    // Se não couber à esquerda do alvo (mobile), aponta pra cima
+    const arrowSize = 30;
+    if(rect.left < arrowSize + 8){
+      arrow.textContent = '👇';
+      arrow.style.left = (rect.left + rect.width/2 - arrowSize/2) + 'px';
+      arrow.style.top = Math.max(4, rect.top - arrowSize - 4) + 'px';
+    } else {
+      arrow.textContent = '👉';
+      arrow.style.left = (rect.left - arrowSize - 6) + 'px';
+      arrow.style.top = (rect.top + rect.height/2 - arrowSize/2) + 'px';
+    }
     requestAnimationFrame(() => { arrow.style.opacity = '1'; });
     return true;
   }, {sel: selector});
@@ -195,10 +204,13 @@ async function scenaProdutividade(page, valorLabel){
 // ── Orquestração por setor ─────────────────────────────
 async function recordSetor(browser, setorKey, setorLabel){
   console.log(`▶ Gravando ${setorKey}…`);
+  // Formato celular (iPhone 14): 390x844 lógico, gravação 2x pra nitidez
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 800 },
-    recordVideo: { dir: OUT_DIR, size: { width: 1280, height: 800 } },
+    viewport: { width: 390, height: 844 },
+    recordVideo: { dir: OUT_DIR, size: { width: 390, height: 844 } },
     deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
   });
   const page = await context.newPage();
   await page.goto(`${APP_URL}/?demo=${setorKey}`, { waitUntil: 'networkidle' });
