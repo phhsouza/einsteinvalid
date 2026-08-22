@@ -4251,7 +4251,119 @@ function detachSectorListeners(){
 document.getElementById('login-pass').addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
 document.getElementById('login-user').addEventListener('keydown', e=>{if(e.key==='Enter') document.getElementById('login-pass').focus();});
 
+// ── MODO DEMO ──────────────────────────────────────
+// Ativado por ?demo=1 — cria um DB fake em memória com dados sintéticos
+// para gravação de vídeo demonstrativo. Não toca o Firebase.
+function createDemoDb(){
+  const store = buildDemoStore();
+  function get(path){
+    const segs = path.split('/').filter(Boolean);
+    return segs.reduce((o,k) => (o == null ? o : o[k]), store);
+  }
+  function setAt(path, v){
+    const segs = path.split('/').filter(Boolean);
+    if(!segs.length){ Object.keys(store).forEach(k=>delete store[k]); Object.assign(store, v||{}); return; }
+    let cur = store;
+    for(let i=0; i<segs.length-1; i++){
+      const k = segs[i];
+      if(cur[k] == null || typeof cur[k] !== 'object') cur[k] = {};
+      cur = cur[k];
+    }
+    const last = segs[segs.length-1];
+    if(v === null || v === undefined) delete cur[last];
+    else cur[last] = v;
+  }
+  function makeRef(path){
+    path = path || '/';
+    return {
+      once(){ return Promise.resolve({val: () => get(path), exists: () => get(path) != null}); },
+      on(evt, cb){ Promise.resolve().then(() => cb({val: () => get(path), exists: () => get(path) != null})); return cb; },
+      off(){},
+      set(v){ setAt(path, v); return Promise.resolve(); },
+      update(v){
+        const cur = get(path) || {};
+        setAt(path, {...cur, ...v});
+        return Promise.resolve();
+      },
+      remove(){ setAt(path, null); return Promise.resolve(); },
+      push(){
+        const id = 'demo_' + Math.random().toString(36).slice(2, 10);
+        return {
+          key: id,
+          set(v){ setAt(`${path}/${id}`, v); return Promise.resolve(); },
+        };
+      },
+    };
+  }
+  return { ref: (path) => makeRef(path || '/') };
+}
+
+function buildDemoStore(){
+  // Mês vigente demo
+  const MES = '2026-08';
+  // Nome do médico demo
+  const DEMO_MEDICO = 'Dr. Demo Médico';
+  const OUTROS = ['Ana Silva', 'Bruno Costa', 'Camila Reis'];
+  // Gera plantões variados de agosto/2026 (segunda 04/08 a domingo 31/08)
+  const plantoes = {};
+  const push = (dataIso, turno, medico) => {
+    const id = 'p_' + Math.random().toString(36).slice(2, 10);
+    plantoes[id] = {dataIso, turno, medico};
+  };
+  // Dr Demo Médico — Manhã seg-sex
+  ['2026-08-04','2026-08-05','2026-08-06','2026-08-11','2026-08-12','2026-08-13','2026-08-18','2026-08-19','2026-08-20','2026-08-25','2026-08-26'].forEach(d => push(d, 'Manhã', DEMO_MEDICO));
+  // Dr Demo Médico — Tarde eventual
+  ['2026-08-07','2026-08-14','2026-08-21','2026-08-28'].forEach(d => push(d, 'Tarde', DEMO_MEDICO));
+  // Dr Demo Médico — Noturnos
+  ['2026-08-05','2026-08-12','2026-08-19','2026-08-26'].forEach(d => push(d, 'Noite', DEMO_MEDICO));
+  // Alguns plantões de outros pra popular a base
+  OUTROS.forEach((m, i) => {
+    ['2026-08-04','2026-08-11','2026-08-18','2026-08-25'].forEach(d => push(d, 'Manhã', m));
+    push(`2026-08-0${6+i}`, 'Noite', m);
+  });
+  return {
+    _migrated: Date.now(),
+    usuarios: {
+      admin: {nome:'Admin', role:'admin', salt:'0'.repeat(32), passHash:'0'.repeat(64), passChanged:true},
+      demo: {nome:DEMO_MEDICO, role:'medico', setor:'radiologia', salt:'0'.repeat(32), passHash:'0'.repeat(64), passChanged:true},
+    },
+    setores: {
+      radiologia: {
+        mesVigente: MES,
+        meses: {
+          [MES]: {
+            meta: {uploadedAt: Date.now() - 5*86400000, uploadedBy:'admin', count: Object.keys(plantoes).length},
+            plantoes,
+          },
+        },
+      },
+    },
+  };
+}
+
+async function bootDemo(){
+  db = createDemoDb();
+  fbReady = true;
+  setConn(true, 'Demo');
+  // Pré-configura sessão do médico demo (pula troca de senha)
+  currentUser = {
+    slug: 'demo',
+    nome: 'Dr. Demo Médico',
+    role: 'medico',
+    setor: 'radiologia',
+    passChanged: true,
+    passHash: '0'.repeat(64),
+    salt: '0'.repeat(32),
+  };
+  await afterLogin();
+}
+
 (async () => {
+  const params = new URLSearchParams(location.search);
+  if(params.get('demo') === '1'){
+    await bootDemo();
+    return;
+  }
   document.getElementById('login-status').textContent = 'Conectando…';
   try {
     await initFirebase();
