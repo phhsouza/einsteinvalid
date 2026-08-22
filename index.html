@@ -264,15 +264,118 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 .info-panel{background:var(--amber-light);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:13px;color:var(--amber-dark);}
 .info-panel strong{font-family:var(--mono);background:var(--white);padding:2px 6px;border-radius:4px;}
 
-/* Responsive */
+/* Responsive — Tablet */
+@media (max-width:900px){
+  .wrap{padding:16px;}
+  .not-day{width:56px;font-size:11px;}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+}
+
+/* Responsive — Mobile (celular) */
 @media (max-width:640px){
-  .card{padding:16px;}
-  .month-row{flex-direction:column;align-items:stretch;}
-  .not-day{display:none;}
-  .not-date{width:auto;}
-  .tabs-bar{top:60px;}
-  .user-row{grid-template-columns:1fr;gap:6px;}
+  /* Layout base */
+  .wrap{padding:12px;}
+  .card{padding:14px 12px;border-radius:10px;}
+  .card-title{font-size:13px;flex-wrap:wrap;gap:6px;}
+  .card-title .right{margin-left:0;width:100%;font-size:11px;}
+
+  /* Topbar: quebra em 2 linhas, remove ruído */
+  .topbar{padding:10px 14px;gap:8px;flex-wrap:wrap;}
+  .topbar-logo{height:32px;}
+  .topbar-title{font-size:15px;}
+  .topbar-sub{font-size:10px;}
+  .topbar-left{flex:1;min-width:0;}
+  .topbar-right{gap:6px;}
   .topbar-user{display:none;}
+  .conn-badge{display:none;}
+  .btn-secondary,.btn-logout{padding:6px 10px;font-size:11px;}
+
+  /* Sector bar */
+  .sector-bar{padding:8px 12px;gap:6px;flex-wrap:wrap;top:58px;}
+  .sector-label{font-size:10px;}
+  .sector-select{font-size:12px;padding:5px 8px;}
+
+  /* Tabs — quebra pra rolagem horizontal com botões enxutos */
+  .tabs-bar{top:57px;}
+  .tab-btn{flex:0 0 auto;min-width:0;padding:11px 14px;font-size:12px;}
+
+  /* Mês e uploads */
+  .month-row{flex-direction:column;align-items:stretch;gap:8px;}
+  .month-select{min-width:0;width:100%;}
+  .upload-area{padding:24px 16px;}
+
+  /* Stats — 2 colunas em vez de auto-fit */
+  .stats{grid-template-columns:1fr 1fr;gap:8px;}
+  .stat{padding:12px 12px;}
+  .stat-val{font-size:18px;}
+  .stat-lbl{font-size:9px;}
+
+  /* Cards de plantão (radio noturnos / eco / gineco / uro / clinicos / endo / derma):
+     quebra em duas linhas — cabeçalho (data+turno) e ação (HE/PRT/check) */
+  .not-row{flex-wrap:wrap;padding:10px 12px;gap:8px 10px;}
+  .not-date{width:auto;flex-shrink:0;}
+  .not-day{display:none;}
+  .not-name{font-size:12px;flex:1;min-width:0;}
+  .not-check{margin-left:0;width:100%;justify-content:space-between;order:5;}
+  .not-prt{margin-right:0;width:100%;order:5;gap:8px;}
+  .not-prt-label{flex-shrink:0;}
+  .not-prt input{flex:1;width:auto;min-width:0;padding:8px 10px;font-size:13px;}
+
+  /* Horas extras: botões maiores pro toque */
+  .he-controls{gap:10px;}
+  .he-btn{width:38px;height:38px;font-size:20px;}
+  .he-display{min-width:64px;font-size:16px;}
+  .he-label{margin-right:0;}
+
+  /* Produtividade: data + prt na mesma linha, botão full-width */
+  .prod-add{grid-template-columns:1fr 1fr;gap:8px;}
+  .prod-add input{padding:10px 12px;font-size:14px;min-width:0;width:100%;}
+  .prod-add .prod-btn{grid-column:1 / -1;padding:12px;font-size:14px;}
+
+  /* Validação — botões full-width */
+  .valid-box{flex-direction:column;align-items:stretch;text-align:left;}
+  .valid-box .valid-icon{align-self:flex-start;}
+  .valid-btn{width:100%;padding:12px;font-size:14px;}
+
+  /* Download / consolidado */
+  .download-row{justify-content:stretch;}
+  .btn-download,.btn-primary,.btn-secondary{min-height:40px;}
+  .download-row .btn-download{width:100%;justify-content:center;padding:12px;font-size:14px;}
+
+  /* Usuários */
+  .user-row{grid-template-columns:1fr;gap:6px;}
+
+  /* Credenciais — botão full-width abaixo */
+  .cred-item{grid-template-columns:1fr;gap:10px;padding:12px;}
+  .cred-copy{width:100%;padding:10px;font-size:13px;}
+
+  /* Form novo usuário / senha */
+  .form-row{grid-template-columns:1fr;gap:10px;}
+
+  /* Modal */
+  .modal-box{padding:22px 18px;border-radius:14px;max-width:none;}
+  .modal-actions{flex-direction:column-reverse;gap:8px;}
+  .modal-actions button{width:100%;padding:12px;}
+
+  /* Tabelas — mais compactas */
+  .tbl th{padding:8px 10px;font-size:10px;}
+  .tbl td{padding:8px 10px;font-size:12px;}
+  .tbl td.money.total,.tbl tfoot td.money.total{font-size:13px;}
+
+  /* Observações textarea */
+  .obs-textarea{font-size:14px;padding:10px 12px;}
+
+  /* Login: menos padding */
+  .login-box{padding:28px 22px;border-radius:16px;}
+  .login-logo img{height:56px;}
+  .login-title{font-size:20px;}
+  .login-input{padding:12px;font-size:15px;}
+  .login-btn{padding:14px;font-size:15px;}
+}
+
+/* Desktop grande — maior conforto de leitura */
+@media (min-width:1400px){
+  .wrap{padding:28px 20px;}
 }
 </style>
 </head>
