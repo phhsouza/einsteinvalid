@@ -760,6 +760,16 @@ async function doLogin(){
   const errEl = document.getElementById('login-error');
   errEl.textContent='';
   if(!rawUser || !pass){ errEl.textContent='Preencha usuário e senha.'; return; }
+
+  // Atalho de modo demo: "demo"/"demo" aciona bootDemo do setor pendente
+  if(_demoSetor && rawUser.toLowerCase() === 'demo' && pass === 'demo'){
+    document.getElementById('login-btn').disabled = true;
+    document.getElementById('login-status').textContent = 'Modo demo — carregando…';
+    await bootDemo(_demoSetor);
+    _demoSetor = null;
+    return;
+  }
+
   if(!fbReady){ errEl.textContent='Aguardando conexão…'; return; }
 
   document.getElementById('login-btn').disabled = true;
@@ -4362,13 +4372,18 @@ function makeDemoRef(store, path){
   };
 }
 
+// Setor demo pendente (quando ?demo=<setor> presente, esperamos login)
+let _demoSetor = null;
+
 (async () => {
   const params = new URLSearchParams(location.search);
   const demoParam = params.get('demo');
   if(demoParam){
-    // ?demo=1 → radiologia (default); ?demo=<setor> → setor específico
-    const setorKey = SETORES_LIST[demoParam] ? demoParam : 'radiologia';
-    await bootDemo(setorKey);
+    // ?demo=<setor> mostra a tela de login. Ao logar com "demo"/"demo",
+    // o bootDemo é acionado (ver doLogin).
+    _demoSetor = SETORES_LIST[demoParam] ? demoParam : 'radiologia';
+    document.getElementById('login-status').textContent = 'Modo demo';
+    document.getElementById('login-overlay').classList.add('show');
     return;
   }
   document.getElementById('login-status').textContent = 'Conectando…';

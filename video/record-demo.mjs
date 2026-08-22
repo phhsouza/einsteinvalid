@@ -204,6 +204,22 @@ async function recordSetor(browser, setorKey, setorLabel){
   await page.goto(`${APP_URL}/?demo=${setorKey}`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(600);
 
+  // 1) Cena de login
+  await page.waitForSelector('#login-overlay.show', { timeout: 10000 });
+  await caption(page, `EinsteinValid — ${setorLabel}`, 2200);
+  await caption(page, 'Faça login com seu usuário e senha', 2200);
+  await pointArrow(page, '#login-user', 900);
+  await page.click('#login-user');
+  await page.keyboard.type('demo', { delay: 130 });
+  await page.waitForTimeout(300);
+  await pointArrow(page, '#login-pass', 900);
+  await page.click('#login-pass');
+  await page.keyboard.type('demo', { delay: 130 });
+  await page.waitForTimeout(400);
+  await pointArrow(page, '#login-btn', 900);
+  await page.click('#login-btn');
+  await page.waitForTimeout(1000);
+
   await intro(page, setorLabel);
   await showValidacao(page);
 
