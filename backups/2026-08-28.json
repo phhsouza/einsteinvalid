@@ -1,0 +1,5355 @@
+{
+  "version": 1,
+  "exportedAt": 1787940705675,
+  "exportedBy": "github-action",
+  "usuarios": {
+    "admin": {
+      "criadoEm": 1785789625410,
+      "nome": "Admin",
+      "passChanged": true,
+      "passHash": "2ca95854f31be5c2e93156fcaf754def78de9ea3cddd5844ca9b7ed393a5dc8a",
+      "role": "admin",
+      "salt": "0698476ee68d5f67a59db0d3c429560c"
+    },
+    "aldo_neto": {
+      "criadoEm": 1787323339642,
+      "nome": "Aldo Neto",
+      "passChanged": false,
+      "passHash": "699c7e35d9d156a23d10185d824ef51641c7ba945e9d0b194d9caee1597d416d",
+      "role": "medico",
+      "salt": "0cceec80780b81e48d8f26bbd953f7b5",
+      "setor": "urologia"
+    },
+    "alexandre_pontes": {
+      "criadoEm": 1787271068007,
+      "nome": "Alexandre Pontes",
+      "passChanged": false,
+      "passHash": "4686c79255e6b5fad25cd9e75c66ef098cc27919379b9446e91081e4c5e4c763",
+      "role": "medico",
+      "salt": "d1de1402e3cb6dd67cbea949f4b2b126",
+      "setor": "ecocardiografia"
+    },
+    "amanda_tormin": {
+      "criadoEm": 1787269857900,
+      "nome": "Amanda Tormin",
+      "passChanged": false,
+      "passHash": "2dba3683690022af451c3ae7e8e7a26a00e150f6cb8ad0eb18a37d6913ff40fd",
+      "role": "medico",
+      "salt": "6f5f18dae8aa50e7d53e19213909daff",
+      "setor": "radiologia"
+    },
+    "amelia_zaccariotti": {
+      "criadoEm": 1787265187385,
+      "nome": "Amélia Zaccariotti",
+      "passChanged": false,
+      "passHash": "7a5f639d9db33b20520531fc49be0cd3640f6901830a8e762525aca7d0418bb1",
+      "role": "medico",
+      "salt": "5e7e0985ee38af131ad72867f29e848c",
+      "setor": "ginecologia"
+    },
+    "ana_vivarelli": {
+      "criadoEm": 1786619935556,
+      "nome": "Ana Gabriela Vivarelli",
+      "passChanged": true,
+      "passHash": "febdf520b5257c3862afa85ab67393fce20a6eb128e99e79487711391c1cb854",
+      "role": "medico",
+      "salt": "f2bee531033b720b13638bbac1489fee",
+      "setor": "dermatologia"
+    },
+    "antonio_flavio": {
+      "criadoEm": 1787323339407,
+      "nome": "Antonio Flávio",
+      "passChanged": false,
+      "passHash": "6f3ca2f979f93185838975938f6e77836013d92fbf989f749a0dd2a03e4263b7",
+      "role": "medico",
+      "salt": "b42dacb64eba8b26afc87b9da44499e8",
+      "setor": "urologia"
+    },
+    "beatriz_borges": {
+      "criadoEm": 1787269857711,
+      "nome": "Beatriz Mendonça Borges",
+      "passChanged": false,
+      "passHash": "bc2f21ce7a803e65ce5a5737c4395e1cefb08ff65865eeeb8fb92f39989c7723",
+      "role": "medico",
+      "salt": "cdfa8cefd9e17f3faea90982c6c73183",
+      "setor": "radiologia"
+    },
+    "fernanda_meirelles": {
+      "criadoEm": 1787269857322,
+      "nome": "Fernanda Lauar Sampaio Meirelles",
+      "passChanged": false,
+      "passHash": "177afcaac79158415b2e57e5c1e3e45b8fad980e52da6a6942719c3398386d61",
+      "role": "medico",
+      "salt": "3c805ba48f7e0e3a8ccdeeabf53c84cb",
+      "setor": "radiologia"
+    },
+    "fernando_costa": {
+      "criadoEm": 1787269858478,
+      "nome": "Fernando Costa",
+      "passChanged": false,
+      "passHash": "a8a2ede683eb32525eaa87185ef9ced737dc3f49b57a6ef77d2eebf1d0c3d376",
+      "role": "medico",
+      "salt": "0a5e4c8696a0c39a69ccf2f7ae559518",
+      "setor": "radiologia"
+    },
+    "guilherme_andrade": {
+      "criadoEm": 1787323338414,
+      "nome": "Guilherme Andrade",
+      "passChanged": false,
+      "passHash": "657be0d3509956ea183252da49e10820726cc8258ade19b7e76032cfc8fb9a72",
+      "role": "medico",
+      "salt": "60c7b8f6aa8abdddc728df52e38c607b",
+      "setor": "urologia"
+    },
+    "henrique_souza": {
+      "criadoEm": 1787264431417,
+      "nome": "Henrique Martins de Souza",
+      "passChanged": true,
+      "passHash": "741627b912725167366ecd05368de17d533b4cd48c47413f90379008194f763f",
+      "role": "medico",
+      "salt": "ae017eba67997919623ef34c1c8dcda3",
+      "setor": "clinicos_checkup"
+    },
+    "joaquianni_rassi": {
+      "criadoEm": 1787269997337,
+      "nome": "Joaquianni Rassi",
+      "passChanged": false,
+      "passHash": "92c2fcccd58a60d7a04cb4bfecea9b9fed44382215f51db2a7a94d5f55f10bc1",
+      "role": "medico",
+      "salt": "b36ea271d4026cf140736339862d4621",
+      "setor": "ginecologia"
+    },
+    "lara_mori": {
+      "criadoEm": 1787269858285,
+      "nome": "Lara Mori",
+      "passChanged": false,
+      "passHash": "f9ea5a92703e461c31552a6962f4056e4cb8db1c58b9c823e83359a9c4f76236",
+      "role": "medico",
+      "salt": "e8853fcf07eae821924066af53410717",
+      "setor": "radiologia"
+    },
+    "larissa_costa": {
+      "criadoEm": 1787269858089,
+      "nome": "Larissa Maia da Costa",
+      "passChanged": false,
+      "passHash": "3d8dfccff5275382768bef3ec9e2b25e18acf2ebd3d241fea55133490372a04c",
+      "role": "medico",
+      "salt": "5ce8df98a8f2220e20cc04c3211a6737",
+      "setor": "radiologia"
+    },
+    "marcos_castro": {
+      "criadoEm": 1786707153919,
+      "nome": "Marcos Filipe Leal Marra de Castro",
+      "passChanged": true,
+      "passHash": "cad1c95b68e08d2919bdda9b33271d49337d7f000175c51d44ae136993233b31",
+      "role": "medico",
+      "salt": "02efb2649c2ff030953a6b0e7a0f74ac",
+      "setor": "ecocardiografia"
+    },
+    "marcos_fiorotto": {
+      "criadoEm": 1787269858669,
+      "nome": "Marcos Fiorotto",
+      "passChanged": false,
+      "passHash": "00e8194d958850219ef10a42eb1e3ed6c4dd084e4d37405ed15a4434b1b4f667",
+      "role": "medico",
+      "salt": "8e266a7529c799c72fd6a99735b94372",
+      "setor": "radiologia"
+    },
+    "mariana_peleja": {
+      "criadoEm": 1787269859055,
+      "nome": "Mariana Berquo Peleja",
+      "passChanged": false,
+      "passHash": "0ab9160cb615c79a93b54a2e32a619ead8b6dc84d3cfa26fd88467a73165e8e1",
+      "role": "medico",
+      "salt": "4160ad78be0c3f010504d1b7942108cf",
+      "setor": "radiologia"
+    },
+    "matheus_azevedo": {
+      "criadoEm": 1787323339035,
+      "nome": "Matheus Azevedo",
+      "passChanged": false,
+      "passHash": "7f2b4764e9f0995004eae63a0fd14d4b7d190704c8672306334cf09f6de897f8",
+      "role": "medico",
+      "salt": "a4251757ea92345d0dc163e739be130a",
+      "setor": "urologia"
+    },
+    "murilo_oliveira": {
+      "criadoEm": 1787269859253,
+      "nome": "Murilo Eugenio Oliveira",
+      "passChanged": false,
+      "passHash": "e2f04ac99b752fdae2571d08109788c834d96b8aeb8101eb781d24b157d0def6",
+      "role": "medico",
+      "salt": "6619c14703092e930e83b9767b6b76ed",
+      "setor": "radiologia"
+    },
+    "olavo_nakamura": {
+      "criadoEm": 1787269858863,
+      "nome": "Olavo Nakamura",
+      "passChanged": false,
+      "passHash": "8f2a91d1cca066cdb72e88eaa3ba0e151aeea827e68629a95527b8a9fcff58ba",
+      "role": "medico",
+      "salt": "31416379246291c62ac129279f3ea5a4",
+      "setor": "radiologia"
+    },
+    "patricia_simon": {
+      "criadoEm": 1787265194638,
+      "nome": "Patrícia Simon",
+      "passChanged": true,
+      "passHash": "da25a003fa7db3f53ead7fc8d2af0ee2e482638462c2ca962be1848f76cc018b",
+      "role": "medico",
+      "salt": "28a843de89cc2d864a4cf1e75aa715c7",
+      "setor": "ginecologia"
+    },
+    "pedro_salgado": {
+      "criadoEm": 1785928669275,
+      "nome": "Pedro Rios Pedroso Salgado",
+      "passChanged": true,
+      "passHash": "fb32a7d20068cb15ffbfb666e8cef9ae3781e0581d2cbbdd89f84417798a4723",
+      "role": "medico",
+      "salt": "71acd94ddff288d62cc95aa140c6fba4",
+      "setor": "radiologia"
+    },
+    "pedro_souza": {
+      "criadoEm": 1787406333189,
+      "nome": "Pedro Henrique Hasimoto e Souza",
+      "passChanged": true,
+      "passHash": "cf2c8e0256cf1e797dff981fbb9a49d0b9096233af4f003e9c9e47e07288048b",
+      "role": "medico",
+      "salt": "7d2e0143436469af6689c852d2ba152f",
+      "setor": "radiologia"
+    },
+    "poliana_parreira": {
+      "criadoEm": 1785845647703,
+      "nome": "Poliana Parreira",
+      "passChanged": true,
+      "passHash": "182abb478c9f00a298e52fbd6563118e1252ba4e041d822ce5072d217054a391",
+      "role": "medico",
+      "salt": "771816fac3fe77e61e1cc217c894acde",
+      "setor": "radiologia"
+    },
+    "rafael_dangoni": {
+      "criadoEm": 1787269859443,
+      "nome": "Rafael Dangoni",
+      "passChanged": false,
+      "passHash": "a2a758ba255b51e65e69bd3e26bcd951279d103d58bf14f5f502f3726cace680",
+      "role": "medico",
+      "salt": "d9bd631c53eecbc3babe3dfef3046f8f",
+      "setor": "radiologia"
+    },
+    "roberto_taveira": {
+      "criadoEm": 1786358967899,
+      "nome": "Roberto Brasil Rabelo Taveira",
+      "passChanged": true,
+      "passHash": "f9d725c712dedac28b6568e9989d0e20cc28e0756bbb84885138ef747b80b67e",
+      "role": "medico",
+      "salt": "2dd07041e4f541378a7adf8ce4c604cf",
+      "setor": "radiologia"
+    },
+    "veluma_teixeira": {
+      "criadoEm": 1787269857123,
+      "nome": "Veluma Lopes Teixeira",
+      "passChanged": false,
+      "passHash": "39315d5a20db39eaffbca8ec09d9cff6f3bcd59adf0b5d74916e985b747be552",
+      "role": "medico",
+      "salt": "f23ed2bf7c66b0a2c0308e1ec6480b1c",
+      "setor": "radiologia"
+    },
+    "victor_oliveira": {
+      "criadoEm": 1787269857517,
+      "nome": "Victor Rodrigues de Oliveira",
+      "passChanged": false,
+      "passHash": "2d8f4a42530695f0374bb1d14119b0e4b3156f189fe65c14c26f508765d7542f",
+      "role": "medico",
+      "salt": "bbfc88d2342e0e119c5c9597e6281ee2",
+      "setor": "radiologia"
+    }
+  },
+  "setores": {
+    "clinicos_checkup": {
+      "mesVigente": "2026-08",
+      "meses": {
+        "2026-08": {
+          "meta": {
+            "count": 48,
+            "uploadedAt": 1787264297121,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1787264297120_926": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:30",
+              "medico": "Isabella Monteiro",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p10_1787264297121_867": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "13:00",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p11_1787264297121_996": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "13:00",
+              "medico": "Isabella Monteiro",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p12_1787264297121_140": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:30",
+              "medico": "Isabella Monteiro",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p13_1787264297121_540": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p14_1787264297121_314": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p15_1787264297121_896": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p16_1787264297121_36": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p17_1787264297121_506": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:30",
+              "medico": "Murilo Nunes",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p18_1787264297121_165": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p19_1787264297121_988": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p1_1787264297121_32": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p20_1787264297121_144": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "13:00",
+              "medico": "Murilo Nunes",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p21_1787264297121_251": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "13:00",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p22_1787264297121_603": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "13:00",
+              "medico": "Isabella Monteiro",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p23_1787264297121_341": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p24_1787264297121_389": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p25_1787264297121_592": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p26_1787264297121_907": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p27_1787264297121_480": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p28_1787264297121_638": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:30",
+              "medico": "Murilo Nunes",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p29_1787264297121_155": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Retorno"
+            },
+            "p2_1787264297121_768": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p30_1787264297121_701": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p31_1787264297121_543": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p32_1787264297121_955": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "13:00",
+              "medico": "Murilo Nunes",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p33_1787264297121_706": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "13:00",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p34_1787264297121_283": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:30",
+              "medico": "Isabella Monteiro",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p35_1787264297121_433": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p36_1787264297121_992": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p37_1787264297121_614": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p38_1787264297121_655": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p39_1787264297121_963": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:30",
+              "medico": "Murilo Nunes",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p3_1787264297121_583": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p40_1787264297121_681": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:30",
+              "medico": "Isabella Monteiro",
+              "turno": "Manhã",
+              "turnoLabel": "Retorno"
+            },
+            "p41_1787264297121_48": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Retorno"
+            },
+            "p42_1787264297121_962": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p43_1787264297121_504": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p44_1787264297121_974": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "13:00",
+              "medico": "Murilo Nunes",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p45_1787264297121_832": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "13:00",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p46_1787264297121_653": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "13:00",
+              "medico": "Isabella Monteiro",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p47_1787264297121_151": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p4_1787264297121_927": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:30",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p5_1787264297121_507": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:30",
+              "medico": "Murilo Nunes",
+              "turno": "Manhã",
+              "turnoLabel": "Atendimento Matutino"
+            },
+            "p6_1787264297121_80": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:30",
+              "medico": "Juliana Tranjan de O Coragem",
+              "turno": "Manhã",
+              "turnoLabel": "Retorno"
+            },
+            "p7_1787264297121_88": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p8_1787264297121_926": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "13:00",
+              "medico": "Henrique Martins de Souza",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            },
+            "p9_1787264297121_405": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "13:00",
+              "medico": "Murilo Nunes",
+              "turno": "Tarde",
+              "turnoLabel": "Retorno"
+            }
+          },
+          "validacoes": {
+            "henrique_souza": {
+              "validadoEm": 1787264566794,
+              "validadoPor": "Henrique Martins de Souza"
+            }
+          }
+        }
+      }
+    },
+    "dermatologia": {
+      "mesVigente": "2026-07",
+      "meses": {
+        "2026-07": {
+          "duracoes": {
+            "2026-07-14|ana_vivarelli|Manhã": 6,
+            "2026-07-28|ana_vivarelli|Manhã": 6
+          },
+          "meta": {
+            "count": 19,
+            "uploadedAt": 1786619910186,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1786619910185_105": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p10_1786619910186_51": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Isadora Rosan",
+              "turno": "Manhã"
+            },
+            "p11_1786619910186_205": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p12_1786619910186_725": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p13_1786619910186_317": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Camila Melo Borges Crossara",
+              "turno": "Manhã"
+            },
+            "p14_1786619910186_131": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p15_1786619910186_636": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p16_1786619910186_249": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p17_1786619910186_743": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Isadora Rosan",
+              "turno": "Manhã"
+            },
+            "p18_1786619910186_747": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p1_1786619910186_723": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Camila Melo Borges Crossara",
+              "turno": "Manhã"
+            },
+            "p2_1786619910186_294": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p3_1786619910186_188": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p4_1786619910186_333": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p5_1786619910186_322": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Isadora Rosan",
+              "turno": "Manhã"
+            },
+            "p6_1786619910186_42": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Camila Melo Borges Crossara",
+              "turno": "Manhã"
+            },
+            "p7_1786619910186_169": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Ana Gabriela Vivarelli",
+              "turno": "Manhã"
+            },
+            "p8_1786619910186_597": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Mayra Rabelo",
+              "turno": "Manhã"
+            },
+            "p9_1786619910186_887": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Isadora Rosan",
+              "turno": "Manhã"
+            }
+          },
+          "validacoes": {
+            "ana_vivarelli": {
+              "validadoEm": 1786619974729,
+              "validadoPor": "Ana Gabriela Vivarelli"
+            }
+          }
+        }
+      }
+    },
+    "ecocardiografia": {
+      "mesVigente": "2026-07",
+      "meses": {
+        "2026-07": {
+          "extras": {
+            "marcos_castro": 4000
+          },
+          "meta": {
+            "count": 32,
+            "uploadedAt": 1786707140210,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1786707140210_563": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p10_1786707140210_949": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Lígia Borges",
+              "turno": "Tarde"
+            },
+            "p11_1786707140210_520": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p12_1786707140210_177": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Manhã"
+            },
+            "p13_1786707140210_91": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p14_1786707140210_496": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Alexandre Pontes",
+              "turno": "Manhã"
+            },
+            "p15_1786707140210_377": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p16_1786707140210_128": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Tarde"
+            },
+            "p17_1786707140210_648": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Lígia Borges",
+              "turno": "Tarde"
+            },
+            "p18_1786707140210_520": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p19_1786707140210_450": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Manhã"
+            },
+            "p1_1786707140210_549": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Alexandre Pontes",
+              "turno": "Manhã"
+            },
+            "p20_1786707140210_675": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p21_1786707140210_590": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Alexandre Pontes",
+              "turno": "Manhã"
+            },
+            "p22_1786707140210_472": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p23_1786707140210_9": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Tarde"
+            },
+            "p24_1786707140210_914": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Lígia Borges",
+              "turno": "Tarde"
+            },
+            "p25_1786707140210_688": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p26_1786707140210_36": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Manhã"
+            },
+            "p27_1786707140210_247": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p28_1786707140210_542": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Alexandre Pontes",
+              "turno": "Manhã"
+            },
+            "p29_1786707140210_169": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p2_1786707140210_254": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p30_1786707140210_479": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Tarde"
+            },
+            "p31_1786707140210_225": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Lígia Borges",
+              "turno": "Tarde"
+            },
+            "p3_1786707140210_620": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Lígia Borges",
+              "turno": "Tarde"
+            },
+            "p4_1786707140210_40": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p5_1786707140210_304": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Manhã"
+            },
+            "p6_1786707140210_280": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p7_1786707140210_538": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Alexandre Pontes",
+              "turno": "Manhã"
+            },
+            "p8_1786707140210_802": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Marcos Filipe Leal Marra de Castro",
+              "turno": "Manhã"
+            },
+            "p9_1786707140210_883": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Thais Pereira de Almeida",
+              "turno": "Tarde"
+            }
+          },
+          "produtividade": {
+            "-P--2E6MOkG3U219RF30": {
+              "criadoEm": 1786707243585,
+              "dataIso": "2026-08-05",
+              "medicoSlug": "marcos_castro",
+              "prt": "2024164"
+            }
+          },
+          "validacoes": {
+            "marcos_castro": {
+              "validadoEm": 1786707293526,
+              "validadoPor": "Marcos Filipe Leal Marra de Castro"
+            }
+          }
+        }
+      }
+    },
+    "endoscopia": {
+      "meses": {
+        "2026-08": {
+          "meta": {
+            "count": 84,
+            "uploadedAt": 1787267905711,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1787267905711_596": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-01",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p10_1787267905711_916": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p11_1787267905711_753": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-08",
+              "horaInicio": "07:00",
+              "medico": "Aline Lima",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p12_1787267905711_624": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-09",
+              "horaInicio": "07:00",
+              "medico": "Aline Lima",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p13_1787267905711_615": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Mirela",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p14_1787267905711_570": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-08",
+              "horaInicio": "13:00",
+              "medico": "Aline Lima",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p15_1787267905711_503": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-09",
+              "horaInicio": "13:00",
+              "medico": "Aline Lima",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p16_1787267905711_699": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-03",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p17_1787267905711_69": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-04",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p18_1787267905711_627": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-05",
+              "horaInicio": "19:00",
+              "medico": "Mirela",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p19_1787267905711_963": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-06",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p1_1787267905711_998": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-02",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p20_1787267905711_972": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-07",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p21_1787267905711_258": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-08",
+              "horaInicio": "19:00",
+              "medico": "Aline Lima",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p22_1787267905711_393": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-09",
+              "horaInicio": "19:00",
+              "medico": "Aline Lima",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p23_1787267905711_434": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p24_1787267905711_31": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p25_1787267905711_112": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p26_1787267905711_910": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p27_1787267905711_85": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p28_1787267905711_119": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-15",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p29_1787267905711_820": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-16",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p2_1787267905711_400": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-01",
+              "horaInicio": "13:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p30_1787267905711_991": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Mirela",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p31_1787267905711_558": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Aline Lima",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p32_1787267905711_329": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "13:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p33_1787267905711_415": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "13:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p34_1787267905711_306": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "13:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p35_1787267905711_640": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-15",
+              "horaInicio": "13:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p36_1787267905711_781": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-16",
+              "horaInicio": "13:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p37_1787267905711_77": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-10",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p38_1787267905711_318": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-11",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p39_1787267905711_422": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-12",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p3_1787267905711_907": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-02",
+              "horaInicio": "13:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p40_1787267905711_514": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-13",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p41_1787267905711_719": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-14",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p42_1787267905711_479": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-15",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p43_1787267905711_518": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-16",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p44_1787267905711_987": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p45_1787267905711_900": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p46_1787267905711_565": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p47_1787267905711_361": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p48_1787267905711_117": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:00",
+              "medico": "Aline Lima",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p49_1787267905711_222": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p4_1787267905711_700": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-01",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p50_1787267905711_96": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-23",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p51_1787267905711_174": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "13:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p52_1787267905711_807": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "13:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p53_1787267905711_716": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "13:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p54_1787267905711_961": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "13:00",
+              "medico": "Ernesto",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p55_1787267905711_572": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-23",
+              "horaInicio": "13:00",
+              "medico": "Ernesto",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p56_1787267905711_686": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-17",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p57_1787267905711_456": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-18",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p58_1787267905711_15": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-19",
+              "horaInicio": "19:00",
+              "medico": "Mirela",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p59_1787267905711_885": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-20",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p5_1787267905711_521": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-02",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p60_1787267905711_378": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-21",
+              "horaInicio": "19:00",
+              "medico": "Aline Lima",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p61_1787267905711_297": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-22",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p62_1787267905711_563": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-23",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p63_1787267905711_88": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p64_1787267905711_27": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p65_1787267905711_363": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p66_1787267905711_619": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p67_1787267905711_78": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p68_1787267905711_163": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p69_1787267905711_319": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-30",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p6_1787267905711_550": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p70_1787267905711_382": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "13:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p71_1787267905711_402": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "13:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p72_1787267905711_794": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "13:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p73_1787267905711_631": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "13:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p74_1787267905711_754": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-30",
+              "horaInicio": "13:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Tarde",
+              "turnoLabel": "TARDE"
+            },
+            "p75_1787267905711_842": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-24",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p76_1787267905711_555": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-25",
+              "horaInicio": "19:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p77_1787267905711_742": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-26",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p78_1787267905711_401": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-27",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p79_1787267905711_204": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-28",
+              "horaInicio": "19:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p7_1787267905711_694": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:00",
+              "medico": "Reinaldo Falluh Filho",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p80_1787267905711_123": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-29",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p81_1787267905711_414": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-30",
+              "horaInicio": "19:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p82_1787267905711_790": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "07:00",
+              "medico": "Ernesto",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p83_1787267905711_292": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-31",
+              "horaInicio": "19:00",
+              "medico": "Ernesto",
+              "turno": "Noite",
+              "turnoLabel": "NOITE (SOBREAVISO)"
+            },
+            "p8_1787267905711_142": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Daniela Milhomem",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            },
+            "p9_1787267905711_92": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:00",
+              "medico": "Karolyne Quireze",
+              "turno": "Manhã",
+              "turnoLabel": "MANHÃ"
+            }
+          }
+        }
+      }
+    },
+    "ginecologia": {
+      "mesVigente": "2026-08",
+      "meses": {
+        "2026-08": {
+          "meta": {
+            "count": 16,
+            "uploadedAt": 1787265137444,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1787265137444_44": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p10_1787265137444_425": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "08:00",
+              "medico": "Patrícia Simon",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p11_1787265137444_530": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "08:00",
+              "medico": "Joaquianni Rassi",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p12_1787265137444_928": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p13_1787265137444_112": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p14_1787265137444_930": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "08:00",
+              "medico": "Patrícia Simon",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p15_1787265137444_398": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "08:00",
+              "medico": "Joaquianni Rassi",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p1_1787265137444_760": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p2_1787265137444_43": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p3_1787265137444_168": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "08:00",
+              "medico": "Joaquianni Rassi",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p4_1787265137444_144": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p5_1787265137444_819": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "08:00",
+              "medico": "Joaquianni Rassi",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p6_1787265137444_909": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "08:00",
+              "medico": "Patrícia Simon",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p7_1787265137444_16": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "08:00",
+              "medico": "Patrícia Simon",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p8_1787265137444_802": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            },
+            "p9_1787265137444_748": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "08:00",
+              "medico": "Amélia Zaccariotti",
+              "turno": "Manhã",
+              "turnoLabel": "Matutino"
+            }
+          },
+          "validacoes": {
+            "patricia_simon": {
+              "validadoEm": 1787265224077,
+              "validadoPor": "Patrícia Simon"
+            }
+          }
+        }
+      }
+    },
+    "radiologia": {
+      "mesVigente": "2026-07",
+      "meses": {
+        "2026-06": {
+          "meta": {
+            "count": 160,
+            "uploadedAt": 1785845508767,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1785845508766_354": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-01",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p100_1785845508767_571": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-17",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p101_1785845508767_155": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-18",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p102_1785845508767_608": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p103_1785845508767_516": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-15",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p104_1785845508767_4": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-16",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p105_1785845508767_79": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-17",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p106_1785845508767_94": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-18",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p107_1785845508767_526": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-19",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p108_1785845508767_940": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-20",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p109_1785845508767_175": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-21",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p10_1785845508767_741": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-05",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p110_1785845508767_68": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-22",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p111_1785845508767_247": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-23",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p112_1785845508767_147": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-24",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p113_1785845508767_865": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-25",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p114_1785845508767_975": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p115_1785845508767_768": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-27",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Manhã"
+            },
+            "p116_1785845508767_77": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-28",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p117_1785845508767_425": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-22",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p118_1785845508767_971": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-23",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p119_1785845508767_105": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-24",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p11_1785845508767_579": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-06",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Manhã"
+            },
+            "p120_1785845508767_29": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-25",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p121_1785845508767_525": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p122_1785845508767_89": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-27",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p123_1785845508767_371": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-22",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p124_1785845508767_689": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-23",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p125_1785845508767_553": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-24",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p126_1785845508767_505": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-25",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p127_1785845508767_552": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p128_1785845508767_251": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p129_1785845508767_82": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-22",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p12_1785845508767_44": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-01",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p130_1785845508767_221": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-23",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p131_1785845508767_948": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-24",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p132_1785845508767_948": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-25",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p133_1785845508767_844": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p134_1785845508767_647": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-27",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p135_1785845508767_547": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-28",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p136_1785845508767_984": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-22",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p137_1785845508767_944": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-23",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p138_1785845508767_885": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-24",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p139_1785845508767_170": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-25",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p13_1785845508767_927": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-02",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p140_1785845508767_730": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-26",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p141_1785845508767_434": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-22",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p142_1785845508767_257": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-23",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p143_1785845508767_276": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-24",
+              "medico": "Fernando Costa",
+              "turno": "Noite"
+            },
+            "p144_1785845508767_509": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-25",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p145_1785845508767_772": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-26",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p146_1785845508767_936": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-27",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p147_1785845508767_802": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-28",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p148_1785845508767_547": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-29",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p149_1785845508767_78": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-30",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p14_1785845508767_87": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-03",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p150_1785845508767_814": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-29",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p151_1785845508767_705": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-30",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p152_1785845508767_672": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-29",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p153_1785845508767_822": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-30",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p154_1785845508767_241": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-29",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p155_1785845508767_960": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-30",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p156_1785845508767_797": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-29",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p157_1785845508767_399": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-30",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p158_1785845508767_260": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-29",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p159_1785845508767_619": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-30",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p15_1785845508767_250": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-05",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p16_1785845508767_866": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-01",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p17_1785845508767_810": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-02",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p18_1785845508767_35": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-03",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p19_1785845508767_656": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-04",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p1_1785845508767_314": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-02",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p20_1785845508767_873": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-05",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p21_1785845508767_988": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-06",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Tarde"
+            },
+            "p22_1785845508767_136": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-07",
+              "medico": "Marcos Fiorotto",
+              "turno": "Tarde"
+            },
+            "p23_1785845508767_368": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-01",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p24_1785845508767_485": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-02",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p25_1785845508767_501": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-03",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p26_1785845508767_272": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-05",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p27_1785845508767_491": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-01",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p28_1785845508767_56": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-02",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p29_1785845508767_579": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-03",
+              "medico": "Fernando Costa",
+              "turno": "Noite"
+            },
+            "p2_1785845508767_692": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-03",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p30_1785845508767_33": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-04",
+              "medico": "Rafael Dangoni",
+              "turno": "Noite"
+            },
+            "p31_1785845508767_527": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-05",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p32_1785845508767_156": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-06",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p33_1785845508767_801": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-07",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p34_1785845508767_293": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-08",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p35_1785845508767_886": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-09",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p36_1785845508767_704": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-10",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p37_1785845508767_368": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-11",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p38_1785845508767_388": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p39_1785845508767_180": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-13",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p3_1785845508767_764": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-04",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p40_1785845508767_858": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-14",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p41_1785845508767_855": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-08",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p42_1785845508767_48": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-09",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p43_1785845508767_886": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-10",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p44_1785845508767_856": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-11",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p45_1785845508767_160": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p46_1785845508767_514": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-13",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p47_1785845508767_951": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-08",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p48_1785845508767_585": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-09",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p49_1785845508767_854": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-10",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p4_1785845508767_685": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-05",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p50_1785845508767_558": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-11",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p51_1785845508767_839": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p52_1785845508767_919": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p53_1785845508767_330": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-08",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p54_1785845508767_425": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-09",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p55_1785845508767_713": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-10",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p56_1785845508767_394": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-11",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p57_1785845508767_825": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p58_1785845508767_790": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-13",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p59_1785845508767_857": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-14",
+              "medico": "Marcos Fiorotto",
+              "turno": "Tarde"
+            },
+            "p5_1785845508767_716": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-06",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p60_1785845508767_102": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-08",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p61_1785845508767_794": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-09",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p62_1785845508767_634": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-10",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p63_1785845508767_197": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-11",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p64_1785845508767_124": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-12",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p65_1785845508767_969": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-08",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p66_1785845508767_125": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-09",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p67_1785845508767_537": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-10",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p68_1785845508767_344": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-11",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p69_1785845508767_327": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-12",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p6_1785845508767_308": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-07",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p70_1785845508767_366": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-13",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p71_1785845508767_413": {
+              "categoria": "Noturno",
+              "dataIso": "2026-06-14",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p72_1785845508767_965": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-15",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p73_1785845508767_455": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-16",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p74_1785845508767_345": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-17",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p75_1785845508767_591": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-18",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p76_1785845508767_201": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p77_1785845508767_882": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-20",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p78_1785845508767_690": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-21",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p79_1785845508767_934": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-15",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p7_1785845508767_179": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-01",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p80_1785845508767_659": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-16",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p81_1785845508767_285": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-17",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p82_1785845508767_637": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-18",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p83_1785845508767_121": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p84_1785845508767_49": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-20",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p85_1785845508767_898": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-15",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p86_1785845508767_596": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-16",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p87_1785845508767_698": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-17",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p88_1785845508767_607": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-18",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p89_1785845508767_466": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p8_1785845508767_314": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-02",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p90_1785845508767_319": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p91_1785845508767_203": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-15",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p92_1785845508767_277": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-16",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p93_1785845508767_263": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-17",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p94_1785845508767_897": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-18",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p95_1785845508767_11": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-19",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p96_1785845508767_508": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-20",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Tarde"
+            },
+            "p97_1785845508767_394": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-06-21",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p98_1785845508767_480": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-15",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p99_1785845508767_805": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-16",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p9_1785845508767_770": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-06-03",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            }
+          }
+        },
+        "2026-07": {
+          "acionamentos": {
+            "2026-07-01|pedro-henrique-hasimoto-e-souza": true,
+            "2026-07-01|pedro_souza": true,
+            "2026-07-07|pedro-henrique-hasimoto-e-souza": true,
+            "2026-07-07|pedro_souza": true,
+            "2026-07-12|pedro-henrique-hasimoto-e-souza": true,
+            "2026-07-19|pedro-henrique-hasimoto-e-souza": true,
+            "2026-07-22|pedro-henrique-hasimoto-e-souza": true
+          },
+          "extras": {
+            "pedro_souza": 5000
+          },
+          "meta": {
+            "count": 171,
+            "uploadedAt": 1785789685003,
+            "uploadedBy": "admin"
+          },
+          "observacoes": {
+            "pedro_salgado": "Hora extra dia",
+            "pedro_souza": "Produtividade mamografia, RM e biópsias."
+          },
+          "overrides": {
+            "victor_oliveira": {
+              "rhMS": 165
+            }
+          },
+          "plantoes": {
+            "p0_1785789685002_700": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p100_1785789685002_228": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-18",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p101_1785789685002_858": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-19",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p102_1785789685002_513": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p103_1785789685002_24": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p104_1785789685002_740": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p105_1785789685002_95": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p106_1785789685002_743": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p107_1785789685002_598": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-25",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p108_1785789685002_419": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-26",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p109_1785789685002_707": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p10_1785789685002_37": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p110_1785789685002_824": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p111_1785789685002_896": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p112_1785789685002_849": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p113_1785789685002_125": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p114_1785789685002_120": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-25",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p115_1785789685002_359": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p116_1785789685002_598": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p117_1785789685002_175": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p118_1785789685002_685": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p119_1785789685002_15": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p11_1785789685002_282": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p120_1785789685002_355": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p121_1785789685002_492": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p122_1785789685002_187": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p123_1785789685002_22": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p124_1785789685002_393": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p125_1785789685002_367": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p126_1785789685002_792": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-25",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p127_1785789685002_922": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-26",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p128_1785789685002_340": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-20",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p129_1785789685002_664": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-21",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p12_1785789685002_681": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p130_1785789685002_994": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-22",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p131_1785789685002_985": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-23",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p132_1785789685002_722": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-24",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p133_1785789685002_375": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-20",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p134_1785789685002_254": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-21",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p135_1785789685002_571": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-22",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p136_1785789685002_547": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-23",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p137_1785789685002_905": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-24",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p138_1785789685002_862": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-25",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p139_1785789685002_234": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-26",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p13_1785789685002_480": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p140_1785789685002_874": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p141_1785789685002_168": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p142_1785789685002_145": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p143_1785789685002_832": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p144_1785789685002_44": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p145_1785789685002_329": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p146_1785789685002_981": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p147_1785789685002_134": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p148_1785789685002_86": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p149_1785789685002_470": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p14_1785789685002_241": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p150_1785789685002_652": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p151_1785789685002_667": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p152_1785789685002_567": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p153_1785789685002_627": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p154_1785789685002_607": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p155_1785789685002_154": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p156_1785789685002_609": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p157_1785789685002_570": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p158_1785789685002_209": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p159_1785789685002_595": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p15_1785789685002_370": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p160_1785789685002_70": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p161_1785789685002_812": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-27",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p162_1785789685002_84": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-28",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p163_1785789685002_148": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-29",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p164_1785789685002_302": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-30",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p165_1785789685002_995": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-31",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p166_1785789685002_369": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-27",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p167_1785789685002_480": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-28",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p168_1785789685002_552": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-29",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p169_1785789685002_371": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-30",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p16_1785789685002_556": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-04",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p170_1785789685002_205": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-31",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p17_1785789685002_314": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-05",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p18_1785789685002_570": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p19_1785789685002_37": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p1_1785789685002_933": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p20_1785789685002_570": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p21_1785789685002_4": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-01",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p22_1785789685002_686": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-02",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p23_1785789685002_404": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-03",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p24_1785789685002_374": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-04",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p25_1785789685002_288": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-05",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p26_1785789685002_254": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p27_1785789685002_733": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p28_1785789685002_177": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p29_1785789685002_614": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p2_1785789685002_80": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p30_1785789685002_320": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p31_1785789685002_298": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-11",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p32_1785789685002_402": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-12",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p33_1785789685002_526": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p34_1785789685002_308": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p35_1785789685002_47": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p36_1785789685002_370": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p37_1785789685002_654": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p38_1785789685002_293": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-11",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Manhã"
+            },
+            "p39_1785789685002_547": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p3_1785789685002_87": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-04",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p40_1785789685002_767": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p41_1785789685002_687": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p42_1785789685002_958": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p43_1785789685002_839": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p44_1785789685002_131": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p45_1785789685002_692": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p46_1785789685002_260": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p47_1785789685002_60": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p48_1785789685002_857": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p49_1785789685002_748": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p4_1785789685002_884": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-05",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p50_1785789685002_62": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-11",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p51_1785789685002_573": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-12",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p52_1785789685002_42": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-06",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p53_1785789685002_372": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-07",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p54_1785789685002_884": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-08",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p55_1785789685002_367": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-09",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p56_1785789685002_97": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-10",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p57_1785789685002_779": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-06",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p58_1785789685002_420": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-07",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p59_1785789685002_751": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-08",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p5_1785789685002_939": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p60_1785789685002_209": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-09",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p61_1785789685002_438": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-10",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p62_1785789685002_988": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-11",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p63_1785789685002_978": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-12",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Noite"
+            },
+            "p64_1785789685002_28": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p65_1785789685002_994": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Manhã"
+            },
+            "p66_1785789685002_764": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p67_1785789685002_189": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p68_1785789685002_941": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p69_1785789685002_82": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-18",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p6_1785789685002_24": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-02",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p70_1785789685002_661": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-19",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p71_1785789685002_906": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p72_1785789685002_114": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p73_1785789685002_966": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p74_1785789685002_290": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p75_1785789685002_174": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p76_1785789685002_333": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-18",
+              "medico": "Marcos Fiorotto",
+              "turno": "Manhã"
+            },
+            "p77_1785789685002_363": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p78_1785789685002_936": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p79_1785789685002_727": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p7_1785789685002_481": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-03",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p80_1785789685002_301": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p81_1785789685002_822": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p82_1785789685002_657": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p83_1785789685002_553": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p84_1785789685002_806": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p85_1785789685002_260": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Tarde"
+            },
+            "p86_1785789685002_553": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Olavo Nakamura",
+              "turno": "Tarde"
+            },
+            "p87_1785789685002_60": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p88_1785789685002_707": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-18",
+              "medico": "Marcos Fiorotto",
+              "turno": "Tarde"
+            },
+            "p89_1785789685002_627": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-19",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p8_1785789685002_855": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-04",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p90_1785789685002_471": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-07-13",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p91_1785789685002_911": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-14",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p92_1785789685002_94": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-15",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Tarde"
+            },
+            "p93_1785789685002_115": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-16",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p94_1785789685002_366": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-17",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p95_1785789685002_964": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-13",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p96_1785789685002_917": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-14",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p97_1785789685002_53": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-15",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p98_1785789685002_490": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-16",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p99_1785789685002_680": {
+              "categoria": "Noturno",
+              "dataIso": "2026-07-17",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p9_1785789685002_18": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-07-01",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            }
+          },
+          "prt": {
+            "2026-07-01|pedro_souza": "3123",
+            "2026-07-07|pedro_souza": "123123",
+            "2026-07-12|pedro_souza": "12323",
+            "2026-07-19|pedro_souza": "42411",
+            "2026-07-22|pedro_souza": "424232",
+            "2026-07-26|pedro_souza": "67587"
+          },
+          "validacoes": {
+            "pedro_salgado": {
+              "validadoEm": 1785929752071,
+              "validadoPor": "Pedro Rios Pedroso Salgado"
+            },
+            "pedro_souza": {
+              "validadoEm": 1785928574605,
+              "validadoPor": "Pedro Henrique Hasimoto e Souza"
+            }
+          }
+        },
+        "2026-08": {
+          "meta": {
+            "count": 182,
+            "uploadedAt": 1787268939578,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1787268939578_494": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-01",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p100_1787268939578_843": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p101_1787268939578_855": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p102_1787268939578_321": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p103_1787268939578_747": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "07:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Manhã"
+            },
+            "p104_1787268939578_595": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p105_1787268939578_66": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p106_1787268939578_148": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p107_1787268939578_367": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p108_1787268939578_724": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p109_1787268939578_15": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p10_1787268939578_691": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p110_1787268939578_606": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p111_1787268939578_584": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p112_1787268939578_510": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p113_1787268939578_247": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:00",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p114_1787268939578_78": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p115_1787268939578_108": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "13:00",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p116_1787268939578_218": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p117_1787268939578_823": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p118_1787268939578_35": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "13:00",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p119_1787268939578_187": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "13:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p11_1787268939578_109": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p120_1787268939578_138": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-23",
+              "horaInicio": "13:00",
+              "medico": "Marcos Fiorotto",
+              "turno": "Tarde"
+            },
+            "p121_1787268939578_731": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p122_1787268939578_305": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p123_1787268939578_233": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "13:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Tarde"
+            },
+            "p124_1787268939578_604": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "13:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p125_1787268939578_291": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "13:00",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p126_1787268939578_554": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-17",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p127_1787268939578_286": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-18",
+              "horaInicio": "19:00",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Noite"
+            },
+            "p128_1787268939578_193": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-19",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p129_1787268939578_318": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-20",
+              "horaInicio": "19:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p12_1787268939578_608": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-08",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p130_1787268939578_928": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-21",
+              "horaInicio": "19:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p131_1787268939578_13": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-22",
+              "horaInicio": "19:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p132_1787268939578_631": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-23",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p133_1787268939578_925": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p134_1787268939578_152": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p135_1787268939578_258": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p136_1787268939578_885": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p137_1787268939578_124": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:00",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p138_1787268939578_375": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "07:00",
+              "medico": "Rafael Dangoni",
+              "turno": "Manhã"
+            },
+            "p139_1787268939578_169": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-30",
+              "horaInicio": "07:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Manhã"
+            },
+            "p13_1787268939578_779": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-09",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p140_1787268939578_610": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p141_1787268939578_651": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p142_1787268939578_645": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p143_1787268939578_561": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p144_1787268939578_945": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p145_1787268939578_623": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "07:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p146_1787268939578_577": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p147_1787268939578_157": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p148_1787268939578_43": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p149_1787268939578_380": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p14_1787268939578_295": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p150_1787268939578_976": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p151_1787268939578_963": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p152_1787268939578_266": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p153_1787268939578_445": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p154_1787268939578_675": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p155_1787268939578_152": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "07:00",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p156_1787268939578_604": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "13:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p157_1787268939578_270": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "13:00",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p158_1787268939578_342": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p159_1787268939578_274": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p15_1787268939578_340": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:00",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p160_1787268939578_964": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "13:00",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p161_1787268939578_329": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "13:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p162_1787268939578_917": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-30",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p163_1787268939578_545": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-24",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p164_1787268939578_707": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p165_1787268939578_168": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "13:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Tarde"
+            },
+            "p166_1787268939578_519": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "13:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p167_1787268939578_806": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "13:00",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p168_1787268939578_767": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-24",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p169_1787268939578_988": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-25",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p16_1787268939578_44": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p170_1787268939578_790": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-26",
+              "horaInicio": "19:00",
+              "medico": "Fernando Costa",
+              "turno": "Noite"
+            },
+            "p171_1787268939578_992": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-27",
+              "horaInicio": "19:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Noite"
+            },
+            "p172_1787268939578_236": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-28",
+              "horaInicio": "19:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p173_1787268939578_424": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-29",
+              "horaInicio": "19:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p174_1787268939578_850": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-30",
+              "horaInicio": "19:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p175_1787268939578_949": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p176_1787268939578_437": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p177_1787268939578_13": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p178_1787268939578_877": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p179_1787268939578_422": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "13:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p17_1787268939578_152": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p180_1787268939578_226": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-31",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p181_1787268939578_936": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-31",
+              "horaInicio": "19:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p18_1787268939578_447": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p19_1787268939578_205": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-08",
+              "horaInicio": "07:00",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Manhã"
+            },
+            "p1_1787268939578_374": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-02",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p20_1787268939578_107": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p21_1787268939578_892": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p22_1787268939578_862": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p23_1787268939578_560": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p24_1787268939578_319": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p25_1787268939578_986": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p26_1787268939578_169": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p27_1787268939578_523": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p28_1787268939578_556": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p29_1787268939578_182": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "07:00",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p2_1787268939578_364": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-01",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p30_1787268939578_942": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "13:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p31_1787268939578_74": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "13:00",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p32_1787268939578_220": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p33_1787268939578_473": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p34_1787268939578_823": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "13:00",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p35_1787268939578_421": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-08",
+              "horaInicio": "13:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p36_1787268939578_800": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-09",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p37_1787268939578_769": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p38_1787268939578_816": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p39_1787268939578_0": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "13:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Tarde"
+            },
+            "p3_1787268939578_122": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-01",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p40_1787268939578_381": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "13:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p41_1787268939578_173": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "13:00",
+              "medico": "Mariana Berquo Peleja",
+              "turno": "Tarde"
+            },
+            "p42_1787268939578_165": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-03",
+              "horaInicio": "19:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p43_1787268939578_987": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-04",
+              "horaInicio": "19:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p44_1787268939578_901": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-05",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p45_1787268939578_198": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-06",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p46_1787268939578_941": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-07",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p47_1787268939578_523": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-08",
+              "horaInicio": "19:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Noite"
+            },
+            "p48_1787268939578_856": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-09",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p49_1787268939578_532": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "07:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p4_1787268939578_914": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-02",
+              "horaInicio": "13:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p50_1787268939578_862": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p51_1787268939578_236": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p52_1787268939578_755": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p53_1787268939578_725": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Fernando Costa",
+              "turno": "Manhã"
+            },
+            "p54_1787268939578_973": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-15",
+              "horaInicio": "07:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p55_1787268939578_383": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-16",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p56_1787268939578_374": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p57_1787268939578_386": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p58_1787268939578_248": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p59_1787268939578_198": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p5_1787268939578_534": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-01",
+              "horaInicio": "19:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p60_1787268939578_215": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p61_1787268939578_709": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-15",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p62_1787268939578_67": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p63_1787268939578_232": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p64_1787268939578_434": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Beatriz Mendonça Borges",
+              "turno": "Manhã"
+            },
+            "p65_1787268939578_987": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p66_1787268939578_683": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p67_1787268939578_64": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p68_1787268939578_29": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "07:00",
+              "medico": "Pedro Henrique Hasimoto e Souza",
+              "turno": "Manhã"
+            },
+            "p69_1787268939578_733": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p6_1787268939578_489": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-02",
+              "horaInicio": "19:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p70_1787268939578_327": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p71_1787268939578_588": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "07:00",
+              "medico": "Poliana Parreira",
+              "turno": "Manhã"
+            },
+            "p72_1787268939578_68": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "13:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Tarde"
+            },
+            "p73_1787268939578_113": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "13:00",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p74_1787268939578_233": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p75_1787268939578_915": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p76_1787268939578_209": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "13:00",
+              "medico": "Amanda Tormin",
+              "turno": "Tarde"
+            },
+            "p77_1787268939578_718": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-15",
+              "horaInicio": "13:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Tarde"
+            },
+            "p78_1787268939578_65": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-16",
+              "horaInicio": "13:00",
+              "medico": "Fernando Costa",
+              "turno": "Tarde"
+            },
+            "p79_1787268939578_304": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-10",
+              "horaInicio": "13:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Tarde"
+            },
+            "p7_1787268939578_112": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-03",
+              "horaInicio": "07:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Manhã"
+            },
+            "p80_1787268939578_561": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "13:00",
+              "medico": "Lara Mori",
+              "turno": "Tarde"
+            },
+            "p81_1787268939578_707": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "13:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Tarde"
+            },
+            "p82_1787268939578_814": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "13:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Tarde"
+            },
+            "p83_1787268939578_482": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "13:00",
+              "medico": "Poliana Parreira",
+              "turno": "Tarde"
+            },
+            "p84_1787268939578_578": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-10",
+              "horaInicio": "19:00",
+              "medico": "Victor Rodrigues de Oliveira",
+              "turno": "Noite"
+            },
+            "p85_1787268939578_678": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-11",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p86_1787268939578_476": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-12",
+              "horaInicio": "19:00",
+              "medico": "Roberto Brasil Rabelo Taveira",
+              "turno": "Noite"
+            },
+            "p87_1787268939578_617": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-13",
+              "horaInicio": "19:00",
+              "medico": "Rafael Dangoni",
+              "turno": "Noite"
+            },
+            "p88_1787268939578_543": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-14",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p89_1787268939578_605": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-15",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p8_1787268939578_917": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p90_1787268939578_482": {
+              "categoria": "Noturno",
+              "dataIso": "2026-08-16",
+              "horaInicio": "19:00",
+              "medico": "Murilo Eugenio Oliveira",
+              "turno": "Noite"
+            },
+            "p91_1787268939578_701": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "07:00",
+              "medico": "Lara Mori",
+              "turno": "Manhã"
+            },
+            "p92_1787268939578_560": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:00",
+              "medico": "Veluma Lopes Teixeira",
+              "turno": "Manhã"
+            },
+            "p93_1787268939578_973": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            },
+            "p94_1787268939578_923": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p95_1787268939578_684": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "07:00",
+              "medico": "Larissa Maia da Costa",
+              "turno": "Manhã"
+            },
+            "p96_1787268939578_58": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "07:00",
+              "medico": "Olavo Nakamura",
+              "turno": "Manhã"
+            },
+            "p97_1787268939578_580": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-23",
+              "horaInicio": "07:00",
+              "medico": "Marcos Fiorotto",
+              "turno": "Manhã"
+            },
+            "p98_1787268939578_597": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-17",
+              "horaInicio": "07:00",
+              "medico": "Fernanda Lauar Sampaio Meirelles",
+              "turno": "Manhã"
+            },
+            "p99_1787268939578_414": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "07:00",
+              "medico": "Amanda Tormin",
+              "turno": "Manhã"
+            },
+            "p9_1787268939578_178": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "07:00",
+              "medico": "Pedro Rios Pedroso Salgado",
+              "turno": "Manhã"
+            }
+          }
+        }
+      }
+    },
+    "urologia": {
+      "meses": {
+        "2026-08": {
+          "meta": {
+            "count": 18,
+            "uploadedAt": 1787323307701,
+            "uploadedBy": "admin"
+          },
+          "plantoes": {
+            "p0_1787323307701_957": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-04",
+              "horaInicio": "08:00",
+              "medico": "Guilherme Andrade",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p10_1787323307701_387": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-20",
+              "horaInicio": "08:00",
+              "medico": "Matheus Azevedo",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p11_1787323307701_387": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-21",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p12_1787323307701_704": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-22",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p13_1787323307701_581": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-25",
+              "horaInicio": "08:00",
+              "medico": "Guilherme Andrade",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p14_1787323307701_117": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-26",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p15_1787323307701_675": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-27",
+              "horaInicio": "08:00",
+              "medico": "Matheus Azevedo",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p16_1787323307701_96": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-28",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p17_1787323307701_548": {
+              "categoria": "Fim de semana",
+              "dataIso": "2026-08-29",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p1_1787323307701_548": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-05",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p2_1787323307701_447": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-06",
+              "horaInicio": "08:00",
+              "medico": "Matheus Azevedo",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p3_1787323307701_829": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-07",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p4_1787323307701_221": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-11",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p5_1787323307701_204": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-12",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p6_1787323307701_360": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-13",
+              "horaInicio": "08:00",
+              "medico": "Matheus Azevedo",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p7_1787323307701_124": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-14",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p8_1787323307701_367": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-18",
+              "horaInicio": "08:00",
+              "medico": "Antonio Flávio",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            },
+            "p9_1787323307701_58": {
+              "categoria": "Meio de semana",
+              "dataIso": "2026-08-19",
+              "horaInicio": "08:00",
+              "medico": "Aldo Neto",
+              "turno": "Manhã",
+              "turnoLabel": "CHECKUP EINSTEIN GO"
+            }
+          }
+        }
+      }
+    }
+  }
+}
