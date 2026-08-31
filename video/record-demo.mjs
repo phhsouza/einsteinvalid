@@ -25,6 +25,7 @@ const SETORES = {
   ginecologia:       { label: 'Ginecologia' },
   urologia:          { label: 'Urologia' },
   endoscopia:        { label: 'Endoscopia' },
+  metodos_graficos:  { label: 'Métodos Gráficos' },
 };
 
 // ── Helpers de overlay (dimensionados para mobile 390x844) ─────────────
@@ -166,6 +167,20 @@ async function scenaDermato(page){
   await page.waitForTimeout(600);
 }
 
+async function scenaMetGraf(page){
+  await scrollTo(page, '#medico-noturnos-title');
+  await caption(page, 'Cada plantão tem sua duração: 4h ou 5h conforme a escala', 2600);
+  await pointArrow(page, '#medico-noturnos .not-row:nth-child(1) .he-btn:last-child', 1400);
+  await caption(page, 'Adicione horas extras clicando em + se necessário', 2200);
+  await page.click('#medico-noturnos .not-row:nth-child(1) .he-btn:last-child');
+  await page.waitForTimeout(400);
+  await page.click('#medico-noturnos .not-row:nth-child(1) .he-btn:last-child');
+  await page.waitForTimeout(500);
+  await page.click('#medico-noturnos .not-row:nth-child(3) .he-btn:last-child');
+  await page.waitForTimeout(500);
+  await caption(page, 'O total é calculado com R$150/h · inclui horas extras', 2400);
+}
+
 async function scenaHoraExtras(page, ms = 2200){
   await scrollTo(page, '#medico-noturnos-title');
   await caption(page, 'Cada plantão vem com a duração padrão do setor', 2400);
@@ -243,6 +258,7 @@ async function recordSetor(browser, setorKey, setorLabel){
     ginecologia:       'ginecologia',
     urologia:          'urologia',
     endoscopia:        'endoscopia',
+    metodos_graficos:  'metodos_graficos',
   })[setorKey];
 
   if(tipo === 'radiologia'){
@@ -256,6 +272,8 @@ async function recordSetor(browser, setorKey, setorLabel){
     await scrollTo(page, '#medico-noturnos-title');
     await caption(page, 'Cada período pago vale 6h × R$150', 2400);
     await scenaProdutividade(page, 'R$ 650 por exame');
+  } else if(tipo === 'metodos_graficos'){
+    await scenaMetGraf(page);
   } else {
     // clínicos / gineco / uro
     await scenaHoraExtras(page);
