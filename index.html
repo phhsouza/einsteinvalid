@@ -377,6 +377,40 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 @media (min-width:1400px){
   .wrap{padding:28px 20px;}
 }
+
+.pdf-btn{background:var(--blue);color:white;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
+.pdf-btn:hover{background:var(--blue-dark);}
+
+@media print {
+  body{background:white !important;}
+  #login-overlay,#topbar,#tabs,#screen-admin,.toast{display:none !important;}
+  .screen{display:none !important;}
+  #screen-medico{display:block !important;padding:0 !important;}
+  .wrap{max-width:none;padding:0 !important;margin:0 !important;}
+
+  /* Esconde cards interativos */
+  #medico-plantoes-card,#medico-noturnos-card,#medico-prod-card,#medico-obs-card{display:none !important;}
+
+  /* Esconde controles interativos */
+  .valid-btn,.valid-btn-undo,.pdf-btn,.he-btn,.month-select{display:none !important;}
+
+  /* Exibe cabeçalho de impressão */
+  #print-header{display:block !important;padding:0 0 14pt;border-bottom:2pt solid #333;margin-bottom:14pt;}
+
+  /* Cards sem sombra */
+  .card{box-shadow:none !important;border:1pt solid #ccc;page-break-inside:avoid;}
+
+  /* Tabela */
+  .tbl-wrap{overflow:visible !important;}
+  .tbl{width:100% !important;font-size:10pt;}
+  .tbl th,.tbl td{padding:5pt 7pt !important;}
+
+  /* Stats */
+  .stats{display:flex;flex-wrap:wrap;gap:8pt;}
+  .stat{border:1pt solid #ccc;border-radius:4pt;padding:6pt 10pt;min-width:80pt;}
+  .stat-val{font-size:14pt;}
+  .stat-lbl{font-size:8pt;}
+}
 </style>
 </head>
 <body>
@@ -578,6 +612,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
   <!-- ═══ MÉDICO ═══ -->
   <div class="screen" id="screen-medico">
+    <div id="print-header" style="display:none"></div>
     <div class="card">
       <div class="card-title">
         <span id="medico-nome-label">—</span>
@@ -592,7 +627,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
     <div class="card section-hidden" id="medico-plantoes-card"></div>
 
-    <div class="card">
+    <div class="card" id="medico-noturnos-card">
       <div class="card-title" id="medico-noturnos-title">Meus noturnos</div>
       <div style="font-size:12px;color:var(--g600);margin-bottom:14px" id="medico-noturnos-hint"></div>
       <div class="noturnos-list" id="medico-noturnos"></div>
@@ -600,7 +635,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
     <div class="card section-hidden" id="medico-prod-card"></div>
 
-    <div class="card">
+    <div class="card" id="medico-detalhe-card">
       <div class="card-title">Detalhamento</div>
       <div class="tbl-wrap"><table class="tbl" id="medico-tbl"></table></div>
     </div>
@@ -2101,6 +2136,7 @@ async function renderMedico(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -2242,6 +2278,21 @@ async function renderMedico(){
   if(obsInput && isEditable){
     obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
   }
+}
+
+function printExtrato(){
+  const mesKey = document.getElementById('medico-mes-select').value;
+  const sectorLabel = SETORES_LIST[currentSector]?.label || currentSector;
+  const hdr = document.getElementById('print-header');
+  hdr.innerHTML = `
+    <div style="font-family:system-ui,sans-serif">
+      <div style="font-size:9pt;color:#666;margin-bottom:4pt">Hospital Israelita Albert Einstein — Goiânia</div>
+      <div style="font-size:16pt;font-weight:700;color:#111">Extrato de Plantões — ${sectorLabel}</div>
+      <div style="font-size:10pt;margin-top:4pt"><strong>Médico:</strong> ${currentUser.nome}</div>
+      <div style="font-size:10pt"><strong>Período:</strong> ${labelMes(mesKey)}</div>
+      <div style="font-size:10pt"><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</div>
+    </div>`;
+  window.print();
 }
 
 async function saveObs(mesKey, value){
@@ -2496,6 +2547,7 @@ async function renderMedico_dermato(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -2825,6 +2877,7 @@ async function renderMedico_eco(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -3261,6 +3314,7 @@ async function renderMedico_clinicos(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -3568,6 +3622,7 @@ async function renderMedico_gineco(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -3869,6 +3924,7 @@ async function renderMedico_uro(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -4177,6 +4233,7 @@ async function renderMedico_metgraf(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
@@ -4471,6 +4528,7 @@ async function renderMedico_endo(){
           <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
         </div>
         ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+        <button class="pdf-btn" onclick="printExtrato()">⬇ Baixar PDF</button>
       </div>`;
   } else {
     validCard.innerHTML = `
