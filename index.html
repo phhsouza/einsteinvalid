@@ -2072,7 +2072,8 @@ async function renderMedico(){
       else notNAc++;
     }
   });
-  const rh = rateMeioSemana(meio);
+  const rhOv = (medicoData.overrides || {})[currentUser.slug]?.rhMS;
+  const rh = rhOv != null ? Number(rhOv) : rateMeioSemana(meio);
   const vMeio = meio*H_TURNO*rh + heValMeio*rh;
   const vFds = fds*H_TURNO*RATE_FDS + heValFds*RATE_FDS;
   const vNAc = notNAc*RATE_NOT_SOBREAVISO;
