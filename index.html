@@ -676,6 +676,7 @@ const SETORES_LIST = {
   ginecologia:       { label: 'Ginecologia',        tipo: 'ginecologia' },
   urologia:          { label: 'Urologia',           tipo: 'urologia' },
   endoscopia:        { label: 'Endoscopia',         tipo: 'endoscopia' },
+  metodos_graficos:  { label: 'Métodos Gráficos',   tipo: 'metodos_graficos' },
 };
 const DEFAULT_SETOR = 'radiologia';
 // Setor ativo: admin muda pelo seletor; médico vem do usuário
@@ -702,6 +703,8 @@ const URO_BASE_H = 4;
 // Regras da endoscopia — só matutino/vespertino de seg-sex são pagos; demais só geram produtividade.
 // Exceção: sábado manhã conta como período pago a partir de 15/08/2026.
 const ENDO_RATE_H = 200;
+// Regras dos métodos gráficos
+const METGRAF_RATE_H = 150;
 const ENDO_BASE_H = 6;
 const ENDO_EXAME_EXTRA = 650;
 const ENDO_SAB_MANHA_START = '2026-08-15';
@@ -1158,6 +1161,15 @@ function calcTotalMedico(tipo, medicoNome, data){
     const nExames = Object.values(produtividade).filter(e => e.medicoSlug === slug).length;
     return horas*ENDO_RATE_H + nExames*ENDO_EXAME_EXTRA + extra;
   }
+  if(tipo === 'metodos_graficos'){
+    let totalHoras = 0;
+    plantoes.forEach(p => {
+      const baseH = Number(p.horas) || 4;
+      const he = Number(horasExtras[heKey(p)]) || 0;
+      totalHoras += baseH + he;
+    });
+    return totalHoras * METGRAF_RATE_H + extra;
+  }
   return 0;
 }
 
@@ -1301,6 +1313,56 @@ async function submitNewPassword(){
 // ══════════════════════════════════════════════════════
 //  PARSER EXCEL
 // ══════════════════════════════════════════════════════
+// Extrai duração em horas do rótulo de turno para métodos gráficos
+// Ex: "Matutino - 08:00/12:00" → 4, "Matutino* - 08:00/13:00" → 5
+function getMetgrafHoras(cell){
+  if(!cell) return 4;
+  const m = String(cell).match(/(\d{1,2}):(\d{2})\s*[\/\-–]\s*(\d{1,2}):(\d{2})/);
+  if(!m) return 4;
+  const start = parseInt(m[1])*60 + parseInt(m[2]);
+  const end   = parseInt(m[3])*60 + parseInt(m[4]);
+  const diff  = (end - start) / 60;
+  return diff > 0 ? diff : 4;
+}
+
+function parseSheet_metgraf(sheet){
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, raw:false, defval:null});
+  const plantoes = [];
+  let i = 0;
+  while(i < rows.length){
+    const row = rows[i] || [];
+    if(row.length >= 8 && row[1] === 'Segunda'){
+      const dateRow = rows[i+1] || [];
+      const datas = [];
+      for(let c=1; c<=7; c++) datas.push(parseDate(dateRow[c]));
+      let j = i+2;
+      while(j < rows.length){
+        const r = rows[j] || [];
+        if(!r.length || r.every(v => v==null || v==='')) break;
+        const turnoCell = r[0];
+        if(!turnoCell) break;
+        const info = detectShift(turnoCell);
+        if(!info) break;
+        const horas = getMetgrafHoras(turnoCell);
+        for(let c=0; c<7; c++){
+          const medico = normalizeName(r[c+1]);
+          const data = datas[c];
+          if(medico && data){
+            const p = { dataIso:isoDateFromDate(data), turno:info.turno, turnoLabel:info.label||info.turno, horas, medico };
+            if(info.horaInicio) p.horaInicio = info.horaInicio;
+            plantoes.push(p);
+          }
+        }
+        j++;
+      }
+      i = j;
+      continue;
+    }
+    i++;
+  }
+  return plantoes;
+}
+
 function parseSheet(sheet){
   const rows=XLSX.utils.sheet_to_json(sheet,{header:1, raw:false, defval:null});
   const plantoes=[];
@@ -1378,7 +1440,7 @@ function handleFileSelect(){
     try{
       const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      uploadedPlantoes=parseSheet(ws);
+      uploadedPlantoes = getSectorTipo()==='metodos_graficos' ? parseSheet_metgraf(ws) : parseSheet(ws);
       if(!uploadedPlantoes.length){ showToast('Nenhum plantão detectado', 'red'); return; }
       showFileInfo(f);
       populateMonthSelect(f.name);
@@ -1766,6 +1828,7 @@ async function renderResumoGeral(){
   if(getSectorTipo() === 'ginecologia') return renderResumoGeral_gineco();
   if(getSectorTipo() === 'urologia') return renderResumoGeral_uro();
   if(getSectorTipo() === 'endoscopia') return renderResumoGeral_endo();
+  if(getSectorTipo() === 'metodos_graficos') return renderResumoGeral_metgraf();
   const sel = document.getElementById('resumo-mes-select');
   if(!sel.options.length){
     await populateMesesSelect('resumo-mes-select', true);
@@ -1972,6 +2035,7 @@ async function renderMedico(){
   if(getSectorTipo() === 'ginecologia') return renderMedico_gineco();
   if(getSectorTipo() === 'urologia') return renderMedico_uro();
   if(getSectorTipo() === 'endoscopia') return renderMedico_endo();
+  if(getSectorTipo() === 'metodos_graficos') return renderMedico_metgraf();
   document.getElementById('medico-prod-card')?.classList.add('section-hidden');
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
@@ -2245,6 +2309,7 @@ async function downloadExcel(){
   if(getSectorTipo() === 'ginecologia') return downloadExcel_gineco();
   if(getSectorTipo() === 'urologia') return downloadExcel_uro();
   if(getSectorTipo() === 'endoscopia') return downloadExcel_endo();
+  if(getSectorTipo() === 'metodos_graficos') return downloadExcel_metgraf();
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
   const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
@@ -4054,6 +4119,303 @@ async function downloadExcel_uro(){
 }
 
 // ══════════════════════════════════════════════════════
+//  MÉTODOS GRÁFICOS
+//  - Plantões Manhã/Tarde com duração variável (4h ou 5h) extraída da planilha
+//  - R$150/h + horas extras em incrementos de 0,5h
+// ══════════════════════════════════════════════════════
+async function renderMedico_metgraf(){
+  document.getElementById('medico-prod-card')?.classList.add('section-hidden');
+  document.getElementById('medico-plantoes-card')?.classList.add('section-hidden');
+  const mesKey = document.getElementById('medico-mes-select').value;
+  if(!mesKey) return;
+  medicoCurrentMes = mesKey;
+  const [snap, vigSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('mesVigente')).once('value'),
+  ]);
+  medicoData = snap.val() || {};
+  const vigente = vigSnap.val();
+  const isEditable = mesKey === vigente;
+
+  const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome)
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
+  const horasExtras = medicoData.horasExtras || {};
+  const validacoes = medicoData.validacoes || {};
+  const minhaValidacao = validacoes[currentUser.slug];
+  const observacoesMap = medicoData.observacoes || {};
+  const minhaObs = observacoesMap[currentUser.slug] || '';
+  const extrasMap = medicoData.extras || {};
+  const meuExtra = Number(extrasMap[currentUser.slug]) || 0;
+
+  let horasTotais = 0, horasBase = 0, horasExtrasTotal = 0;
+  plantoes.forEach(p => {
+    const baseH = Number(p.horas) || 4;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    horasBase += baseH;
+    horasExtrasTotal += he;
+    horasTotais += baseH + he;
+  });
+  const valorPlantoes = horasTotais * METGRAF_RATE_H;
+  const total = valorPlantoes + meuExtra;
+
+  document.getElementById('medico-stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${horasTotais}h</div><div class="stat-lbl">Horas totais (${horasBase}h base + ${horasExtrasTotal}h extras)</div></div>
+    <div class="stat"><div class="stat-val">R$ ${METGRAF_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
+    ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
+    <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
+
+  const validCard = document.getElementById('medico-validacao-card');
+  if(minhaValidacao){
+    const dt = new Date(minhaValidacao.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    validCard.innerHTML = `
+      <div class="valid-box done">
+        <div class="valid-icon">✅</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato validado</div>
+          <div class="valid-sub">Você conferiu este extrato em ${dt}.</div>
+        </div>
+        ${isEditable ? `<button class="valid-btn valid-btn-undo" onclick="unvalidateExtract('${mesKey}')">Desfazer validação</button>` : ''}
+      </div>`;
+  } else {
+    validCard.innerHTML = `
+      <div class="valid-box pending">
+        <div class="valid-icon">⚠️</div>
+        <div class="valid-text">
+          <div class="valid-title">Extrato pendente de validação</div>
+          <div class="valid-sub">Confira as horas extras dos plantões antes de validar.</div>
+        </div>
+        <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
+      </div>`;
+  }
+
+  const noturnosEl = document.getElementById('medico-noturnos');
+  document.getElementById('medico-noturnos-title').innerHTML = `Meus plantões ${isEditable ? '' : '<span class="right" style="color:var(--amber-dark);font-size:12px">🔒 leitura</span>'}`;
+  document.getElementById('medico-noturnos-hint').textContent = isEditable
+    ? 'A duração base de cada plantão vem da planilha (4h ou 5h). Adicione horas extras em incrementos de 0,5h se necessário.'
+    : 'Somente leitura — mês não é o vigente.';
+  if(!plantoes.length){
+    noturnosEl.innerHTML='<div class="empty">Nenhum plantão no mês.</div>';
+  } else {
+    noturnosEl.innerHTML = plantoes.map(p => {
+      const k = heKey(p);
+      const baseH = Number(p.horas) || 4;
+      const he = Number(horasExtras[k]) || 0;
+      const totH = baseH + he;
+      const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+      const disMinus = !isEditable || he <= 0;
+      const disPlus  = !isEditable || he >= 12;
+      return `<div class="not-row ${he>0?'acionado':''}">
+        <span class="not-date">${fmtDate(p.dataIso)}</span>
+        <span class="not-day">${dia}</span>
+        <span class="not-name">${p.turnoLabel || p.turno} <span style="font-size:11px;color:var(--g400)">(${baseH}h)</span></span>
+        <span class="not-check">
+          <span class="he-label">Horas extras:</span>
+          <span class="he-controls">
+            <button class="he-btn" ${disMinus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',-0.5)" title="Remover 0,5h">−</button>
+            <span class="he-display">${totH}h${he>0?`<span class="he-badge">(+${he})</span>`:''}</span>
+            <button class="he-btn" ${disPlus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',0.5)" title="Adicionar 0,5h">+</button>
+          </span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+
+  const rows = plantoes.map(p => {
+    const baseH = Number(p.horas) || 4;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    const totH = baseH + he;
+    const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+    return `<tr>
+      <td>${fmtDate(p.dataIso)}</td>
+      <td>${dia}</td>
+      <td>${p.turnoLabel || p.turno}</td>
+      <td class="num">${totH}h${he>0?` <span style="color:var(--amber-dark);font-size:10px">(+${he}h)</span>`:''}</td>
+      <td class="money">${fmtMoney(totH * METGRAF_RATE_H)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('medico-tbl').innerHTML=`
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th class="num">Horas</th><th class="num">Valor</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr><td colspan="4">Subtotal plantões (${horasTotais}h × R$${METGRAF_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+    </tfoot>`;
+
+  document.getElementById('medico-obs-card').innerHTML = `
+    <div class="card-title">Observações</div>
+    <textarea class="obs-textarea" id="medico-obs-input" ${isEditable?'':'disabled'} placeholder="Escreva aqui qualquer observação sobre seu extrato deste mês.">${escapeHtml(minhaObs)}</textarea>
+    <div class="obs-hint">${isEditable ? 'Salva automaticamente ao sair do campo.' : 'Somente leitura — mês não é o vigente.'}</div>`;
+  const obsInput = document.getElementById('medico-obs-input');
+  if(obsInput && isEditable) obsInput.addEventListener('blur', () => saveObs(mesKey, obsInput.value));
+}
+
+async function renderResumoGeral_metgraf(){
+  const sel = document.getElementById('resumo-mes-select');
+  if(!sel.options.length) await populateMesesSelect('resumo-mes-select', true);
+  const mesKey = sel.value;
+  if(!mesKey){
+    document.getElementById('tbl-resumo').innerHTML='<tbody><tr><td class="empty">Nenhum mês para exibir.</td></tr></tbody>';
+    document.getElementById('resumo-stats').innerHTML='';
+    document.getElementById('admin-obs-card').innerHTML='';
+    return;
+  }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const horasExtras = data.horasExtras || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    const m = medicos.get(p.medico);
+    m.total++;
+    const baseH = Number(p.horas) || 4;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    m.horas += baseH + he;
+    m.hExtras += he;
+  });
+
+  const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0, totValid=0;
+  const bodyRows = rows.map(([m, c]) => {
+    const slug = slugify(m);
+    const vP = c.horas * METGRAF_RATE_H;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    let validCell;
+    if(v){
+      totValid++;
+      const dt = new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      validCell = `<td><span class="valid-chip ok" title="Validado em ${dt}">✓ Validado</span></td>`;
+    } else {
+      validCell = `<td><span class="valid-chip pending">⚠ Pendente</span></td>`;
+    }
+    return `<tr>
+      <td>${escapeHtml(m)}</td>
+      ${validCell}
+      <td class="num">${c.total}</td>
+      <td class="num">${c.horas}h</td>
+      <td class="num">${c.hExtras>0?`+${c.hExtras}h`:'0'}</td>
+      <td class="money">${fmtMoney(vP)}</td>
+      <td><input type="number" step="0.01" class="extras-input" value="${extra||''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${slug}',this.value)"></td>
+      <td class="money total">${fmtMoney(total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbl-resumo').innerHTML = `
+    <thead><tr>
+      <th>Médico</th><th class="num">Validado?</th><th class="num">Plantões</th>
+      <th class="num">Horas</th><th class="num">Extras (h)</th>
+      <th class="num">R$ Plantões</th><th class="num">Extras (R$)</th><th class="num">TOTAL R$</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr>
+      <td>TOTAL</td><td class="num">${totValid}/${medicos.size}</td><td class="num">${sT}</td>
+      <td class="num">${sH}h</td><td class="num">${sHE>0?`+${sHE}h`:'0'}</td>
+      <td class="money">${fmtMoney(sVP)}</td><td class="money">${fmtMoney(sExtras)}</td>
+      <td class="money total">${fmtMoney(sTot)}</td>
+    </tr></tfoot>`;
+  document.getElementById('resumo-stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
+    <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
+    <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
+
+  const obsCard = document.getElementById('admin-obs-card');
+  const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
+  if(!obsEntries.length){
+    obsCard.innerHTML = `<div class="card-title">Observações dos médicos</div><div class="empty">Nenhuma observação escrita neste mês.</div>`;
+  } else {
+    const nomesBySlug = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+    obsCard.innerHTML = `
+      <div class="card-title">Observações dos médicos <span class="right">${obsEntries.length} ${obsEntries.length===1?'médico escreveu':'médicos escreveram'}</span></div>
+      <div class="obs-list">
+        ${obsEntries.map(([slug, texto]) => `
+          <div class="obs-item">
+            <div class="obs-item-head">${escapeHtml(nomesBySlug.get(slug) || slug)}</div>
+            <div class="obs-item-text">${escapeHtml(texto)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+async function downloadExcel_metgraf(){
+  const mesKey = document.getElementById('resumo-mes-select').value;
+  if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
+  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const data = snap.val() || {};
+  const plantoes = Object.values(data.plantoes || {});
+  const horasExtras = data.horasExtras || {};
+  const validacoes = data.validacoes || {};
+  const extras = data.extras || {};
+  const observacoes = data.observacoes || {};
+  if(!plantoes.length){ showToast('Sem dados', 'red'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const [y,m] = mesKey.split('-');
+  const periodoLabel = `${MESES_PT[+m]}/${y}`;
+
+  const detHead = ['Data','Dia da semana','Turno','Médico','Horas base','Horas extras','Total horas','Valor R$'];
+  const detRows = plantoes.slice()
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno) || a.medico.localeCompare(b.medico,'pt-BR'))
+    .map(p => {
+      const baseH = Number(p.horas) || 4;
+      const he = Number(horasExtras[heKey(p)]) || 0;
+      const tot = baseH + he;
+      return [fmtDate(p.dataIso), DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))], p.turnoLabel||p.turno, p.medico,
+        baseH, he, tot, {v:tot*METGRAF_RATE_H, t:'n', z:'R$ #,##0.00'}];
+    });
+  const wsDet = XLSX.utils.aoa_to_sheet([detHead, ...detRows]);
+  wsDet['!cols'] = [{wch:12},{wch:14},{wch:22},{wch:42},{wch:10},{wch:12},{wch:12},{wch:14}];
+
+  const medicos = new Map();
+  plantoes.forEach(p => {
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    const c = medicos.get(p.medico);
+    c.total++;
+    const baseH = Number(p.horas) || 4;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    c.horas += baseH + he;
+    c.hExtras += he;
+  });
+  const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const resHead = ['Médico','Validado?','Plantões','Horas','Extras (h)','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
+  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0;
+  const bodyRows = medNames.map(med => {
+    const c = medicos.get(med);
+    const slug = slugify(med);
+    const vP = c.horas * METGRAF_RATE_H;
+    const extra = Number(extras[slug]) || 0;
+    const total = vP + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const v = validacoes[slug];
+    const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
+    return [med, validValue, c.total, c.horas, c.hExtras,
+      {v:vP, t:'n', z:'R$ #,##0.00'}, {v:extra, t:'n', z:'R$ #,##0.00'},
+      {v:total, t:'n', z:'R$ #,##0.00'}, observacoes[slug]||''];
+  });
+  const totFormulas = ['TOTAL','',sT,sH,sHE,
+    {v:sVP, t:'n', z:'R$ #,##0.00'}, {v:sExtras, t:'n', z:'R$ #,##0.00'},
+    {v:sTot, t:'n', z:'R$ #,##0.00'},''];
+  const wsRes = XLSX.utils.aoa_to_sheet([
+    [`Métodos Gráficos — ${periodoLabel}`],
+    [`Duração base variável por plantão (4h ou 5h) × R$${METGRAF_RATE_H}/h. Horas extras em incrementos de 0,5h.`],
+    [], resHead, ...bodyRows, totFormulas,
+  ]);
+  wsRes['!cols'] = [{wch:42},{wch:18},{wch:10},{wch:8},{wch:10},{wch:14},{wch:14},{wch:14},{wch:50}];
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
+  XLSX.writeFile(wb, `EinsteinValid_MetGraf_${periodoLabel.replace('/','_')}.xlsx`);
+  showToast('Excel gerado ✓', 'green');
+}
+
+// ══════════════════════════════════════════════════════
 //  ENDOSCOPIA
 //  - Períodos (seg-sex manhã/tarde): pagos 6h × R$150
 //  - Sobreavisos (noturnos + sáb/dom): não remunerados;
@@ -4456,9 +4818,9 @@ function buildDemoStore(setorKey){
   const DEMO_MEDICO = 'Dr. Demo Médico';
   const OUTROS = ['Ana Silva', 'Bruno Costa', 'Camila Reis'];
   const plantoes = {};
-  const push = (dataIso, turno, medico) => {
+  const push = (dataIso, turno, medico, extra={}) => {
     const id = 'p_' + Math.random().toString(36).slice(2, 10);
-    plantoes[id] = {dataIso, turno, medico};
+    plantoes[id] = {dataIso, turno, medico, ...extra};
   };
   const tipo = SETORES_LIST[setorKey]?.tipo || 'radiologia';
   const segSex = ['2026-08-04','2026-08-05','2026-08-06','2026-08-07','2026-08-11','2026-08-12','2026-08-13','2026-08-14','2026-08-18','2026-08-19','2026-08-20','2026-08-25','2026-08-26','2026-08-27'];
@@ -4474,6 +4836,14 @@ function buildDemoStore(setorKey){
   } else if(tipo === 'ecocardiografia' || tipo === 'clinicos' || tipo === 'ginecologia' || tipo === 'urologia'){
     segSex.slice(0,8).forEach(d => push(d, 'Manhã', DEMO_MEDICO));
     ['2026-08-06','2026-08-13','2026-08-20','2026-08-27'].forEach(d => push(d, 'Tarde', DEMO_MEDICO));
+  } else if(tipo === 'metodos_graficos'){
+    // Mix de Matutino 4h e Matutino* 5h
+    ['2026-08-04','2026-08-06','2026-08-11','2026-08-13','2026-08-18','2026-08-20','2026-08-25','2026-08-27'].forEach(d =>
+      push(d, 'Manhã', DEMO_MEDICO, {turnoLabel:'Matutino', horas:4}));
+    ['2026-08-05','2026-08-07','2026-08-12','2026-08-14','2026-08-19','2026-08-26'].forEach(d =>
+      push(d, 'Manhã', DEMO_MEDICO, {turnoLabel:'Matutino*', horas:5}));
+    ['2026-08-06','2026-08-13','2026-08-20','2026-08-27'].forEach(d =>
+      push(d, 'Tarde', DEMO_MEDICO, {turnoLabel:'Vespertino', horas:4}));
   } else if(tipo === 'endoscopia'){
     // Períodos pagos (seg-sex manhã/tarde)
     segSex.slice(0,8).forEach(d => push(d, 'Manhã', DEMO_MEDICO));
