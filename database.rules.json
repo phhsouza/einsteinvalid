@@ -53,6 +53,7 @@
                 "turnoLabel":  {".validate": "newData.isString() && newData.val().length <= 100"},
                 "horaInicio":  {".validate": "newData.isString() && newData.val().matches(/^[0-9]{2}:[0-9]{2}$/)"},
                 "categoria":   {".validate": "newData.isString() && newData.val().length <= 60"},
+                "horas":       {".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 24"},
                 "$other":      {".validate": false}
               }
             },
