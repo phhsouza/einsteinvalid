@@ -590,6 +590,8 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
 
     <div class="card" id="medico-validacao-card"></div>
 
+    <div class="card section-hidden" id="medico-plantoes-card"></div>
+
     <div class="card">
       <div class="card-title" id="medico-noturnos-title">Meus noturnos</div>
       <div style="font-size:12px;color:var(--g600);margin-bottom:14px" id="medico-noturnos-hint"></div>
@@ -1097,12 +1099,14 @@ function calcTotalMedico(tipo, medicoNome, data){
 
   if(tipo === 'radiologia'){
     let meio=0, fds=0, notNAc=0, notAc=0;
+    let heValMeio=0, heValFds=0, heValNAc=0;
     plantoes.forEach(p => {
       const cat = categorize(p);
-      if(cat === CAT_MEIO) meio++;
-      else if(cat === CAT_FDS) fds++;
+      const he = Number(horasExtras[heKey(p)]) || 0;
+      if(cat === CAT_MEIO){ meio++; heValMeio += he; }
+      else if(cat === CAT_FDS){ fds++; heValFds += he; }
       else if(cat === CAT_NOITE){
-        if(acionamentos[acionamentoKey(p)]) notAc++;
+        if(acionamentos[acionamentoKey(p)]){ notAc++; heValNAc += he; }
         else notNAc++;
       }
     });
@@ -1115,7 +1119,11 @@ function calcTotalMedico(tipo, medicoNome, data){
     notNAc = getOv('notNAc') ?? notNAc;
     notAc = getOv('notAc') ?? notAc;
     const rh = getOv('rhMS') ?? rateMeioSemana(meio);
-    return meio*H_TURNO*rh + fds*H_TURNO*RATE_FDS + notNAc*RATE_NOT_SOBREAVISO + notAc*H_NOITE*RATE_NOT_ACIONADO_H + extra;
+    return meio*H_TURNO*rh + heValMeio*rh
+         + fds*H_TURNO*RATE_FDS + heValFds*RATE_FDS
+         + notNAc*RATE_NOT_SOBREAVISO
+         + notAc*H_NOITE*RATE_NOT_ACIONADO_H + heValNAc*RATE_NOT_ACIONADO_H
+         + extra;
   }
   if(tipo === 'dermatologia'){
     let q6=0;
@@ -1781,15 +1789,17 @@ async function renderResumoGeral(){
     return (v === undefined || v === null || v === '') ? null : Number(v);
   };
 
+  const horasExtrasRes = data.horasExtras || {};
   const medicos = new Map();
   plantoes.forEach(p => {
-    if(!medicos.has(p.medico)) medicos.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0});
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0, heValMeio:0, heValFds:0, heValNAc:0});
     const m = medicos.get(p.medico);
     const cat = categorize(p);
-    if(cat === CAT_MEIO) m.meio++;
-    else if(cat === CAT_FDS) m.fds++;
+    const he = Number(horasExtrasRes[heKey(p)]) || 0;
+    if(cat === CAT_MEIO){ m.meio++; m.heValMeio += he; }
+    else if(cat === CAT_FDS){ m.fds++; m.heValFds += he; }
     else if(cat === CAT_NOITE){
-      if(acionamentos[acionamentoKey(p)]) m.notAc++;
+      if(acionamentos[acionamentoKey(p)]){ m.notAc++; m.heValNAc += he; }
       else m.notNAc++;
     }
   });
@@ -1809,8 +1819,10 @@ async function renderResumoGeral(){
     const notNAc = ovNNAc !== null ? ovNNAc : c.notNAc;
     const notAc = ovNAc !== null ? ovNAc : c.notAc;
     const rh = ovRh !== null ? ovRh : rateMeioSemana(meio);
-    const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
-    const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+    const vMeio = meio*H_TURNO*rh + c.heValMeio*rh;
+    const vFds = fds*H_TURNO*RATE_FDS + c.heValFds*RATE_FDS;
+    const vNAc = notNAc*RATE_NOT_SOBREAVISO;
+    const vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H + c.heValNAc*RATE_NOT_ACIONADO_H;
     const extra = Number(extras[medicoSlug]) || 0;
     const total = vMeio+vFds+vNAc+vAc+extra;
     totMeio+=meio; totFds+=fds; totNAc+=notNAc; totAc+=notAc; totMoney+=total; totExtras+=extra;
@@ -1974,6 +1986,7 @@ async function renderMedico(){
 
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome);
   const acionamentos = medicoData.acionamentos || {};
+  const horasExtras = medicoData.horasExtras || {};
   const prtMap = medicoData.prt || {};
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
@@ -1984,24 +1997,30 @@ async function renderMedico(){
 
   // Stats
   let meio=0, fds=0, notAc=0, notNAc=0;
+  let heValMeio=0, heValFds=0, heValNAc=0;
   plantoes.forEach(p => {
     const cat = categorize(p);
-    if(cat === CAT_MEIO) meio++;
-    else if(cat === CAT_FDS) fds++;
+    const he = Number(horasExtras[heKey(p)]) || 0;
+    if(cat === CAT_MEIO){ meio++; heValMeio += he; }
+    else if(cat === CAT_FDS){ fds++; heValFds += he; }
     else if(cat === CAT_NOITE){
-      if(acionamentos[acionamentoKey(p)]) notAc++;
+      if(acionamentos[acionamentoKey(p)]){ notAc++; heValNAc += he; }
       else notNAc++;
     }
   });
   const rh = rateMeioSemana(meio);
-  const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
-  const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+  const vMeio = meio*H_TURNO*rh + heValMeio*rh;
+  const vFds = fds*H_TURNO*RATE_FDS + heValFds*RATE_FDS;
+  const vNAc = notNAc*RATE_NOT_SOBREAVISO;
+  const vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H + heValNAc*RATE_NOT_ACIONADO_H;
+  const totalHE = heValMeio + heValFds + heValNAc;
   const total = vMeio+vFds+vNAc+vAc + meuExtra;
 
   document.getElementById('medico-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${notAc+notNAc}</div><div class="stat-lbl">Noturnos (${notAc} acion.)</div></div>
     <div class="stat"><div class="stat-val">R$ ${rh}</div><div class="stat-lbl">Valor/h Meio semana</div></div>
+    ${totalHE ? `<div class="stat"><div class="stat-val">${totalHE}h</div><div class="stat-lbl">Horas extras</div></div>` : ''}
     ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
     <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
 
@@ -2030,6 +2049,42 @@ async function renderMedico(){
       </div>`;
   }
 
+  // Plantões (Manhã / Tarde / FDS) com horas extras
+  const plantoesCard = document.getElementById('medico-plantoes-card');
+  const naoNoturnos = plantoes.filter(p => p.turno !== 'Noite').sort((a,b)=>a.dataIso.localeCompare(b.dataIso));
+  if(naoNoturnos.length){
+    plantoesCard.classList.remove('section-hidden');
+    plantoesCard.innerHTML = `
+      <div class="card-title">Meus plantões ${isEditable ? '' : '<span class="right" style="color:var(--amber-dark);font-size:12px">🔒 leitura</span>'}</div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:14px">Cada plantão vale ${H_TURNO}h. Adicione horas extras se você atendeu além do horário (incrementos de 0,5h).</div>
+      <div class="noturnos-list">
+        ${naoNoturnos.map(p => {
+          const k = heKey(p);
+          const he = Number(horasExtras[k]) || 0;
+          const totH = H_TURNO + he;
+          const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+          const cat = categorize(p);
+          const disMinus = !isEditable || he <= 0;
+          const disPlus = !isEditable || he >= 12;
+          return `<div class="not-row ${he>0?'acionado':''}">
+            <span class="not-date">${fmtDate(p.dataIso)}</span>
+            <span class="not-day">${dia}</span>
+            <span class="not-name">${p.turnoLabel || p.turno} <span style="font-size:11px;color:var(--g400)">(${cat})</span></span>
+            <span class="not-check">
+              <span class="he-label">Horas extras:</span>
+              <span class="he-controls">
+                <button class="he-btn" ${disMinus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',-0.5)" title="Remover 0,5h">−</button>
+                <span class="he-display">${totH}h${he>0?`<span class="he-badge">(+${he})</span>`:''}</span>
+                <button class="he-btn" ${disPlus?'disabled':''} onclick="adjustHE('${mesKey}','${k}',0.5)" title="Adicionar 0,5h">+</button>
+              </span>
+            </span>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    plantoesCard.classList.add('section-hidden');
+  }
+
   // Noturnos
   const noturnos = plantoes.filter(p => p.turno === 'Noite').sort((a,b)=>a.dataIso.localeCompare(b.dataIso));
   const noturnosEl = document.getElementById('medico-noturnos');
@@ -2044,9 +2099,13 @@ async function renderMedico(){
   } else {
     noturnosEl.innerHTML = noturnos.map(p=>{
       const k = acionamentoKey(p);
+      const kHe = heKey(p);
       const checked = !!acionamentos[k];
+      const he = Number(horasExtras[kHe]) || 0;
       const prt = prtMap[k] || '';
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
+      const disMinus = !isEditable || he <= 0;
+      const disPlus = !isEditable || !checked || he >= 12;
       return `<div class="not-row ${checked?'acionado':''}">
         <span class="not-date">${fmtDate(p.dataIso)}</span>
         <span class="not-day">${dia}</span>
@@ -2055,10 +2114,20 @@ async function renderMedico(){
           <span class="not-prt-label">PRT</span>
           <input type="text" value="${escapeHtml(prt)}" ${isEditable?'':'disabled'} placeholder="—" onchange="savePrt('${mesKey}','${k}',this.value)">
         </span>
-        <span class="not-check">
-          <input type="checkbox" ${checked?'checked':''} ${isEditable?'':'disabled'} onchange="toggleAcionamento('${mesKey}','${k}',this.checked)">
+        ${checked ? `<span class="not-check" style="flex-direction:column;align-items:flex-end;gap:4px">
+          <span style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" checked ${isEditable?'':'disabled'} onchange="toggleAcionamento('${mesKey}','${k}',this.checked)">
+            <span class="not-check-label">Acionado</span>
+          </span>
+          <span class="he-controls" style="margin-top:2px">
+            <button class="he-btn" ${disMinus?'disabled':''} onclick="adjustHE('${mesKey}','${kHe}',-0.5)">−</button>
+            <span class="he-display" style="font-size:12px;min-width:48px">${H_NOITE+he}h${he>0?`<span class="he-badge">(+${he})</span>`:''}</span>
+            <button class="he-btn" ${disPlus?'disabled':''} onclick="adjustHE('${mesKey}','${kHe}',0.5)">+</button>
+          </span>
+        </span>` : `<span class="not-check">
+          <input type="checkbox" ${isEditable?'':'disabled'} onchange="toggleAcionamento('${mesKey}','${k}',this.checked)">
           <span class="not-check-label">Acionado</span>
-        </span>
+        </span>`}
       </div>`;
     }).join('');
   }
@@ -2068,27 +2137,35 @@ async function renderMedico(){
     .map(p => {
       const cat = categorize(p);
       const dia = DIAS_PT[dayIdxMon0(dateFromIso(p.dataIso))];
-      let valor = 0;
-      if(cat === CAT_MEIO) valor = H_TURNO*rh;
-      else if(cat === CAT_FDS) valor = H_TURNO*RATE_FDS;
-      else if(cat === CAT_NOITE){
-        valor = acionamentos[acionamentoKey(p)] ? H_NOITE*RATE_NOT_ACIONADO_H : RATE_NOT_SOBREAVISO;
+      const he = Number(horasExtras[heKey(p)]) || 0;
+      let horas = 0, valor = 0;
+      if(cat === CAT_MEIO){
+        horas = H_TURNO + he;
+        valor = horas * rh;
+      } else if(cat === CAT_FDS){
+        horas = H_TURNO + he;
+        valor = horas * RATE_FDS;
+      } else if(cat === CAT_NOITE){
+        const ac = acionamentos[acionamentoKey(p)];
+        if(ac){ horas = H_NOITE + he; valor = horas * RATE_NOT_ACIONADO_H; }
+        else { horas = H_NOITE; valor = RATE_NOT_SOBREAVISO; }
       }
       return `<tr>
         <td>${fmtDate(p.dataIso)}</td>
         <td>${dia}</td>
         <td>${p.turnoLabel || p.turno}</td>
         <td>${cat}${cat===CAT_NOITE && acionamentos[acionamentoKey(p)] ? ' (acionado)' : ''}</td>
+        <td class="num">${horas}h${he>0?` <span style="font-size:10px;color:var(--amber-dark)">(+${he})</span>`:''}</td>
         <td class="money">${fmtMoney(valor)}</td>
       </tr>`;
     }).join('');
   document.getElementById('medico-tbl').innerHTML=`
-    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
+    <thead><tr><th>Data</th><th>Dia</th><th>Turno</th><th>Categoria</th><th class="num">Horas</th><th class="num">Valor</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot>
-      <tr><td colspan="4">Subtotal plantões</td><td class="money">${fmtMoney(vMeio+vFds+vNAc+vAc)}</td></tr>
-      ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
-      <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
+      <tr><td colspan="5">Subtotal plantões</td><td class="money">${fmtMoney(vMeio+vFds+vNAc+vAc)}</td></tr>
+      ${meuExtra ? `<tr><td colspan="5">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
+      <tr><td colspan="5">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
     </tfoot>`;
 
   // Observações do médico (textarea)
@@ -2209,6 +2286,7 @@ async function downloadExcel(){
   wsNot['!cols']=[{wch:12},{wch:14},{wch:42},{wch:14},{wch:16}];
 
   // Resumo
+  const horasExtrasXls = data.horasExtras || {};
   const medSet = new Set();
   plantoes.forEach(p => medSet.add(p.medico));
   const medicos = Array.from(medSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
@@ -2217,27 +2295,30 @@ async function downloadExcel(){
   // Contagens base a partir da escala (antes de overrides)
   const baseMap = new Map();
   plantoes.forEach(p => {
-    if(!baseMap.has(p.medico)) baseMap.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0});
+    if(!baseMap.has(p.medico)) baseMap.set(p.medico, {meio:0, fds:0, notAc:0, notNAc:0, heValMeio:0, heValFds:0, heValNAc:0});
     const b = baseMap.get(p.medico);
     const cat = categorize(p);
-    if(cat === CAT_MEIO) b.meio++;
-    else if(cat === CAT_FDS) b.fds++;
+    const he = Number(horasExtrasXls[heKey(p)]) || 0;
+    if(cat === CAT_MEIO){ b.meio++; b.heValMeio += he; }
+    else if(cat === CAT_FDS){ b.fds++; b.heValFds += he; }
     else if(cat === CAT_NOITE){
-      if(acionamentos[acionamentoKey(p)]) b.notAc++;
+      if(acionamentos[acionamentoKey(p)]){ b.notAc++; b.heValNAc += he; }
       else b.notNAc++;
     }
   });
   let sumMeio=0, sumFds=0, sumNNAc=0, sumNAc=0, sumTotP=0, sumVMeio=0, sumVFds=0, sumVNAc=0, sumVAc=0, sumExtras=0, sumTotal=0;
   const bodyRowsExcel=medicos.map((med)=>{
     const slug = slugify(med);
-    const base = baseMap.get(med) || {meio:0,fds:0,notAc:0,notNAc:0};
+    const base = baseMap.get(med) || {meio:0,fds:0,notAc:0,notNAc:0,heValMeio:0,heValFds:0,heValNAc:0};
     const meio = (getOv(slug,'meio') ?? base.meio);
     const fds = (getOv(slug,'fds') ?? base.fds);
     const notNAc = (getOv(slug,'notNAc') ?? base.notNAc);
     const notAc = (getOv(slug,'notAc') ?? base.notAc);
     const rh = (getOv(slug,'rhMS') ?? rateMeioSemana(meio));
-    const vMeio = meio*H_TURNO*rh, vFds = fds*H_TURNO*RATE_FDS;
-    const vNAc = notNAc*RATE_NOT_SOBREAVISO, vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H;
+    const vMeio = meio*H_TURNO*rh + base.heValMeio*rh;
+    const vFds = fds*H_TURNO*RATE_FDS + base.heValFds*RATE_FDS;
+    const vNAc = notNAc*RATE_NOT_SOBREAVISO;
+    const vAc = notAc*H_NOITE*RATE_NOT_ACIONADO_H + base.heValNAc*RATE_NOT_ACIONADO_H;
     const extraVal = Number(extras[slug]) || 0;
     const total = vMeio+vFds+vNAc+vAc+extraVal;
     const totP = meio+fds+notNAc+notAc;
