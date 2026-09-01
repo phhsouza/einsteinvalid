@@ -553,6 +553,17 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
       <div class="card-title">Meses salvos <span class="right" id="mes-vigente-label"></span></div>
       <div id="meses-list"><div class="empty">Nenhum mês salvo ainda.</div></div>
     </div>
+
+    <div class="card section-hidden" id="plantoes-admin-card">
+      <div class="card-title">
+        Plantões — <span id="plantoes-admin-mes-label"></span>
+        <span class="right" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="search" id="plantoes-admin-filter" placeholder="Filtrar médico…" oninput="renderPlantoesTbl()" style="padding:5px 10px;font-size:13px;border:1px solid var(--g200);border-radius:6px;font-family:var(--font);outline:none;min-width:0;width:160px">
+          <button class="btn-secondary" onclick="document.getElementById('plantoes-admin-card').classList.add('section-hidden')">Fechar</button>
+        </span>
+      </div>
+      <div class="tbl-wrap"><table class="tbl" id="tbl-plantoes-admin"></table></div>
+    </div>
   </div>
 
   <!-- ═══ ADMIN: USUÁRIOS ═══ -->
@@ -1581,6 +1592,7 @@ async function renderMesesList(){
         <div class="user-slug">${count} plantões · atualizado ${m.meta?.uploadedAt ? new Date(m.meta.uploadedAt).toLocaleString('pt-BR') : '—'}</div>
       </div>
       <div></div>
+      <button class="btn-secondary" onclick="showPlantoes('${k}')">✏ Plantões</button>
       ${isVig
         ? `<button class="btn-danger" onclick="clearMesVigente()">Remover vigente</button>`
         : `<button class="btn-secondary" onclick="setMesVigente('${k}')">Definir vigente</button>`}
@@ -1606,6 +1618,58 @@ async function deleteMes(k){
   const vig = (await db.ref(spath('mesVigente')).once('value')).val();
   if(vig === k) await db.ref(spath('mesVigente')).remove();
   showToast('Mês apagado', 'green');
+  document.getElementById('plantoes-admin-card').classList.add('section-hidden');
+  renderMesesList();
+}
+
+let _plantoesAdminMes = null;
+let _plantoesAdminData = {};
+
+async function showPlantoes(mesKey){
+  _plantoesAdminMes = mesKey;
+  const card = document.getElementById('plantoes-admin-card');
+  document.getElementById('plantoes-admin-mes-label').textContent = labelMes(mesKey);
+  document.getElementById('plantoes-admin-filter').value = '';
+  card.classList.remove('section-hidden');
+  card.scrollIntoView({ behavior:'smooth', block:'start' });
+  const snap = await db.ref(spath(`meses/${mesKey}/plantoes`)).once('value');
+  _plantoesAdminData = snap.val() || {};
+  renderPlantoesTbl();
+}
+
+function renderPlantoesTbl(){
+  const tbl = document.getElementById('tbl-plantoes-admin');
+  if(!tbl) return;
+  const filter = (document.getElementById('plantoes-admin-filter')?.value || '').toLowerCase();
+  const entries = Object.entries(_plantoesAdminData)
+    .filter(([,p]) => !filter || (p.medico||'').toLowerCase().includes(filter))
+    .sort(([,a],[,b]) => a.dataIso.localeCompare(b.dataIso) || (a.medico||'').localeCompare(b.medico||''));
+  if(!entries.length){
+    tbl.innerHTML = '<tbody><tr><td colspan="5" style="text-align:center;color:var(--g400);padding:16px">Nenhum plantão encontrado.</td></tr></tbody>';
+    return;
+  }
+  tbl.innerHTML = `
+    <thead><tr><th>Data</th><th>Médico</th><th>Turno</th><th>Hora</th><th></th></tr></thead>
+    <tbody>${entries.map(([pid,p]) => `
+      <tr>
+        <td>${fmtDate(p.dataIso)}</td>
+        <td>${p.medico||'—'}</td>
+        <td>${p.turnoLabel||p.turno||'—'}</td>
+        <td>${p.horaInicio||'—'}</td>
+        <td style="width:40px"><button class="btn-danger" style="padding:3px 10px;font-size:12px" onclick="deletePlantao('${pid}')">×</button></td>
+      </tr>`).join('')}
+    </tbody>
+    <tfoot><tr><td colspan="5" style="color:var(--g400);font-size:12px">${entries.length} plantão(ões)</td></tr></tfoot>`;
+}
+
+async function deletePlantao(pid){
+  if(!confirm('Remover este plantão? A ação não pode ser desfeita.')) return;
+  await db.ref(spath(`meses/${_plantoesAdminMes}/plantoes/${pid}`)).remove();
+  delete _plantoesAdminData[pid];
+  const newCount = Object.keys(_plantoesAdminData).length;
+  await db.ref(spath(`meses/${_plantoesAdminMes}/meta/count`)).set(newCount);
+  showToast('Plantão removido', 'green');
+  renderPlantoesTbl();
   renderMesesList();
 }
 function labelMes(key){
