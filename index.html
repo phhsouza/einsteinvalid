@@ -398,7 +398,7 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   #print-obs{display:block !important;font-size:10pt;line-height:1.5;white-space:pre-wrap;color:#333;}
 
   /* Esconde controles interativos */
-  .valid-btn,.valid-btn-undo,.pdf-btn,.he-btn,.month-select{display:none !important;}
+  .valid-btn,.valid-btn-undo,.pdf-btn,.he-btn,.month-select,#admin-preview-banner{display:none !important;}
 
   /* Exibe cabeçalho de impressão */
   #print-header{display:block !important;padding:0 0 14pt;border-bottom:2pt solid #333;margin-bottom:14pt;}
@@ -622,6 +622,13 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
         <span class="download-hint">Excel contém 3 abas: Resumo, Detalhado e Noturnos</span>
         <button class="btn-download" onclick="downloadExcel()">⬇ Baixar Excel</button>
       </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--g200);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--g500);font-weight:600">👁 Ver extrato:</span>
+        <select id="preview-select" style="flex:1;min-width:180px;max-width:300px;padding:7px 10px;border:1px solid var(--g200);border-radius:6px;font-family:var(--font);font-size:13px;outline:none">
+          <option value="">Selecione um médico…</option>
+        </select>
+        <button class="btn-secondary" onclick="previewExtrato()">→ Ver extrato</button>
+      </div>
     </div>
 
     <div class="card" id="admin-obs-card"></div>
@@ -630,6 +637,10 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   <!-- ═══ MÉDICO ═══ -->
   <div class="screen" id="screen-medico">
     <div id="print-header" style="display:none"></div>
+    <div id="admin-preview-banner" style="display:none;background:var(--amber-light);border:1px solid var(--amber);border-radius:var(--r-sm);padding:10px 16px;margin-bottom:8px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--amber-dark);font-weight:600">👁 Prévia — visualizando extrato como médico</span>
+      <button class="btn-secondary" onclick="exitPreview()">← Voltar ao admin</button>
+    </div>
     <div class="card">
       <div class="card-title">
         <span id="medico-nome-label">—</span>
@@ -2060,6 +2071,7 @@ async function renderResumoGeral(){
     <div class="stat money"><div class="stat-val">${fmtMoney(totMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
   // Card de observações
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -2123,6 +2135,38 @@ async function saveExtra(mesKey, medicoSlug, value){
 // ══════════════════════════════════════════════════════
 let medicoCurrentMes = null;
 let medicoData = null;
+
+let _adminPreview = null;
+
+function populatePreviewSelect(medicos){
+  const sel = document.getElementById('preview-select');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecione um médico…</option>' +
+    Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'))
+      .map(n=>`<option value="${slugify(n)}">${escapeHtml(n)}</option>`).join('');
+}
+
+function previewExtrato(){
+  const sel = document.getElementById('preview-select');
+  const slug = sel.value;
+  const nome = sel.options[sel.selectedIndex]?.text;
+  if(!slug){ showToast('Selecione um médico', 'red'); return; }
+  _adminPreview = {...currentUser};
+  currentUser = {slug, nome, role:'medico', passChanged:true};
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-medico').classList.add('active');
+  document.getElementById('medico-nome-label').textContent = nome;
+  document.getElementById('admin-preview-banner').style.display='flex';
+  renderMedicoInit();
+}
+
+function exitPreview(){
+  currentUser = _adminPreview;
+  _adminPreview = null;
+  document.getElementById('admin-preview-banner').style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  switchAdminTab('resumo');
+}
 
 async function renderMedicoInit(){
   await populateMesesSelect('medico-mes-select', true);
@@ -2812,6 +2856,7 @@ async function renderResumoGeral_dermato(){
     <div class="stat money"><div class="stat-val">${fmtMoney(sumMoney)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
   // Card de observações
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -3236,6 +3281,7 @@ async function renderResumoGeral_eco(){
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
   // Observações
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -3568,6 +3614,7 @@ async function renderResumoGeral_clinicos(){
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
   // Observações
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -3872,6 +3919,7 @@ async function renderResumoGeral_gineco(){
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -4174,6 +4222,7 @@ async function renderResumoGeral_uro(){
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -4516,6 +4565,7 @@ async function renderResumoGeral_metgraf(){
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
@@ -4869,6 +4919,7 @@ async function renderResumoGeral_endo(){
     <div class="stat"><div class="stat-val">${sEx}</div><div class="stat-lbl">Exames extras</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
 
+  populatePreviewSelect(medicos);
   const obsCard = document.getElementById('admin-obs-card');
   const obsEntries = Object.entries(observacoes).filter(([_,v]) => v && v.trim());
   if(!obsEntries.length){
