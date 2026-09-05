@@ -3066,16 +3066,16 @@ async function renderMedico_eco(){
         <td>${fmtDate(e.dataIso)}</td>
         <td style="font-family:var(--mono)">${escapeHtml(e.prt||'')}</td>
         <td class="money">${fmtMoney(ECO_EXAME_EXTRA)}</td>
-        <td>${isEditable ? `<button class="btn-danger" style="padding:4px 10px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button>` : ''}</td>
+        <td><button class="btn-danger" style="padding:4px 10px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button></td>
       </tr>`).join('')
     : '<tr><td colspan="4" class="empty">Nenhum exame extra registrado.</td></tr>';
   const todayIso = new Date().toISOString().slice(0,10);
-  const addForm = isEditable ? `
+  const addForm = `
     <div class="prod-add">
       <input type="date" id="prod-data" value="${todayIso}">
       <input type="text" id="prod-prt" placeholder="ID do paciente">
       <button class="prod-btn" onclick="addProdutividade('${mesKey}')">+ Adicionar exame</button>
-    </div>` : '';
+    </div>`;
   prodCard.innerHTML = `
     <div class="card-title">Produtividade — Exames extras <span class="right">${nExames} exame${nExames===1?'':'s'} · ${fmtMoney(valorExames)}</span></div>
     <div style="font-size:12px;color:var(--g600);margin-bottom:12px">Cada exame extra vale ${fmtMoney(ECO_EXAME_EXTRA)}. Registre com data e ID do paciente.</div>
@@ -4454,15 +4454,15 @@ async function renderMedico_metgraf(){
         <td>${fmtDate(e.dataIso)}</td>
         <td style="font-family:var(--mono)">${escapeHtml(e.prt||'')}</td>
         <td class="money">${fmtMoney(METGRAF_EXAME_EXTRA)}</td>
-        <td>${isEditable ? `<button class="btn-danger" style="padding:3px 10px;font-size:12px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button>` : ''}</td>
+        <td><button class="btn-danger" style="padding:3px 10px;font-size:12px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button></td>
       </tr>`).join('') || '<tr><td colspan="4" class="empty">Nenhum exame extra registrado.</td></tr>';
   const todayIso = new Date().toISOString().slice(0,10);
-  const addForm = isEditable ? `
+  const addForm = `
     <div class="prod-add">
       <input type="date" id="prod-data" value="${todayIso}">
       <input type="text" id="prod-prt" placeholder="ID do paciente">
       <button class="prod-btn" onclick="addProdutividade('${mesKey}')">+ Adicionar exame</button>
-    </div>` : '';
+    </div>`;
   prodCard.classList.remove('section-hidden');
   prodCard.innerHTML = `
     <div class="card-title">Produtividade — Exames extras <span class="right">${nExames} exame${nExames===1?'':'s'} · ${fmtMoney(valorExames)}</span></div>
@@ -4770,16 +4770,16 @@ async function renderMedico_endo(){
         <td>${fmtDate(e.dataIso)}</td>
         <td style="font-family:var(--mono)">${escapeHtml(e.prt||'')}</td>
         <td class="money">${fmtMoney(ENDO_EXAME_EXTRA)}</td>
-        <td>${isEditable ? `<button class="btn-danger" style="padding:4px 10px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button>` : ''}</td>
+        <td><button class="btn-danger" style="padding:4px 10px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button></td>
       </tr>`).join('')
     : '<tr><td colspan="4" class="empty">Nenhum exame extra registrado.</td></tr>';
   const todayIso = new Date().toISOString().slice(0,10);
-  const addForm = isEditable ? `
+  const addForm = `
     <div class="prod-add">
       <input type="date" id="prod-data" value="${todayIso}">
       <input type="text" id="prod-prt" placeholder="ID do paciente">
       <button class="prod-btn" onclick="addProdutividade('${mesKey}')">+ Adicionar exame</button>
-    </div>` : '';
+    </div>`;
   prodCard.innerHTML = `
     <div class="card-title">Produtividade — Exames extras <span class="right">${nExames} exame${nExames===1?'':'s'} · ${fmtMoney(valorExames)}</span></div>
     <div style="font-size:12px;color:var(--g600);margin-bottom:12px">Cada exame extra vale ${fmtMoney(ENDO_EXAME_EXTRA)}. Registre com data e ID do paciente.</div>
