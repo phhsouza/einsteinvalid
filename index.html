@@ -1243,10 +1243,14 @@ async function exportConsolidado(){
   if(!mesKey){ showToast('Escolha um mês', 'red'); return; }
 
   const rows = []; // {medico, setor, total}
+  const EXAMES_TIPOS = new Set(['ecocardiografia','endoscopia','metodos_graficos']);
   for(const [sectorKey, sectorInfo] of Object.entries(SETORES_LIST)){
-    const snap = await db.ref(`setores/${sectorKey}/meses/${mesKey}`).once('value');
+    const fetches = [db.ref(`setores/${sectorKey}/meses/${mesKey}`).once('value')];
+    if(EXAMES_TIPOS.has(sectorInfo.tipo)) fetches.push(db.ref(`setores/${sectorKey}/exames_extras`).once('value'));
+    const [snap, exSnap] = await Promise.all(fetches);
     const data = snap.val();
     if(!data || !data.plantoes) continue;
+    if(exSnap) data.produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
     const medicos = new Set();
     Object.values(data.plantoes).forEach(p => medicos.add(p.medico));
     medicos.forEach(m => {
@@ -2961,9 +2965,10 @@ async function renderMedico_eco(){
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
   medicoCurrentMes = mesKey;
-  const [snap, vigSnap] = await Promise.all([
+  const [snap, vigSnap, exSnap] = await Promise.all([
     db.ref(spath(`meses/${mesKey}`)).once('value'),
     db.ref(spath('mesVigente')).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
   ]);
   medicoData = snap.val() || {};
   const vigente = vigSnap.val();
@@ -2971,7 +2976,7 @@ async function renderMedico_eco(){
 
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome).sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
   const horasExtras = medicoData.horasExtras || {};
-  const produtividade = medicoData.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const meusExames = Object.entries(produtividade).filter(([_,e]) => e.medicoSlug === currentUser.slug);
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
@@ -3154,6 +3159,10 @@ async function adjustHE(mesKey, key, delta){
   }
 }
 
+function filterExamesByMes(exames, mesKey){
+  return Object.fromEntries(Object.entries(exames).filter(([,e]) => (e.dataIso||'').startsWith(mesKey)));
+}
+
 async function addProdutividade(mesKey){
   const dataInput = document.getElementById('prod-data');
   const prtInput = document.getElementById('prod-prt');
@@ -3162,7 +3171,7 @@ async function addProdutividade(mesKey){
   if(!dataIso){ showToast('Informe a data', 'red'); dataInput.focus(); return; }
   if(!prt){ showToast('Informe o ID do paciente', 'red'); prtInput.focus(); return; }
   try {
-    const ref = db.ref(spath(`meses/${mesKey}/produtividade`)).push();
+    const ref = db.ref(spath('exames_extras')).push();
     await ref.set({dataIso, prt, medicoSlug: currentUser.slug, criadoEm: Date.now()});
     showToast('Exame extra adicionado', 'green');
     renderMedico();
@@ -3174,7 +3183,7 @@ async function addProdutividade(mesKey){
 async function deleteProdutividade(mesKey, id){
   if(!confirm('Remover este exame extra?')) return;
   try {
-    await db.ref(spath(`meses/${mesKey}/produtividade/${id}`)).remove();
+    await db.ref(spath(`exames_extras/${id}`)).remove();
     renderMedico();
   } catch(err) {
     showToast('Erro: '+err.message, 'red');
@@ -3191,11 +3200,14 @@ async function renderResumoGeral_eco(){
     document.getElementById('admin-obs-card').innerHTML='';
     return;
   }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -3303,11 +3315,14 @@ async function renderResumoGeral_eco(){
 async function downloadExcel_eco(){
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -4323,9 +4338,10 @@ async function renderMedico_metgraf(){
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
   medicoCurrentMes = mesKey;
-  const [snap, vigSnap] = await Promise.all([
+  const [snap, vigSnap, exSnap] = await Promise.all([
     db.ref(spath(`meses/${mesKey}`)).once('value'),
     db.ref(spath('mesVigente')).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
   ]);
   medicoData = snap.val() || {};
   const vigente = vigSnap.val();
@@ -4334,7 +4350,7 @@ async function renderMedico_metgraf(){
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome)
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
   const horasExtras = medicoData.horasExtras || {};
-  const produtividade = medicoData.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
   const observacoesMap = medicoData.observacoes || {};
@@ -4491,11 +4507,14 @@ async function renderResumoGeral_metgraf(){
     document.getElementById('admin-obs-card').innerHTML='';
     return;
   }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -4587,11 +4606,14 @@ async function renderResumoGeral_metgraf(){
 async function downloadExcel_metgraf(){
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -4682,16 +4704,17 @@ async function renderMedico_endo(){
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
   medicoCurrentMes = mesKey;
-  const [snap, vigSnap] = await Promise.all([
+  const [snap, vigSnap, exSnap] = await Promise.all([
     db.ref(spath(`meses/${mesKey}`)).once('value'),
     db.ref(spath('mesVigente')).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
   ]);
   medicoData = snap.val() || {};
   const vigente = vigSnap.val();
   const isEditable = mesKey === vigente;
 
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome).sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
-  const produtividade = medicoData.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const meusExames = Object.entries(produtividade).filter(([_,e]) => e.medicoSlug === currentUser.slug);
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
@@ -4832,10 +4855,13 @@ async function renderResumoGeral_endo(){
     document.getElementById('admin-obs-card').innerHTML='';
     return;
   }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -4941,10 +4967,13 @@ async function renderResumoGeral_endo(){
 async function downloadExcel_endo(){
   const mesKey = document.getElementById('resumo-mes-select').value;
   if(!mesKey){ showToast('Nenhum mês', 'red'); return; }
-  const snap = await db.ref(spath(`meses/${mesKey}`)).once('value');
+  const [snap, exSnap] = await Promise.all([
+    db.ref(spath(`meses/${mesKey}`)).once('value'),
+    db.ref(spath('exames_extras')).once('value'),
+  ]);
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
-  const produtividade = data.produtividade || {};
+  const produtividade = filterExamesByMes(exSnap.val() || {}, mesKey);
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
