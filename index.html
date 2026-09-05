@@ -2214,7 +2214,7 @@ async function renderMedico(){
         <div class="valid-icon">⚠️</div>
         <div class="valid-text">
           <div class="valid-title">Extrato pendente de validação</div>
-          <div class="valid-sub">Depois de conferir plantões, acionamentos e PRTs, valide o extrato para o admin saber que está conferido.</div>
+          <div class="valid-sub">Depois de conferir plantões, acionamentos e IDs, valide o extrato para o admin saber que está conferido.</div>
         </div>
         <button class="valid-btn" ${isEditable?'':'disabled'} onclick="validateExtract('${mesKey}')">✓ Validar extrato</button>
       </div>`;
@@ -2282,7 +2282,7 @@ async function renderMedico(){
         <span class="not-day">${dia}</span>
         <span class="not-name">Noturno</span>
         <span class="not-prt">
-          <span class="not-prt-label">PRT</span>
+          <span class="not-prt-label">ID paciente</span>
           <input type="text" value="${escapeHtml(prt)}" ${isEditable?'':'disabled'} placeholder="—" onchange="savePrt('${mesKey}','${k}',this.value)">
         </span>
         ${checked ? `<span class="not-check" style="flex-direction:column;align-items:flex-end;gap:4px">
@@ -2404,7 +2404,7 @@ async function toggleAcionamento(mesKey, key, checked){
 }
 
 async function validateExtract(mesKey){
-  if(!confirm('Confirmar que você conferiu todos os plantões, acionamentos e PRTs deste mês?')) return;
+  if(!confirm('Confirmar que você conferiu todos os plantões, acionamentos e IDs deste mês?')) return;
   try {
     await db.ref(spath(`meses/${mesKey}/validacoes/${currentUser.slug}`)).set({
       validadoEm: Date.now(),
@@ -2432,9 +2432,9 @@ async function savePrt(mesKey, key, value){
     const v = String(value).trim();
     if(!v) await db.ref(spath(`meses/${mesKey}/prt/${key}`)).remove();
     else await db.ref(spath(`meses/${mesKey}/prt/${key}`)).set(v);
-    showToast('PRT salvo', 'green');
+    showToast('ID salvo', 'green');
   } catch(err) {
-    showToast('Erro ao salvar PRT: '+err.message, 'red');
+    showToast('Erro ao salvar ID: '+err.message, 'red');
   }
 }
 
@@ -2479,7 +2479,7 @@ async function downloadExcel(){
   wsDet['!cols']=[{wch:12},{wch:14},{wch:10},{wch:22},{wch:42}];
 
   // Noturnos
-  const notHead=['Data','Dia da semana','Médico','Acionado? (S)','PRT'];
+  const notHead=['Data','Dia da semana','Médico','Acionado? (S)','ID paciente'];
   const notRows=plantoes.filter(p=>p.turno==='Noite')
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.medico.localeCompare(b.medico,'pt-BR'))
     .map(p=>{
@@ -3113,7 +3113,7 @@ async function addProdutividade(mesKey){
   const dataIso = dataInput.value;
   const prt = prtInput.value.trim();
   if(!dataIso){ showToast('Informe a data', 'red'); dataInput.focus(); return; }
-  if(!prt){ showToast('Informe o PRT', 'red'); prtInput.focus(); return; }
+  if(!prt){ showToast('Informe o ID do paciente', 'red'); prtInput.focus(); return; }
   try {
     const ref = db.ref(spath(`meses/${mesKey}/produtividade`)).push();
     await ref.set({dataIso, prt, medicoSlug: currentUser.slug, criadoEm: Date.now()});
