@@ -757,6 +757,7 @@ const URO_BASE_H = 4;
 const ENDO_RATE_H = 200;
 // Regras dos métodos gráficos
 const METGRAF_RATE_H = 150;
+const METGRAF_EXAME_EXTRA = 70;
 const ENDO_BASE_H = 6;
 const ENDO_EXAME_EXTRA = 650;
 const ENDO_SAB_MANHA_START = '2026-08-15';
@@ -1220,7 +1221,8 @@ function calcTotalMedico(tipo, medicoNome, data){
       const he = Number(horasExtras[heKey(p)]) || 0;
       totalHoras += baseH + he;
     });
-    return totalHoras * METGRAF_RATE_H + extra;
+    const nExames = Object.values(produtividade).filter(e => e.medicoSlug === slug).length;
+    return totalHoras * METGRAF_RATE_H + nExames * METGRAF_EXAME_EXTRA + extra;
   }
   return 0;
 }
@@ -4268,7 +4270,6 @@ async function downloadExcel_uro(){
 //  - R$150/h + horas extras em incrementos de 0,5h
 // ══════════════════════════════════════════════════════
 async function renderMedico_metgraf(){
-  document.getElementById('medico-prod-card')?.classList.add('section-hidden');
   document.getElementById('medico-plantoes-card')?.classList.add('section-hidden');
   const mesKey = document.getElementById('medico-mes-select').value;
   if(!mesKey) return;
@@ -4284,6 +4285,7 @@ async function renderMedico_metgraf(){
   const plantoes = Object.values(medicoData.plantoes || {}).filter(p => p.medico === currentUser.nome)
     .sort((a,b)=>a.dataIso.localeCompare(b.dataIso) || a.turno.localeCompare(b.turno));
   const horasExtras = medicoData.horasExtras || {};
+  const produtividade = medicoData.produtividade || {};
   const validacoes = medicoData.validacoes || {};
   const minhaValidacao = validacoes[currentUser.slug];
   const observacoesMap = medicoData.observacoes || {};
@@ -4300,12 +4302,17 @@ async function renderMedico_metgraf(){
     horasTotais += baseH + he;
   });
   const valorPlantoes = horasTotais * METGRAF_RATE_H;
-  const total = valorPlantoes + meuExtra;
+
+  const meusExames = Object.entries(produtividade).filter(([,e]) => e.medicoSlug === currentUser.slug);
+  const nExames = meusExames.length;
+  const valorExames = nExames * METGRAF_EXAME_EXTRA;
+  const total = valorPlantoes + valorExames + meuExtra;
 
   document.getElementById('medico-stats').innerHTML=`
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
     <div class="stat"><div class="stat-val">${horasTotais}h</div><div class="stat-lbl">Horas totais (${horasBase}h base + ${horasExtrasTotal}h extras)</div></div>
     <div class="stat"><div class="stat-val">R$ ${METGRAF_RATE_H}</div><div class="stat-lbl">Valor/h</div></div>
+    ${nExames ? `<div class="stat"><div class="stat-val">${nExames}</div><div class="stat-lbl">Exames extras (${fmtMoney(valorExames)})</div></div>` : ''}
     ${meuExtra ? `<div class="stat"><div class="stat-val" style="color:var(--blue-dark)">${fmtMoney(meuExtra)}</div><div class="stat-lbl">Extras (admin)</div></div>` : ''}
     <div class="stat money"><div class="stat-val">${fmtMoney(total)}</div><div class="stat-lbl">Total a receber</div></div>`;
 
@@ -4384,9 +4391,38 @@ async function renderMedico_metgraf(){
     <tbody>${rows}</tbody>
     <tfoot>
       <tr><td colspan="4">Subtotal plantões (${horasTotais}h × R$${METGRAF_RATE_H})</td><td class="money">${fmtMoney(valorPlantoes)}</td></tr>
+      ${nExames ? `<tr><td colspan="4">Exames extras (${nExames} × R$${METGRAF_EXAME_EXTRA})</td><td class="money">${fmtMoney(valorExames)}</td></tr>` : ''}
       ${meuExtra ? `<tr><td colspan="4">Extras (admin)</td><td class="money">${fmtMoney(meuExtra)}</td></tr>` : ''}
       <tr><td colspan="4">TOTAL</td><td class="money total">${fmtMoney(total)}</td></tr>
     </tfoot>`;
+
+  // Card de produtividade
+  const prodCard = document.getElementById('medico-prod-card');
+  const prodRows = meusExames
+    .sort(([,a],[,b]) => a.dataIso.localeCompare(b.dataIso))
+    .map(([id, e]) => `
+      <tr>
+        <td>${fmtDate(e.dataIso)}</td>
+        <td style="font-family:var(--mono)">${escapeHtml(e.prt||'')}</td>
+        <td class="money">${fmtMoney(METGRAF_EXAME_EXTRA)}</td>
+        <td>${isEditable ? `<button class="btn-danger" style="padding:3px 10px;font-size:12px" onclick="deleteProdutividade('${mesKey}','${id}')">×</button>` : ''}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="empty">Nenhum exame extra registrado.</td></tr>';
+  const todayIso = new Date().toISOString().slice(0,10);
+  const addForm = isEditable ? `
+    <div class="prod-add">
+      <input type="date" id="prod-data" value="${todayIso}">
+      <input type="text" id="prod-prt" placeholder="ID do paciente">
+      <button class="prod-btn" onclick="addProdutividade('${mesKey}')">+ Adicionar exame</button>
+    </div>` : '';
+  prodCard.classList.remove('section-hidden');
+  prodCard.innerHTML = `
+    <div class="card-title">Produtividade — Exames extras <span class="right">${nExames} exame${nExames===1?'':'s'} · ${fmtMoney(valorExames)}</span></div>
+    <div style="font-size:12px;color:var(--g600);margin-bottom:12px">Cada exame extra vale ${fmtMoney(METGRAF_EXAME_EXTRA)}. Registre com data e ID do paciente.</div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Data</th><th>ID paciente</th><th class="num">Valor</th><th></th></tr></thead>
+      <tbody>${prodRows}</tbody>
+    </table></div>
+    ${addForm}`;
 
   document.getElementById('medico-obs-card').innerHTML = `
     <div class="card-title">Observações</div>
@@ -4410,13 +4446,14 @@ async function renderResumoGeral_metgraf(){
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
+  const produtividade = data.produtividade || {};
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
 
   const medicos = new Map();
   plantoes.forEach(p => {
-    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0, nExames:0});
     const m = medicos.get(p.medico);
     m.total++;
     const baseH = Number(p.horas) || 4;
@@ -4424,15 +4461,20 @@ async function renderResumoGeral_metgraf(){
     m.horas += baseH + he;
     m.hExtras += he;
   });
+  Object.values(produtividade).forEach(e => {
+    const nome = Array.from(medicos.keys()).find(n => slugify(n) === e.medicoSlug);
+    if(nome) medicos.get(nome).nExames++;
+  });
 
   const rows = Array.from(medicos.entries()).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
-  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0, totValid=0;
+  let sT=0, sH=0, sHE=0, sVP=0, sVE=0, sExtras=0, sTot=0, totValid=0;
   const bodyRows = rows.map(([m, c]) => {
     const slug = slugify(m);
     const vP = c.horas * METGRAF_RATE_H;
+    const vE = c.nExames * METGRAF_EXAME_EXTRA;
     const extra = Number(extras[slug]) || 0;
-    const total = vP + extra;
-    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const total = vP + vE + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sVE+=vE; sExtras+=extra; sTot+=total;
     const v = validacoes[slug];
     let validCell;
     if(v){
@@ -4448,7 +4490,8 @@ async function renderResumoGeral_metgraf(){
       <td class="num">${c.total}</td>
       <td class="num">${c.horas}h</td>
       <td class="num">${c.hExtras>0?`+${c.hExtras}h`:'0'}</td>
-      <td class="money">${fmtMoney(vP)}</td>
+      <td class="num">${c.nExames||0}</td>
+      <td class="money">${fmtMoney(vP+vE)}</td>
       <td><input type="number" step="0.01" class="extras-input" value="${extra||''}" placeholder="0,00" onchange="saveExtra('${mesKey}','${slug}',this.value)"></td>
       <td class="money total">${fmtMoney(total)}</td>
     </tr>`;
@@ -4456,18 +4499,19 @@ async function renderResumoGeral_metgraf(){
   document.getElementById('tbl-resumo').innerHTML = `
     <thead><tr>
       <th>Médico</th><th class="num">Validado?</th><th class="num">Plantões</th>
-      <th class="num">Horas</th><th class="num">Extras (h)</th>
-      <th class="num">R$ Plantões</th><th class="num">Extras (R$)</th><th class="num">TOTAL R$</th>
+      <th class="num">Horas</th><th class="num">Extras (h)</th><th class="num">Exames</th>
+      <th class="num">R$ Plantões+Exames</th><th class="num">Extras (R$)</th><th class="num">TOTAL R$</th>
     </tr></thead>
     <tbody>${bodyRows}</tbody>
     <tfoot><tr>
       <td>TOTAL</td><td class="num">${totValid}/${medicos.size}</td><td class="num">${sT}</td>
-      <td class="num">${sH}h</td><td class="num">${sHE>0?`+${sHE}h`:'0'}</td>
-      <td class="money">${fmtMoney(sVP)}</td><td class="money">${fmtMoney(sExtras)}</td>
+      <td class="num">${sH}h</td><td class="num">${sHE>0?`+${sHE}h`:'0'}</td><td class="num">${Object.keys(produtividade).length}</td>
+      <td class="money">${fmtMoney(sVP+sVE)}</td><td class="money">${fmtMoney(sExtras)}</td>
       <td class="money total">${fmtMoney(sTot)}</td>
     </tr></tfoot>`;
   document.getElementById('resumo-stats').innerHTML = `
     <div class="stat"><div class="stat-val">${plantoes.length}</div><div class="stat-lbl">Plantões (${labelMes(mesKey)})</div></div>
+    <div class="stat"><div class="stat-val">${Object.keys(produtividade).length}</div><div class="stat-lbl">Exames extras</div></div>
     <div class="stat"><div class="stat-val">${medicos.size}</div><div class="stat-lbl">Médicos</div></div>
     <div class="stat"><div class="stat-val">${totValid}/${medicos.size}</div><div class="stat-lbl">Validados</div></div>
     <div class="stat money"><div class="stat-val">${fmtMoney(sTot)}</div><div class="stat-lbl">Total a pagar</div></div>`;
@@ -4497,6 +4541,7 @@ async function downloadExcel_metgraf(){
   const data = snap.val() || {};
   const plantoes = Object.values(data.plantoes || {});
   const horasExtras = data.horasExtras || {};
+  const produtividade = data.produtividade || {};
   const validacoes = data.validacoes || {};
   const extras = data.extras || {};
   const observacoes = data.observacoes || {};
@@ -4521,7 +4566,7 @@ async function downloadExcel_metgraf(){
 
   const medicos = new Map();
   plantoes.forEach(p => {
-    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0});
+    if(!medicos.has(p.medico)) medicos.set(p.medico, {total:0, horas:0, hExtras:0, nExames:0});
     const c = medicos.get(p.medico);
     c.total++;
     const baseH = Number(p.horas) || 4;
@@ -4529,33 +4574,50 @@ async function downloadExcel_metgraf(){
     c.horas += baseH + he;
     c.hExtras += he;
   });
+  const nomesMap = new Map(Array.from(medicos.keys()).map(n => [slugify(n), n]));
+  Object.values(produtividade).forEach(e => {
+    const nome = nomesMap.get(e.medicoSlug);
+    if(nome) medicos.get(nome).nExames++;
+  });
   const medNames = Array.from(medicos.keys()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const resHead = ['Médico','Validado?','Plantões','Horas','Extras (h)','R$ Plantões','Extras (R$)','TOTAL R$','Observações'];
-  let sT=0, sH=0, sHE=0, sVP=0, sExtras=0, sTot=0;
+  const resHead = ['Médico','Validado?','Plantões','Horas','Extras (h)','Exames extras','R$ Plantões','R$ Exames','Extras (R$)','TOTAL R$','Observações'];
+  let sT=0, sH=0, sHE=0, sVP=0, sVE=0, sExtras=0, sTot=0;
   const bodyRows = medNames.map(med => {
     const c = medicos.get(med);
     const slug = slugify(med);
     const vP = c.horas * METGRAF_RATE_H;
+    const vE = c.nExames * METGRAF_EXAME_EXTRA;
     const extra = Number(extras[slug]) || 0;
-    const total = vP + extra;
-    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sExtras+=extra; sTot+=total;
+    const total = vP + vE + extra;
+    sT+=c.total; sH+=c.horas; sHE+=c.hExtras; sVP+=vP; sVE+=vE; sExtras+=extra; sTot+=total;
     const v = validacoes[slug];
     const validValue = v ? new Date(v.validadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Pendente';
-    return [med, validValue, c.total, c.horas, c.hExtras,
-      {v:vP, t:'n', z:'R$ #,##0.00'}, {v:extra, t:'n', z:'R$ #,##0.00'},
-      {v:total, t:'n', z:'R$ #,##0.00'}, observacoes[slug]||''];
+    return [med, validValue, c.total, c.horas, c.hExtras, c.nExames,
+      {v:vP, t:'n', z:'R$ #,##0.00'}, {v:vE, t:'n', z:'R$ #,##0.00'},
+      {v:extra, t:'n', z:'R$ #,##0.00'}, {v:total, t:'n', z:'R$ #,##0.00'}, observacoes[slug]||''];
   });
-  const totFormulas = ['TOTAL','',sT,sH,sHE,
-    {v:sVP, t:'n', z:'R$ #,##0.00'}, {v:sExtras, t:'n', z:'R$ #,##0.00'},
-    {v:sTot, t:'n', z:'R$ #,##0.00'},''];
+  const totFormulas = ['TOTAL','',sT,sH,sHE,Object.keys(produtividade).length,
+    {v:sVP, t:'n', z:'R$ #,##0.00'}, {v:sVE, t:'n', z:'R$ #,##0.00'},
+    {v:sExtras, t:'n', z:'R$ #,##0.00'}, {v:sTot, t:'n', z:'R$ #,##0.00'},''];
   const wsRes = XLSX.utils.aoa_to_sheet([
     [`Métodos Gráficos — ${periodoLabel}`],
-    [`Duração base variável por plantão (4h ou 5h) × R$${METGRAF_RATE_H}/h. Horas extras em incrementos de 0,5h.`],
+    [`Duração base variável por plantão (4h ou 5h) × R$${METGRAF_RATE_H}/h. Exames extras R$${METGRAF_EXAME_EXTRA}/exame.`],
     [], resHead, ...bodyRows, totFormulas,
   ]);
-  wsRes['!cols'] = [{wch:42},{wch:18},{wch:10},{wch:8},{wch:10},{wch:14},{wch:14},{wch:14},{wch:50}];
+  wsRes['!cols'] = [{wch:42},{wch:18},{wch:10},{wch:8},{wch:10},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:50}];
+
+  // Aba de produtividade
+  const prodHead = ['Data','Médico','ID paciente','Valor R$'];
+  const prodRows = Object.values(produtividade)
+    .sort((a,b)=>a.dataIso.localeCompare(b.dataIso))
+    .map(e => [fmtDate(e.dataIso), nomesMap.get(e.medicoSlug)||e.medicoSlug, e.prt||'',
+      {v:METGRAF_EXAME_EXTRA, t:'n', z:'R$ #,##0.00'}]);
+  const wsProd = XLSX.utils.aoa_to_sheet([prodHead, ...prodRows]);
+  wsProd['!cols'] = [{wch:12},{wch:42},{wch:20},{wch:14}];
+
   XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
   XLSX.utils.book_append_sheet(wb, wsDet, 'Plantões');
+  XLSX.utils.book_append_sheet(wb, wsProd, 'Exames extras');
   XLSX.writeFile(wb, `EinsteinValid_MetGraf_${periodoLabel.replace('/','_')}.xlsx`);
   showToast('Excel gerado ✓', 'green');
 }
