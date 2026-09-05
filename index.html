@@ -389,7 +389,13 @@ body{font-family:var(--font);min-height:100vh;background:var(--g50);color:var(--
   .wrap{max-width:none;padding:0 !important;margin:0 !important;}
 
   /* Esconde cards interativos */
-  #medico-plantoes-card,#medico-noturnos-card,#medico-prod-card,#medico-obs-card{display:none !important;}
+  #medico-plantoes-card,#medico-noturnos-card,#medico-prod-card{display:none !important;}
+
+  /* Observações: mostra como texto simples (só se tiver conteúdo) */
+  #medico-obs-card{display:none !important;}
+  #medico-obs-card.print-with-obs{display:block !important;}
+  #medico-obs-card .obs-textarea,#medico-obs-card .obs-hint{display:none !important;}
+  #print-obs{display:block !important;font-size:10pt;line-height:1.5;white-space:pre-wrap;color:#333;}
 
   /* Esconde controles interativos */
   .valid-btn,.valid-btn-undo,.pdf-btn,.he-btn,.month-select{display:none !important;}
@@ -2356,7 +2362,24 @@ function printExtrato(){
       <div style="font-size:10pt"><strong>Período:</strong> ${labelMes(mesKey)}</div>
       <div style="font-size:10pt"><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</div>
     </div>`;
+
+  // Injeta observações como texto simples no PDF
+  const obsCard = document.getElementById('medico-obs-card');
+  const obsText = (document.getElementById('medico-obs-input')?.value || '').trim();
+  let printObsEl = null;
+  if(obsCard && obsText){
+    printObsEl = document.createElement('div');
+    printObsEl.id = 'print-obs';
+    printObsEl.textContent = obsText;
+    obsCard.appendChild(printObsEl);
+    obsCard.classList.add('print-with-obs');
+  }
+
   window.print();
+
+  // Limpa elementos temporários após impressão
+  if(printObsEl) printObsEl.remove();
+  if(obsCard) obsCard.classList.remove('print-with-obs');
 }
 
 async function saveObs(mesKey, value){
